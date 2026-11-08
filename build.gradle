@@ -21,8 +21,13 @@ repositories {
 }
 
 dependencies {
+    compileOnly("com.github.Anuken.Mindustry:core:$mindustryVersion") {
+        transitive = false
+    }
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    compileOnly "com.github.Anuken.Arc:g3d:$mindustryVersion"
+    compileOnly "com.github.Anuken.Arc:fx:$mindustryVersion"
+    compileOnly "com.github.Anuken.Arc:arcnet:$mindustryVersion"
 }
 
 tasks.withType(JavaCompile).configureEach {
