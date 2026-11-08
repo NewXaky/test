@@ -1,4 +1,4 @@
-package newex.showhp;
+package newex;
 
 import arc.Core;
 import arc.Events;
@@ -22,13 +22,12 @@ import mindustry.gen.Groups;
 import mindustry.gen.Unit;
 import arc.graphics.Blending;
 import mindustry.ui.Fonts;
-import mindustry.mod.Mod;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/** Hiện thanh máu cho đơn vị trong 5 giây sau khi bị thương. Cài đặt: "newex-hp-style" = show-hp | hp | off. */
-public class ShowHpMod extends Mod {
+/** Hiện thanh máu cho đơn vị trong 5 giây sau khi bị thương (thay show-hp.js). Cài đặt: "newex-hp-style" = show-hp | hp | off. */
+public final class ShowHp {
     static final String STYLE_KEY = "newex-hp-style";
     static final float SHOW_TIME = 300f;            // 5s sau lần mất/hồi máu cuối
     static final float SHATTER_LIFE = 18f, CRACK_FRAC = 0.22f;
@@ -147,7 +146,10 @@ public class ShowHpMod extends Mod {
         Draw.reset();
     });
 
-    public ShowHpMod() {
+    private ShowHp() {}
+
+    /** Gọi 1 lần từ NexMod. */
+    public static void init() {
         // Xóa bộ nhớ đệm khi đổi map / bắt đầu lại ván
         Events.on(WorldLoadEvent.class, e -> clearCache());
         Events.on(StateChangeEvent.class, e -> {
@@ -179,7 +181,7 @@ public class ShowHpMod extends Mod {
             forget(id);
         });
 
-        Events.run(mindustry.game.EventType.Trigger.draw, ShowHpMod::drawBars);
+        Events.run(mindustry.game.EventType.Trigger.draw, ShowHp::drawBars);
     }
 
     static String style() {
@@ -195,7 +197,7 @@ public class ShowHpMod extends Mod {
     }
 
     /** Độ cao (từ tâm đơn vị) tới đỉnh phần hiển thị máu, để số sát thương xếp ngay trên mà không đè.
-     *  Gọi từ JS: Packages.newex.showhp.ShowHpMod.hpTop(size) */
+     *  Dùng bởi DamageDisplay. */
     public static float hpTop(float size) {
         String style = style();
         if (style.equals("off")) return size / 2f + 4f;
