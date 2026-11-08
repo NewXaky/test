@@ -3,14 +3,14 @@ plugins {
 }
 
 version = '1.0'
-base { archivesName = 'NeoWex' }
+base { archivesName = 'ShowHpMod' }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 sourceSets.main.java.srcDirs = ['src']
 
 ext {
-    // ĐỔI số này cho khớp bản game (tag trên github.com/Anuken/Mindustry). Mod yêu cầu game >= 157.
+    // Đổi số này nếu muốn build theo phiên bản Mindustry khác (tag trên GitHub Anuken/Mindustry)
     mindustryVersion = 'v146'
     sdkRoot = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
 }
@@ -21,7 +21,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.github.Anuken.Mindustry:core:$mindustryVersion") { transitive = false }
+    compileOnly("com.github.Anuken.Mindustry:core:$mindustryVersion") {
+        transitive = false
+    }
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Arc:g3d:$mindustryVersion"
     compileOnly "com.github.Anuken.Arc:fx:$mindustryVersion"
@@ -32,15 +34,12 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-// 1) jar cho PC: file .class + mod.hjson + toàn bộ tài nguyên (content, sprites, maps, sounds, music...)
+// 1) jar cho PC (chứa file .class + mod.json)
 jar {
-    archiveFileName = 'NeoWexDesktop.jar'
+    archiveFileName = 'ShowHpModDesktop.jar'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(rootDir) {
-        include 'mod.hjson', 'mod.json', 'icon.png'
-        include 'content/**', 'sprites/**', 'maps/**', 'music/**', 'sounds/**', 'bundles/**'
-        // KHÔNG đưa scripts/*.js vào jar: mod đã chuyển sang Java.
-    }
+    from(rootDir) { include 'mod.json' }
+    from('assets') { include '**' }   // bỏ qua nếu không có thư mục assets
 }
 
 // 2) chuyển sang dex (classes.dex) để chạy trên Android
@@ -56,7 +55,7 @@ tasks.register('jarAndroid') {
                 .find { new File(it, 'd8').exists() }
         if (platform == null || tools == null) throw new GradleException('Thiếu android.jar hoặc d8 trong Android SDK.')
 
-        def out = new File(buildDir, 'libs/NeoWexAndroid.jar')
+        def out = new File(buildDir, 'libs/ShowHpModAndroid.jar')
         def cp = configurations.compileClasspath.files + [new File(platform, 'android.jar')]
         def cmd = [new File(tools, 'd8').path] +
                 cp.collectMany { ['--classpath', it.path] } +
@@ -65,11 +64,11 @@ tasks.register('jarAndroid') {
     }
 }
 
-// 3) gộp PC + Android thành 1 file mod: NeoWex.jar
+// 3) gộp PC + Android thành 1 file mod duy nhất: ShowHpMod.jar
 tasks.register('deploy', Jar) {
     dependsOn jarAndroid
-    archiveFileName = 'NeoWex.jar'
+    archiveFileName = 'ShowHpMod.jar'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { zipTree(jar.archiveFile.get().asFile) }
-    from { zipTree(new File(buildDir, 'libs/NeoWexAndroid.jar')) }
+    from { zipTree(new File(buildDir, 'libs/ShowHpModAndroid.jar')) }
 }

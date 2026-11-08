@@ -1,0 +1,10 @@
+{
+  "name": "show-hp",
+  "displayName": "Show HP",
+  "author": "newex",
+  "main": "newex.showhp.ShowHpMod",
+  "description": "Hiển thị thanh máu cho đơn vị trong 5 giây sau khi bị thương, kèm hiệu ứng vỡ khi chết.",
+  "version": "1.0",
+  "minGameVersion": 154,
+  "java": true
+}
