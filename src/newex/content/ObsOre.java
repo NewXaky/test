@@ -66,7 +66,7 @@ public final class ObsOre {
                         }
 
                         try {
-                            Fx.smallExplode.at(currentTile.worldx(), currentTile.worldy());
+                            Fx.explosion.at(currentTile.worldx(), currentTile.worldy());
                         } catch (Throwable ignored) {
                         }
                     }

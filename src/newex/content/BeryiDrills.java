@@ -165,9 +165,9 @@ public final class BeryiDrills {
         }
 
         @Override
-        public void onDestroy() {
+        public void onDestroyed() {
             cachedTiles = new Seq<>();
-            super.onDestroy();
+            super.onDestroyed();
         }
 
         void scanAndCacheTiles() {
@@ -284,7 +284,7 @@ public final class BeryiDrills {
                             items.add(item, amountToAdd);
 
                             try {
-                                Call.effect(Fx.mined, randomTile.worldx(), randomTile.worldy(), 0f, item.color);
+                                Call.effect(Fx.mine, randomTile.worldx(), randomTile.worldy(), 0f, item.color);
                             } catch (Throwable ignored) {
                             }
                         }
