@@ -5,6 +5,26 @@ import arc.Events;
 import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.mod.Mod;
+import newex.content.BeryiDrills;
+import newex.content.Comduik;
+import newex.content.CopesBlock;
+import newex.content.Crynex;
+import newex.content.DrexkouDrills;
+import newex.content.EmeraliftWall;
+import newex.content.ExplayderAbility;
+import newex.content.ExzoryCore;
+import newex.content.FlasallowFactory;
+import newex.content.GeneratMachine;
+import newex.content.LaserChargerUranilum;
+import newex.content.Korynd;
+import newex.content.ObsOre;
+import newex.content.Pinfyr;
+import newex.content.RedstoneWall;
+import newex.content.SyrufpatFactory;
+import newex.content.UranilumReactor;
+import newex.content.WuexConveyor;
+import newex.content.XeuwConveyor;
+import newex.content.Zoj;
 
 /**
  * Lớp chính của mod NeoWex (thay scripts/main.js).
@@ -26,6 +46,34 @@ public class NexMod extends Mod {
         ShowHp.init();
         DamageDisplay.init();
         BuffEnemies.init();
+
+        // Giai đoạn 2/3: nội dung (block, pháo, đơn vị)
+        ObsOre.init();
+        Pinfyr.init();
+        EmeraliftWall.init();
+        RedstoneWall.init();
+        Korynd.init();
+        Zoj.init();
+        ExplayderAbility.init();
+        CopesBlock.init();
+        WuexConveyor.init();
+        XeuwConveyor.init();
+        GeneratMachine.init();
+        LaserChargerUranilum.init();
+        Crynex.init();
+        Comduik.init();
+        BeryiDrills.init();
+        DrexkouDrills.init();
+        UranilumReactor.init();
+        FlasallowFactory.init();
+        SyrufpatFactory.init();
+    }
+
+    /** Game gọi hàm này khi nạp nội dung: tạo các block/đạn được định nghĩa bằng code (hjson sẽ bổ sung thuộc tính sau). */
+    @Override
+    public void loadContent() {
+        ExzoryCore.create();
+        Zoj.create();
     }
 
     static void applyNexDefaultsIfNeeded() {

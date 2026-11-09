@@ -1,6 +1,6 @@
 # NeoWex – Java, giai đoạn 1 (nền tảng)
 
-Đã chuyển: PerfCore, NexNet, NexFree, MatchTimer, BuffEnemies, ShowHp, DamageDisplay, NexMod (khởi tạo).
+Đã chuyển: giai đoạn 1 (nền tảng) + lô 1 đến 6 của giai đoạn 2/3. Xem MIGRATION.md để biết từng file.
 Xem `MIGRATION.md` để biết toàn bộ danh sách còn lại.
 
 ## Cách dùng
