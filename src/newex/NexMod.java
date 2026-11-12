@@ -32,6 +32,7 @@ import newex.content.SplashFx;
 import newex.content.Sta;
 import newex.content.SyrufpatFactory;
 import newex.content.TurretSystem;
+import newex.content.Tyber;
 import newex.content.UnitReactor;
 import newex.content.UranilumReactor;
 import newex.content.WuexConveyor;
@@ -90,6 +91,7 @@ public class NexMod extends Mod {
         Sta.init();
         ErysidusDrone.init();
         Cin.init();
+        Tyber.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
