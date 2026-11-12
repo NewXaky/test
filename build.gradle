@@ -11,7 +11,7 @@ sourceSets.main.java.srcDirs = ['src']
 
 ext {
     // ĐỔI số này cho khớp bản game (tag trên github.com/Anuken/Mindustry). Mod yêu cầu game >= 157.
-    mindustryVersion = 'v146'
+    mindustryVersion = 'v157.4'
     sdkRoot = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
 }
 
