@@ -84,7 +84,7 @@ public final class RedstoneWall {
                     nextShockTime = Mathf.random(200f, 400f);
 
                     try {
-                        Fx.spark.at(x, y);
+                        Fx.generatespark.at(x, y);
                         Fx.lightning.at(x, y, Mathf.random(360f), PerfCore.color("ff4444"));
                     } catch (Throwable ignored) {
                     }
@@ -116,7 +116,7 @@ public final class RedstoneWall {
                     }
 
                     try {
-                        Fx.spark.at(x, y);
+                        Fx.generatespark.at(x, y);
                     } catch (Throwable ignored) {
                     }
                 }
