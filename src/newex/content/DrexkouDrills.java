@@ -173,10 +173,10 @@ public final class DrexkouDrills {
         }
 
         @Override
-        public void onDestroyed() {
+        public void onDestroy() {
             releaseTarget();
             cachedTiles = new Seq<>();
-            super.onDestroyed();
+            super.onDestroy();
         }
 
         void scanAndCacheTiles() {
@@ -364,7 +364,7 @@ public final class DrexkouDrills {
                                 items.add(item, amountToAdd);
 
                                 try {
-                                    Call.effect(Fx.mine, targetTile.worldx(), targetTile.worldy(), 0f, item.color);
+                                    Call.effect(Fx.mined, targetTile.worldx(), targetTile.worldy(), 0f, item.color);
                                 } catch (Throwable ignored) {
                                 }
                             }

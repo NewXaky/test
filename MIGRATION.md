@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 27 file (5481 dòng). Còn lại: 69 file (53167 dòng), chưa tính main.js đang làm dở.
+Đã xong: 40 file (9343 dòng). Còn lại: 56 file (49305 dòng), chưa tính main.js đang làm dở.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -26,11 +26,14 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 
 | File JS | Dòng | Trạng thái |
 |---|---:|---|
+| laser-brey.js | 476 | ✅ xong → content/LaserBrey.java |
 | uranilum-reactor.js | 442 | ✅ xong → content/UranilumReactor.java |
 | flasallow-factory.js | 432 | ✅ xong → content/FlasallowFactory + FactoryFx.java |
 | syrufpat-factory.js | 430 | ✅ xong → content/SyrufpatFactory + FactoryFx.java |
 | drexkou-drills.js | 418 | ✅ xong → content/DrexkouDrills + DrillUtil.java |
 | comduik.js | 390 | ✅ xong → content/Comduik.java |
+| balashilon.js | 376 | ✅ xong → content/BalashilonBlock.java |
+| unit-reactor.js | 352 | ✅ xong → content/UnitReactor.java |
 | beryi-drills.js | 343 | ✅ xong → content/BeryiDrills + DrillUtil + HiddenOres.java |
 | crynex.js | 281 | ✅ xong → content/Crynex.java |
 | generat-machine.js | 248 | ✅ xong → content/GeneratMachine.java |
@@ -44,26 +47,24 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | obs-ore.js | 61 | ✅ xong → content/ObsOre.java |
 | pinfyr.js | 44 | ✅ xong → content/Pinfyr.java |
 | cores.js | 12 | ✅ xong → content/ExzoryCore.java |
-| laser-brey.js | 476 | ⬜ chưa |
-| balashilon.js | 376 | ⬜ chưa |
-| unit-reactor.js | 352 | ⬜ chưa |
 
 ## Giai đoạn 2 – hệ thống dùng chung
 
 | File JS | Dòng | Trạng thái |
 |---|---:|---|
-| antikei-logic.js | 496 | ⬜ chưa |
-| sta.js | 462 | ⬜ chưa |
-| element-system.js | 391 | ⬜ chưa |
-| turret-system.js | 325 | ⬜ chưa |
-| splash-fx.js | 100 | ⬜ chưa |
-| fix-save.js | 83 | ⬜ chưa |
-| planets.js | 33 | ⬜ chưa |
+| antikei-logic.js | 496 | ✅ xong → content/Antikei.java |
+| sta.js | 462 | ✅ xong → content/Sta + PerkTurret.java |
+| element-system.js | 391 | ✅ xong → content/ElementSystem + AuraTurret.java |
+| turret-system.js | 325 | ✅ xong → content/TurretSystem.java |
+| splash-fx.js | 100 | ✅ xong → content/SplashFx.java |
+| fix-save.js | 83 | ✅ xong → content/FixSave + LeveledUnit.java |
+| planets.js | 33 | ✅ xong → content/ZorynexPlanet.java |
 
 ## Giai đoạn 3 – turret
 
 | File JS | Dòng | Trạng thái |
 |---|---:|---|
+| laytery.js | 281 | ✅ xong → content/Laytery.java |
 | zoj.js | 98 | ✅ xong → content/Zoj.java |
 | thermion.js | 1867 | ⬜ chưa |
 | reflecounum.js | 1542 | ⬜ chưa |
@@ -109,12 +110,13 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | buffetles.js | 413 | ⬜ chưa |
 | therdum.js | 366 | ⬜ chưa |
 | tyber.js | 356 | ⬜ chưa |
-| laytery.js | 281 | ⬜ chưa |
 
 ## Giai đoạn 3 – đơn vị & drone
 
 | File JS | Dòng | Trạng thái |
 |---|---:|---|
+| cin.js | 327 | ✅ xong → content/Cin.java |
+| erysidus-drone.js | 160 | ✅ xong → content/ErysidusDrone.java |
 | explayder.js | 75 | ✅ xong → content/ExplayderAbility.java |
 | cargo-drone.js | 1814 | ⬜ chưa |
 | cos.js | 1222 | ⬜ chưa |
@@ -122,8 +124,6 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | leolyr.js | 486 | ⬜ chưa |
 | elorix.js | 415 | ⬜ chưa |
 | leolyr-summoner.js | 334 | ⬜ chưa |
-| cin.js | 327 | ⬜ chưa |
-| erysidus-drone.js | 160 | ⬜ chưa |
 
 ## Giai đoạn 4 – giao diện & chế độ chơi
 

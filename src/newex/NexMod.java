@@ -5,25 +5,38 @@ import arc.Events;
 import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.mod.Mod;
+import newex.content.Antikei;
+import newex.content.BalashilonBlock;
 import newex.content.BeryiDrills;
+import newex.content.Cin;
 import newex.content.Comduik;
 import newex.content.CopesBlock;
 import newex.content.Crynex;
 import newex.content.DrexkouDrills;
+import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
+import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
 import newex.content.ExzoryCore;
+import newex.content.FixSave;
 import newex.content.FlasallowFactory;
 import newex.content.GeneratMachine;
+import newex.content.LaserBrey;
+import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
 import newex.content.ObsOre;
 import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
+import newex.content.SplashFx;
+import newex.content.Sta;
 import newex.content.SyrufpatFactory;
+import newex.content.TurretSystem;
+import newex.content.UnitReactor;
 import newex.content.UranilumReactor;
 import newex.content.WuexConveyor;
 import newex.content.XeuwConveyor;
+import newex.content.ZorynexPlanet;
 import newex.content.Zoj;
 
 /**
@@ -44,6 +57,7 @@ public class NexMod extends Mod {
         NexNet.init();
         NexFree.init();
         ShowHp.init();
+        FixSave.init();
         DamageDisplay.init();
         BuffEnemies.init();
 
@@ -67,6 +81,18 @@ public class NexMod extends Mod {
         UranilumReactor.init();
         FlasallowFactory.init();
         SyrufpatFactory.init();
+        UnitReactor.init();
+        BalashilonBlock.init();
+        LaserBrey.init();
+        Antikei.init();
+        ZorynexPlanet.init();
+        ElementSystem.init();
+        Sta.init();
+        ErysidusDrone.init();
+        Cin.init();
+
+        // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
+        SplashFx.init();
     }
 
     /** Game gọi hàm này khi nạp nội dung: tạo các block/đạn được định nghĩa bằng code (hjson sẽ bổ sung thuộc tính sau). */
@@ -74,6 +100,12 @@ public class NexMod extends Mod {
     public void loadContent() {
         ExzoryCore.create();
         Zoj.create();
+        BalashilonBlock.create();
+        TurretSystem.create();
+        Sta.create();
+        ErysidusDrone.create();
+        Laytery.create();
+        Cin.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
