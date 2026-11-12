@@ -25,6 +25,7 @@ import newex.content.LaserBrey;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
+import newex.content.NewMode;
 import newex.content.ObsOre;
 import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
@@ -92,6 +93,7 @@ public class NexMod extends Mod {
         ErysidusDrone.init();
         Cin.init();
         Tyber.init();
+        NewMode.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
