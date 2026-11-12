@@ -273,10 +273,9 @@ public final class ElementSystem {
     }
 
     private static float turretRange(Building b) {
-        try {
-            float r = b.range();
+        if (b instanceof Turret.TurretBuild) {
+            float r = ((Turret.TurretBuild) b).range();
             if (r > 0) return r;
-        } catch (Throwable ignored) {
         }
         float br = b.block instanceof Turret ? ((Turret) b.block).range : 0f;
         return br > 0 ? br : 200f;

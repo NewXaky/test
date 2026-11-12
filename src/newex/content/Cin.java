@@ -17,6 +17,7 @@ import mindustry.content.UnitTypes;
 import mindustry.entities.Effect;
 import mindustry.entities.Units;
 import mindustry.entities.abilities.Ability;
+import mindustry.entities.units.StatusEntry;
 import mindustry.entities.units.WeaponMount;
 import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.ContentInitEvent;
@@ -163,8 +164,8 @@ public final class Cin {
 
         coreStatus = new StatusEffect("cin-core") {
             @Override
-            public void update(Unit unit, float time) {
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 State s = states.get(unit.id);
                 float m = s == null ? 1f : 1f + s.rage * RAGE_STEP;
                 if (Mathf.chance(CRIT_CHANCE)) m *= CRIT_MULTIPLIER;

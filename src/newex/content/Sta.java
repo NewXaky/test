@@ -13,6 +13,7 @@ import arc.util.Time;
 import mindustry.Vars;
 import mindustry.content.StatusEffects;
 import mindustry.entities.Effect;
+import mindustry.entities.units.StatusEntry;
 import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.Trigger;
 import mindustry.game.EventType.UnitDestroyEvent;
@@ -271,8 +272,8 @@ public final class Sta {
             }
 
             @Override
-            public void update(Unit unit, float time) {
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 int id = unit.id;
                 if (!ceiStacks.containsKey(id)) ceiStacks.put(id, 0);
                 if (!ceiTimers.containsKey(id)) ceiTimers.put(id, 0f);
@@ -340,8 +341,8 @@ public final class Sta {
             }
 
             @Override
-            public void update(Unit unit, float time) {
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 int id = unit.id;
                 if (!doteiStacks.containsKey(id)) doteiStacks.put(id, 1);
                 float damagePerTick = (1f * doteiStacks.get(id)) / 60f;
@@ -362,8 +363,8 @@ public final class Sta {
             }
 
             @Override
-            public void update(Unit unit, float time) {
-                super.update(unit, time);
+            public void update(Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 int id = unit.id;
                 if (!deotDamagedTime.containsKey(id)) deotDamagedTime.put(id, 0f);
             }
@@ -381,8 +382,8 @@ public final class Sta {
             }
 
             @Override
-            public void update(final Unit unit, float time) {
-                super.update(unit, time);
+            public void update(final Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 if (Mathf.chanceDelta(1.0 / 60.0)) {
                     int id = unit.id;
                     int stacks = stacksOrOne(id);
