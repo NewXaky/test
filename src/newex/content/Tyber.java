@@ -8,7 +8,6 @@ import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.audio.Sound;
-import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
@@ -56,14 +55,6 @@ public final class Tyber {
     private static boolean en() {
         String l = Core.settings.getString("locale", "");
         return l != null && l.startsWith("en");
-    }
-
-    /** Thêm Label tự xuống dòng, canh trái (tránh lỗi Element không có setAlignment). */
-    private static void wrap(Table table, String text, float width) {
-        Label l = new Label(text);
-        l.setWrap(true);
-        l.setAlignment(Align.left);
-        table.add(l).width(width);
     }
 
     private static String t(String enText, String viText) {
@@ -131,12 +122,12 @@ public final class Tyber {
     public static class TyberBuild extends ItemTurret.ItemTurretBuild {
         float shootingTimer = 0f, lastRocketTime = 0f, lastExplosionTime = 0f;
         int evolution = 0;
-        int lastAppliedEvo = -1;
 
-        /** ItemTurretBuild là inner class nên phải truyền ItemTurret làm enclosing instance. */
-        TyberBuild(ItemTurret turret) {
-            turret.super();
+        public TyberBuild(ItemTurret outer) {
+            outer.super();
         }
+
+        int lastAppliedEvo = -1;
 
         @Override
         public float range() {
@@ -257,7 +248,8 @@ public final class Tyber {
             b.background(Styles.black6);
             b.margin(12);
             b.add(title).row();
-            wrap(b, desc, 340f);
+            b.add(desc).width(340).get().setWrap(true);
+            b.getCells().peek().get().setAlignment(Align.left);
             b.row();
             b.button(btn, () -> {
                 CoreBuild core = team.core();
@@ -278,7 +270,8 @@ public final class Tyber {
 
         private void openUpgradeDialog() {
             BaseDialog dialog = new BaseDialog(t("Tyber Turret Upgrade Center", "Trung tâm nâng cấp pháo Tyber"));
-            wrap(dialog.cont, requirementText(), 360f);
+            dialog.cont.add(requirementText()).width(360f).get().setWrap(true);
+            dialog.cont.getCells().peek().get().setAlignment(Align.left);
             dialog.cont.row();
             dialog.cont.add().height(10f).row();
 
@@ -337,7 +330,8 @@ public final class Tyber {
                     + (ev == 0 ? "[yellow](MK1)[]" : ev == 1 ? "[cyan](MK2)[]" : "[purple](MK2B)[]");
                 BaseDialog dialog = new BaseDialog(title);
                 Table info = new Table();
-                wrap(info, statsText(ev), 360f);
+                info.add(statsText(ev)).width(360f).get().setWrap(true);
+                info.getCells().peek().get().setAlignment(Align.left);
                 ScrollPane scroll = new ScrollPane(info);
                 scroll.setScrollingDisabled(true, false);
                 dialog.cont.add(scroll).maxHeight(400f);

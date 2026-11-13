@@ -25,8 +25,10 @@ import newex.content.LaserBrey;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
+import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.ObsOre;
+import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
@@ -94,6 +96,7 @@ public class NexMod extends Mod {
         Cin.init();
         Tyber.init();
         NewMode.init();
+        LeolyrSummoner.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -110,6 +113,7 @@ public class NexMod extends Mod {
         ErysidusDrone.create();
         Laytery.create();
         Cin.create();
+        Therdum.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
