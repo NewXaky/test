@@ -29,7 +29,6 @@ import mindustry.gen.Building;
 import mindustry.gen.Bullet;
 import mindustry.gen.Healthc;
 import mindustry.gen.Icon;
-import mindustry.gen.Sounds;
 import mindustry.gen.Teamc;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
@@ -334,7 +333,7 @@ public final class Lavunder {
                 bm.started = true;
                 if (!Vars.headless) {
                     Effect.shake(12f, 22f, bm.x, bm.y);
-                    try { Sounds.laserbig.at(bm.x, bm.y, 0.9f, 1f); } catch (Exception err) {}
+                    // JS: Sounds.laserbig không tồn tại ở v157 → .at() ném lỗi bị try/catch nuốt, chưa từng phát tiếng (bài học 33).
                 }
             }
 

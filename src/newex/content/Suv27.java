@@ -152,7 +152,11 @@ public final class Suv27 {
                     if (flareType != null && flareType.weapons.size > 0) {
                         BulletType bLeft = flareType.weapons.get(0).bullet.copy();
                         bLeft.damage = 25f; bLeft.speed = 6.5f; bLeft.lifetime = 35f;
-                        bLeft.frontColor = Color.white; bLeft.backColor = Color.valueOf("c084fc");
+                        // BulletType không có frontColor/backColor (chỉ BasicBulletType có): bài học 33
+                        if (bLeft instanceof BasicBulletType) {
+                            ((BasicBulletType) bLeft).frontColor = Color.white;
+                            ((BasicBulletType) bLeft).backColor = Color.valueOf("c084fc");
+                        }
                         wLeft.bullet = bLeft;
                     }
                     Weapon wRight = uType.weapons.get(1);
@@ -208,7 +212,7 @@ public final class Suv27 {
 
         unitDataMap.remove(oldUnit.id);
         Call.unitDestroy(oldUnit.id);
-        if (oldUnit.added) oldUnit.remove();
+        if (oldUnit.isAdded()) oldUnit.remove();
 
         UnitData newData = getUnitData(newUnit);
         if (newData != null) {
