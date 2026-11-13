@@ -35,6 +35,7 @@ import newex.content.ExzoryCore;
 import newex.content.FixSave;
 import newex.content.FlasallowFactory;
 import newex.content.GeneratMachine;
+import newex.content.Heliyron;
 import newex.content.LaserBrey;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
@@ -163,6 +164,7 @@ public class NexMod extends Mod {
         Therdum.create();
         ArchuengPvp.create();
         Xylaon.create();
+        Heliyron.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
