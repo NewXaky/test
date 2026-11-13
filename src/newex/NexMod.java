@@ -37,6 +37,7 @@ import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
+import newex.content.Tankani;
 import newex.content.SyrufpatFactory;
 import newex.content.TurretSystem;
 import newex.content.Tyber;
@@ -105,6 +106,7 @@ public class NexMod extends Mod {
         Buffetles.init();
         Survival.init();
         LeolyrSummoner.init();
+        Tankani.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
