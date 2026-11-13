@@ -132,6 +132,6 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | newmode-pvp.js | 7993 | ⬜ chưa |
 | loadout-selection.js | 1508 | ⬜ chưa |
 | survivor-skills.js | 1493 | ⬜ chưa |
-| shop.js | 465 | ⬜ chưa |
+| shop.js | 465 | ✅ xong → content/Shop.java (module, gọi từ loadout-selection) |
 | newmode-survival.js | 388 | ⬜ chưa |
 | newmode.js | 301 | ⬜ chưa |
