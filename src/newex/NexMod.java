@@ -18,6 +18,7 @@ import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.mod.Mod;
 import newex.content.Antikei;
+import newex.content.ArchuengPvp;
 import newex.content.BalashilonBlock;
 import newex.content.BeryiDrills;
 import newex.content.Cin;
@@ -139,6 +140,7 @@ public class NexMod extends Mod {
         Tankani4k.init();
         DroneLauncher.init();
         Repulsyron.init();
+        ArchuengPvp.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -156,6 +158,7 @@ public class NexMod extends Mod {
         Laytery.create();
         Cin.create();
         Therdum.create();
+        ArchuengPvp.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
