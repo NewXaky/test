@@ -21,7 +21,7 @@ import mindustry.entities.bullet.BulletType;
 import mindustry.game.EventType.ContentInitEvent;
 import mindustry.gen.Building;
 import mindustry.gen.Bullet;
-import mindustry.gen.Flyingc;
+import mindustry.gen.Unit;
 import mindustry.gen.Healthc;
 import mindustry.gen.Hitboxc;
 import mindustry.gen.Icon;
@@ -226,7 +226,7 @@ public final class Tankani {
         protected void findTarget() {
             super.findTarget();
             if (getTier() == 2 && target != null) {
-                if (!(target instanceof Flyingc) || !((Flyingc) target).isFlying()) target = null;
+                if (!(target instanceof Unit) || !((Unit) target).isFlying()) target = null;
             }
         }
 
