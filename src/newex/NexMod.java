@@ -31,6 +31,7 @@ import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
 import newex.content.Endyr;
 import newex.content.Holyder;
+import newex.content.Lavunder;
 import newex.content.Erysidus;
 import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
@@ -55,6 +56,7 @@ import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
 import newex.content.Persefer;
+import newex.content.Suv27;
 import newex.content.Rangtaturs;
 import newex.content.Ravendes;
 import newex.content.RedstoneWall;
@@ -158,6 +160,7 @@ public class NexMod extends Mod {
         Ravendes.init();
         Persefer.init();
         Endyr.init();
+        Suv27.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -187,6 +190,7 @@ public class NexMod extends Mod {
         Rangtaturs.create();
         Flazerd.create();
         Holyder.create();
+        Lavunder.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
