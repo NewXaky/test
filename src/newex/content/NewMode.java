@@ -231,7 +231,17 @@ public final class NewMode {
 
         Fi mapFile = getMapFile(mapName);
         if (mapFile != null) {
-            Map map = MapIO.createMap(mapFile, true);
+            Map map;
+            try {
+                map = MapIO.createMap(mapFile, true);
+            } catch (java.io.IOException ex) {
+                Log.err("Lỗi đọc map " + mapName + ": " + ex);
+                isPlayingNewMode = false;
+                activeMapName = null;
+                Core.settings.put("newex-is-playing-newmode", false);
+                Vars.ui.showInfo("Không đọc được file maps/" + mapName + ".msav: " + ex.getMessage());
+                return;
+            }
 
             Vars.logic.reset();
             Vars.world.loadMap(map);
