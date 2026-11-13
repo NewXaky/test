@@ -62,6 +62,7 @@ import newex.content.UnitReactor;
 import newex.content.UranilumReactor;
 import newex.content.WuexConveyor;
 import newex.content.XeuwConveyor;
+import newex.content.Xylaon;
 import newex.content.ZorynexPlanet;
 import newex.content.Zoj;
 
@@ -161,6 +162,7 @@ public class NexMod extends Mod {
         Cin.create();
         Therdum.create();
         ArchuengPvp.create();
+        Xylaon.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
