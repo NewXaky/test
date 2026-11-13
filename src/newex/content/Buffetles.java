@@ -27,7 +27,7 @@ import mindustry.ui.Bar;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
-import mindustry.world.World;
+import mindustry.core.World;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 import newex.NexNet;
@@ -54,7 +54,7 @@ public final class Buffetles {
 
     private static String pct(float v) { return String.format(Locale.ROOT, "%.1f", v); }
 
-    private static void left(Table table, String text, float width) {
+    private static void wrapLeft(Table table, String text, float width) {
         Label l = new Label(text);
         l.setWrap(true);
         l.setAlignment(Align.left);
@@ -295,7 +295,7 @@ public final class Buffetles {
             b.background(Styles.black6);
             b.margin(12f);
             b.add(title).row();
-            left(b, desc, 340f);
+            wrapLeft(b, desc, 340f);
             b.row();
             b.button(btn, () -> upgrade(dialog, target)).size(180f, 38f);
             return b;
@@ -352,7 +352,7 @@ public final class Buffetles {
 
             BaseDialog dialog = new BaseDialog(title);
             Table info = new Table();
-            left(info, desc, 360f);
+            wrapLeft(info, desc, 360f);
             ScrollPane scroll = new ScrollPane(info);
             scroll.setScrollingDisabled(true, false);
             dialog.cont.add(scroll).maxHeight(400f);
