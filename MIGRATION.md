@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 64/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 34 file (~39 025 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 66/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 32 file (~37 850 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -92,10 +92,10 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | flazerd.js | 645 | ⬜ chưa |
 | rangtaturs.js | 625 | ⬜ chưa |
 | persefer.js | 622 | ⬜ chưa |
-| ravendes.js | 604 | ⬜ chưa |
+| ravendes.js | 604 | ✅ xong → content/Ravendes.java (chưa biên dịch thử) |
 | blixalum.js | 573 | ✅ xong → content/Blixalum.java |
 | reguilater.js | 555 | ✅ xong → content/Reguilater.java |
-| tenytisyr.js | 553 | ⬜ chưa |
+| tenytisyr.js | 553 | ✅ xong → content/Tenytisyr.java (chưa biên dịch thử) |
 | vendicum.js | 545 | ✅ xong → content/Vendicum.java |
 | erysidus.js | 533 | ✅ xong → content/Erysidus.java |
 | xylaon.js | 515 | ✅ xong → content/Xylaon.java |
@@ -150,41 +150,45 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 7. **Lớp Build lồng nhau** (`ItemTurretBuild`, `PowerTurretBuild`) → constructor phải `outer.super();`, và `buildType = () -> new XBuild(block)`.
 8. **Ngôn ngữ**: mỗi file JS tự định nghĩa một kiểu kiểm tra ngôn ngữ khác nhau (`isVietnamese` = "không phải en", `isEnglish` = "locale bắt đầu bằng en", `vn()` = "bắt đầu bằng vi"). Chép đúng hàm của từng file, đừng gộp chung kẻo đổi ngôn ngữ mặc định.
 9. **Cách kiểm tra không cần chờ GitHub Actions**: `javac -nowarn -encoding UTF-8 --release 8 -cp server-release.jar -d out $(find src -name '*.java')` (server-release.jar lấy từ GitHub Releases v157.4).
+10. **`this.isShooting` (không có ngoặc) trong JS luôn truthy** (là đối tượng hàm, không phải boolean) → điều kiện `isShooting && hasAmmo() && isActive()` của Tenytisyr thực ra chỉ còn `hasAmmo() && isActive()`. → Java gọi `isShooting()` thật (gần như tương đương); luôn soát JS tìm tên hàm quên `()`.
+11. **`create(owner, team, x, y, angle, -1, randSpeed)` (7 tham số) = `velocityScl=-1, lifetimeScl=randSpeed`** (Ravendes MK2B shotgun): vận tốc ×(-1) nên đạn bay NGƯỢC hướng nòng. → Giữ nguyên hành vi cũ, có chú thích trong `fireShotgunBurst()`. Muốn sửa: dùng bản 9 tham số `create(owner, team, x, y, angle, -1f, randScl, 1f, null)`. (Cùng gốc với bài học 3.)
+12. **`Lines.circle(Color)` không tồn tại** (Tenytisyr, hiệu ứng nổ MK2B: `Lines.circle(ringColors[i])`). Rhino chỉ báo lỗi lúc chạy; Java báo lỗi biên dịch. → Bỏ dòng đó, giữ `Draw.color(...)` + `Lines.circle(x, y, r)`.
+13. **`block.basePrefix` không tồn tại trên Turret v157** (nó thuộc `DrawTurret`). `PerfCore.region(block.basePrefix + size)` ra `"undefined4"` → không tìm thấy → luôn chạy `super.draw()`. → Java gọi thẳng `super.draw()` rồi vẽ nòng, khỏi tạo chuỗi tên giả.
+14. **Biến cục bộ bị lambda sửa**: Java không cho lambda gán lại biến cục bộ (JS `rx += x` trong `randLenVectors`). → Dùng mảng 1 phần tử `final float[] pos = {x, y}`.
+15. **Ghi đè `shouldShoot()` nên khai báo `public`** (nếu lớp cha là protected thì public vẫn hợp lệ, ngược lại thì lỗi biên dịch). Ghi chú: `isGalileoJS` của JS → `instanceof LeveledUnit` trong Java.
+16. **Các file Tenytisyr/Ravendes được viết trong môi trường không có Mindustry jar** nên CHƯA biên dịch. Chạy lệnh ở mục 9 trước khi push.
 
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
-
-1. tenytisyr.js (553 dòng)
-2. ravendes.js (604 dòng)
-3. persefer.js (622 dòng)
-4. rangtaturs.js (625 dòng)
-5. flazerd.js (645 dòng)
-6. endyr.js (649 dòng)
-7. holyder-system.js (650 dòng)
-8. lavunder.js (666 dòng)
-9. suv-27.js (666 dòng)
-10. lazash.js (678 dòng)
-11. nethyr.js (713 dòng)
-12. hitekalum.js (719 dòng)
-13. lyvervon-system.js (721 dòng)
-14. dor.js (726 dòng)
-15. overyr.js (740 dòng)
-16. forstarsilum.js (741 dòng)
-17. maxitoner.js (813 dòng)
-18. plasanod.js (829 dòng)
-19. nucleytor.js (860 dòng)
-20. emperfum.js (873 dòng)
-21. tyteryi.js (922 dòng)
-22. dtg-soldern.js (925 dòng)
-23. emperical.js (1013 dòng)
-24. indeniter.js (1028 dòng)
-25. galaxvorram.js (1058 dòng)
-26. aether-spiral.js (1137 dòng)
-27. cos.js (1222 dòng)
-28. swordoder.js (1410 dòng)
-29. survivor-skills.js (1493 dòng)
-30. loadout-selection.js (1508 dòng)
-31. reflecounum.js (1542 dòng)
-32. cargo-drone.js (1814 dòng)
-33. thermion.js (1867 dòng)
-34. newmode-pvp.js (7993 dòng)
+1. persefer.js (622 dòng)
+2. rangtaturs.js (625 dòng)
+3. flazerd.js (645 dòng)
+4. endyr.js (649 dòng)
+5. holyder-system.js (650 dòng)
+6. lavunder.js (666 dòng)
+7. suv-27.js (666 dòng)
+8. lazash.js (678 dòng)
+9. nethyr.js (713 dòng)
+10. hitekalum.js (719 dòng)
+11. lyvervon-system.js (721 dòng)
+12. dor.js (726 dòng)
+13. overyr.js (740 dòng)
+14. forstarsilum.js (741 dòng)
+15. maxitoner.js (813 dòng)
+16. plasanod.js (829 dòng)
+17. nucleytor.js (860 dòng)
+18. emperfum.js (873 dòng)
+19. tyteryi.js (922 dòng)
+20. dtg-soldern.js (925 dòng)
+21. emperical.js (1013 dòng)
+22. indeniter.js (1028 dòng)
+23. galaxvorram.js (1058 dòng)
+24. aether-spiral.js (1137 dòng)
+25. cos.js (1222 dòng)
+26. swordoder.js (1410 dòng)
+27. survivor-skills.js (1493 dòng)
+28. loadout-selection.js (1508 dòng)
+29. reflecounum.js (1542 dòng)
+30. cargo-drone.js (1814 dòng)
+31. thermion.js (1867 dòng)
+32. newmode-pvp.js (7993 dòng)

@@ -51,6 +51,7 @@ import newex.content.Survival;
 import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
+import newex.content.Ravendes;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
@@ -58,6 +59,7 @@ import newex.content.DroneLauncher;
 import newex.content.Repulsyron;
 import newex.content.Tankani;
 import newex.content.Tankani4k;
+import newex.content.Tenytisyr;
 import newex.content.SyrufpatFactory;
 import newex.content.TurretSystem;
 import newex.content.Tyber;
@@ -148,6 +150,7 @@ public class NexMod extends Mod {
         Repulsyron.init();
         ArchuengPvp.init();
         Erysidus.init();
+        Ravendes.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -171,6 +174,8 @@ public class NexMod extends Mod {
         Vendicum.create();
         Blixalum.create();
         Reguilater.create();
+        Tenytisyr.create();
+        Ravendes.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
