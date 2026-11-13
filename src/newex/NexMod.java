@@ -21,6 +21,7 @@ import newex.content.Antikei;
 import newex.content.ArchuengPvp;
 import newex.content.BalashilonBlock;
 import newex.content.BeryiDrills;
+import newex.content.Blixalum;
 import newex.content.Cin;
 import newex.content.Comduik;
 import newex.content.CopesBlock;
@@ -49,6 +50,7 @@ import newex.content.ObsOre;
 import newex.content.Survival;
 import newex.content.Therdum;
 import newex.content.Pinfyr;
+import newex.content.Reguilater;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
@@ -167,6 +169,8 @@ public class NexMod extends Mod {
         Xylaon.create();
         Heliyron.create();
         Vendicum.create();
+        Blixalum.create();
+        Reguilater.create();
     }
 
     static void applyNexDefaultsIfNeeded() {

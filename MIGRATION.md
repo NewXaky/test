@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 56 file (≈18 357 dòng, số thực tế nhiều hơn bảng dưới ghi vì bảng này đã cũ — nhiều file như Cin, Sonicor, Buffetles, Therdum, Tyber, Elorix, LeolyrSummoner, NewMode, Survival, main.js... đã xong nhưng bảng chưa cập nhật). Còn lại khoảng 38 file (~26 500 dòng): leolyr.js vừa xong, archueng-pvp.js & reflecounum.js đang xử lý riêng (xem memory), newmode-pvp.js (7993 dòng) đang làm dở từng phần.
+Đã xong: 64/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 34 file (~39 025 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -93,13 +93,13 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | rangtaturs.js | 625 | ⬜ chưa |
 | persefer.js | 622 | ⬜ chưa |
 | ravendes.js | 604 | ⬜ chưa |
-| blixalum.js | 573 | ⬜ chưa |
-| reguilater.js | 555 | ⬜ chưa |
+| blixalum.js | 573 | ✅ xong → content/Blixalum.java |
+| reguilater.js | 555 | ✅ xong → content/Reguilater.java |
 | tenytisyr.js | 553 | ⬜ chưa |
-| vendicum.js | 545 | ⬜ chưa |
-| erysidus.js | 533 | ⬜ chưa |
-| xylaon.js | 515 | ⬜ chưa |
-| heliyron.js | 511 | ⬜ chưa |
+| vendicum.js | 545 | ✅ xong → content/Vendicum.java |
+| erysidus.js | 533 | ✅ xong → content/Erysidus.java |
+| xylaon.js | 515 | ✅ xong → content/Xylaon.java |
+| heliyron.js | 511 | ✅ xong → content/Heliyron.java |
 | tankani4k.js | 511 | ✅ xong → content/Tankani4k.java |
 | blaw.js | 499 | ✅ xong → content/Blaw.java |
 | repulsyron.js | 459 | ✅ xong → content/Repulsyron.java |
@@ -135,3 +135,56 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | shop.js | 465 | ✅ xong → content/Shop.java (module, gọi từ loadout-selection) |
 | newmode-survival.js | 388 | ✅ xong → content/Survival.java |
 | newmode.js | 301 | ✅ xong → content/NewMode.java |
+| archueng-pvp.js | 378 | ✅ xong → content/ArchuengPvp.java |
+
+## Bài học – code lỗi cần né (cập nhật mỗi lần gặp lỗi mới)
+
+Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuyển file mới.
+
+1. **`cannot find symbol: baseRegion`** (Blixalum). Turret/ItemTurret ở v157 KHÔNG có trường `baseRegion`; JS `block.baseRegion` chỉ "chạy" vì Rhino bỏ qua. → Tự giữ `TextureRegion customBase = PerfCore.region("reinforced-block-" + size)` rồi chỉ vẽ khi `found()`.
+2. **Rhino chọn overload khác Java.** `Effect.at(x, y, rot, Color)` gán `e.color`, KHÔNG gán `e.data`; JS đọc `e.data || màuMặcĐịnh` nên luôn ra màu mặc định (Blixalum muzzle, Reguilater hit). → Đã giữ đúng hành vi cũ. Muốn đổi màu theo tier thì gọi `.at(x, y, rot, (Object) color)`.
+3. **`BulletType.create(owner, team, x, y, angle, a, b)` (7 tham số) là `velocityScl, lifetimeScl`, không phải sát thương.** JS truyền hệ số sát thương vào đó (laser MK2B của Blixalum, laser phụ của Reguilater) nên thực tế không nhân sát thương. → Giữ nguyên; nếu muốn nhân sát thương dùng bản 9 tham số `create(owner, team, x, y, angle, damage, velocityScl, lifetimeScl, data)`.
+4. **`Call.createBullet(type, team, x, y, angle, damage, velocityScl, lifetimeScl)`**: JS truyền `bullet.speed` vào `velocityScl` (đạn nhanh gấp `speed` lần). → Giữ nguyên, ghi chú trong code.
+5. **`Units.closestTarget(...)` trả `Teamc`**, không có `.dead`/`.damage` như JS. → Ép sang `Healthc` rồi dùng `dead()`, `damage()`, `health()`, `maxHealth()`; toạ độ dùng `getX()/getY()`.
+6. **`canControl` là phương thức của `ControlBlock`**, không phải trường của block. `reguilater.canControl = false` trong JS vô tác dụng. → `@Override public boolean canControl() { return false; }` trong lớp Build.
+7. **Lớp Build lồng nhau** (`ItemTurretBuild`, `PowerTurretBuild`) → constructor phải `outer.super();`, và `buildType = () -> new XBuild(block)`.
+8. **Ngôn ngữ**: mỗi file JS tự định nghĩa một kiểu kiểm tra ngôn ngữ khác nhau (`isVietnamese` = "không phải en", `isEnglish` = "locale bắt đầu bằng en", `vn()` = "bắt đầu bằng vi"). Chép đúng hàm của từng file, đừng gộp chung kẻo đổi ngôn ngữ mặc định.
+9. **Cách kiểm tra không cần chờ GitHub Actions**: `javac -nowarn -encoding UTF-8 --release 8 -cp server-release.jar -d out $(find src -name '*.java')` (server-release.jar lấy từ GitHub Releases v157.4).
+
+
+## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
+
+1. tenytisyr.js (553 dòng)
+2. ravendes.js (604 dòng)
+3. persefer.js (622 dòng)
+4. rangtaturs.js (625 dòng)
+5. flazerd.js (645 dòng)
+6. endyr.js (649 dòng)
+7. holyder-system.js (650 dòng)
+8. lavunder.js (666 dòng)
+9. suv-27.js (666 dòng)
+10. lazash.js (678 dòng)
+11. nethyr.js (713 dòng)
+12. hitekalum.js (719 dòng)
+13. lyvervon-system.js (721 dòng)
+14. dor.js (726 dòng)
+15. overyr.js (740 dòng)
+16. forstarsilum.js (741 dòng)
+17. maxitoner.js (813 dòng)
+18. plasanod.js (829 dòng)
+19. nucleytor.js (860 dòng)
+20. emperfum.js (873 dòng)
+21. tyteryi.js (922 dòng)
+22. dtg-soldern.js (925 dòng)
+23. emperical.js (1013 dòng)
+24. indeniter.js (1028 dòng)
+25. galaxvorram.js (1058 dòng)
+26. aether-spiral.js (1137 dòng)
+27. cos.js (1222 dòng)
+28. swordoder.js (1410 dòng)
+29. survivor-skills.js (1493 dòng)
+30. loadout-selection.js (1508 dòng)
+31. reflecounum.js (1542 dòng)
+32. cargo-drone.js (1814 dòng)
+33. thermion.js (1867 dòng)
+34. newmode-pvp.js (7993 dòng)
