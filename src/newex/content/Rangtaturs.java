@@ -326,7 +326,7 @@ public final class Rangtaturs {
                           "[gold]⚡ BASE STATS (MK1) ⚡[]\n" +
                           "[lightgray]Turret HP:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Block Size:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Effective Range:[] [orange]" + Math.round(block.range) + " pixels[]\n" +
+                          "Effective Range:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixels[]\n" +
                           "Target Type:[] [yellow]Ground targets only[]\n\n" +
                           "[sky]⚡ FIREPOWER & MECHANICS:[]\n" +
                           "• [lightgray]Standard Shotgun:[] Fires a spread of [green]39 shrapnel bullets[] applying random status effects from a 7-debuff pool.\n" +
@@ -335,7 +335,7 @@ public final class Rangtaturs {
                           "[gold]⚡ THÔNG SỐ CƠ BẢN (MK1) ⚡[]\n" +
                           "[lightgray]Máu tháp pháo:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Kích thước khối:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(block.range) + " pixel[]\n" +
+                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixel[]\n" +
                           "Mục tiêu phát xạ:[] [yellow]Mặt đất (Không bắn phòng không)[]\n\n" +
                           "[sky]⚡ ĐẶC TÍNH HỎA LỰC VÀ CHU KỲ CƠ CHẾ:[]\n" +
                           "• [lightgray]Bắn Shotgun thường:[] Phóng loạt gồm [green]39 viên đạn mảnh[] mang ngẫu nhiên hiệu ứng bộ 7 trạng thái bất lợi.\n" +
@@ -347,7 +347,7 @@ public final class Rangtaturs {
                           "[cyan]⚡ BASE STATS (MK2) ⚡[]\n" +
                           "[lightgray]Turret HP:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Block Size:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Effective Range:[] [orange]" + Math.round(block.range) + " pixels[]\n\n" +
+                          "Effective Range:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixels[]\n\n" +
                           "[lime]⚡ FIREPOWER & MECHANICS:[]\n" +
                           "• [lightgray]Status Barrage:[] Shotgun pellet count increased to [green]53 bullets[].\n" +
                           "• [lightgray]Short-Circuit Charge:[] Laser charge time reduced to [yellow]2.33s (140 ticks) [lime](-22.2%)[], Laser core damage boosted to [red]310%[].[]\n" +
@@ -355,7 +355,7 @@ public final class Rangtaturs {
                           "[cyan]⚡ THÔNG SỐ CƠ BẢN (MK2) ⚡[]\n" +
                           "[lightgray]Máu tháp pháo:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Kích thước khối:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(block.range) + " pixel[]\n\n" +
+                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixel[]\n\n" +
                           "[lime]⚡ ĐẶC TÍNH HỎA LỰC VÀ CHU KỲ CƠ CHẾ:[]\n" +
                           "• [lightgray]Mưa đạn trạng thái:[] Số lượng đạn Shotgun tăng lên [green]53 viên mảnh[].\n" +
                           "• [lightgray]Sạc xung ngắn mạch:[] Thời gian tích tụ năng lượng Laser rút xuống còn [yellow]2.33 giây (140 tick) [lime](Giảm -22.2%)[], sát thương Laser lõi tăng vọt đạt [red]310%[].[]\n" +
@@ -366,7 +366,7 @@ public final class Rangtaturs {
                           "[purple]⚡ BASE STATS (MK2B) ⚡[]\n" +
                           "[lightgray]Turret HP:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Block Size:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Effective Range:[] [orange]" + Math.round(block.range) + " pixels[]\n\n" +
+                          "Effective Range:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixels[]\n\n" +
                           "[purple]🔥 🔥 GRAVITY STATUS SUPERSTORM MECHANICS:[]\n" +
                           "• Removes old point-charging and Berserk gauge mechanisms completely.\n" +
                           "• [lightgray]Hybrid Shotgun Storm:[] Fires a compressed Laser beam accompanied by a heavy density shotgun spray of up to [green]68 bullets[].\n" +
@@ -375,7 +375,7 @@ public final class Rangtaturs {
                           "[purple]⚡ THÔNG SỐ CƠ BẢN (MK2B) ⚡[]\n" +
                           "[lightgray]Máu tháp pháo:[] [green]" + Math.round(health) + "[]\n" +
                           "📐 Kích thước khối:[] [white]" + block.size + "x" + block.size + "[]\n" +
-                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(block.range) + " pixel[]\n\n" +
+                          "Tầm bắn hiệu dụng:[] [orange]" + Math.round(((ItemTurret) block).range) + " pixel[]\n\n" +
                           "[purple]🔥 🔥 CƠ CHẾ SIÊU BÃO LOẠN TRẠNG THÁI TRỌNG LỰC:[]\n" +
                           "• Hệ thống loại bỏ hoàn toàn cơ chế sạc tích tụ điểm và thanh cuồng nộ cũ.\n" +
                           "• [lightgray]Bão Shotgun hỗn hợp:[] Phóng ra tia Laze nén kèm chùm đạn shotgun tập trung mật độ cao lên tới [green]68 viên đạn[].\n" +
