@@ -60,6 +60,7 @@ import newex.content.SyrufpatFactory;
 import newex.content.TurretSystem;
 import newex.content.Tyber;
 import newex.content.UnitReactor;
+import newex.content.Vendicum;
 import newex.content.UranilumReactor;
 import newex.content.WuexConveyor;
 import newex.content.XeuwConveyor;
@@ -165,6 +166,7 @@ public class NexMod extends Mod {
         ArchuengPvp.create();
         Xylaon.create();
         Heliyron.create();
+        Vendicum.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
