@@ -28,6 +28,7 @@ import newex.content.Korynd;
 import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.ObsOre;
+import newex.content.Survival;
 import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
@@ -96,6 +97,7 @@ public class NexMod extends Mod {
         Cin.init();
         Tyber.init();
         NewMode.init();
+        Survival.init();
         LeolyrSummoner.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
