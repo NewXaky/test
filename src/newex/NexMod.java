@@ -30,6 +30,7 @@ import newex.content.DrexkouDrills;
 import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
 import newex.content.Endyr;
+import newex.content.Holyder;
 import newex.content.Erysidus;
 import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
@@ -185,6 +186,7 @@ public class NexMod extends Mod {
         Persefer.create();
         Rangtaturs.create();
         Flazerd.create();
+        Holyder.create();
     }
 
     static void applyNexDefaultsIfNeeded() {

@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 70/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 28 file (~35 400 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 71/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 27 file (~34 750 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -87,7 +87,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | nethyr.js | 713 | ⬜ chưa |
 | lazash.js | 678 | ⬜ chưa |
 | lavunder.js | 666 | ⬜ chưa |
-| holyder-system.js | 650 | ⬜ chưa |
+| holyder-system.js | 650 | ✅ xong → content/Holyder.java (hjson không có `type:` nên giữ nguyên; chưa biên dịch với jar) |
 | endyr.js | 649 | ✅ xong → content/Endyr.java (block do endyr.hjson tạo; Java chỉ vá ở ContentInitEvent nên GIỮ `type:` trong hjson; chưa biên dịch với jar) |
 | flazerd.js | 645 | ✅ xong → content/Flazerd.java (chưa biên dịch với jar Mindustry) |
 | rangtaturs.js | 625 | ✅ xong → content/Rangtaturs.java (chưa biên dịch với jar Mindustry; đã qua kiểm tra cú pháp javac) |
@@ -170,34 +170,34 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 27. **`Mathf.sin(x)` nhận radian; `Mathf.PI` là float**: thay `Math.PI` khi truyền vào `Mathf.sin`.
 29. **Hai kiểu block, hai cách xử lý hjson.** (a) Java tạo block bằng `new XTurret("x")` → hjson cùng tên phải BỎ `type:` cấp cao nhất (bài 28). (b) hjson tạo block (có `type: ItemTurret`), JS chỉ vá bằng `Vars.content.getByName(...)` lúc `ContentInitEvent` (endyr) → Java cũng chỉ vá ở `ContentInitEvent` (đăng ký trong `init()`), KHÔNG `new`, và GIỮ nguyên hjson. Nhìn đầu file JS: có `extend(ItemTurret, "name"...)` là (a), có `getByName(...)` là (b).
     Phụ: `configured()` JS kiểm tra `typeof value === "number"` luôn sai với `java.lang.Integer` nên chưa từng chạy; `config()` của Endyr trả mặt nạ ô trang bị KHÔNG có bit 15 nên khi copy/dán bản thiết kế sẽ bị hiểu là toạ độ bắn (giữ nguyên hành vi cũ). `global.NexReflect.isProtected` → `Endyr.reflectProtected` (Boolf) để nối khi chuyển reflecounum.js.
+30. **JS gọi sai kiểu/ghi thuộc tính vô hiệu (Holyder).** `turnToTarget(currentTarget)` truyền đối tượng vào hàm nhận `float` → Java phải truyền góc `Angles.angle(x,y,tx,ty)`. `this.recoil = 1.0` trên Build không có tác dụng (Rhino chỉ tạo thuộc tính JS) → bỏ. `region.found` (thiếu `()`) luôn truthy → Java dùng `found()`. `Vars.ui.getLanguage` không tồn tại → bỏ nhánh. `font.getData().setScale(0.12)` mà không trả lại làm nhỏ chữ outline toàn game → Java lưu `scaleX` cũ và khôi phục. `updateTile()` JS KHÔNG gọi `super$updateTile` nên Java cũng không gọi (giữ nguyên). `target` của Turret là `Posc`/`Teamc`, không có `dead`: dùng helper `isDead(Object)` = `o instanceof Healthc && ((Healthc) o).dead()`.
 
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
-1. holyder-system.js (650 dòng)
-2. lavunder.js (666 dòng)
-3. suv-27.js (666 dòng)
-4. lazash.js (678 dòng)
-5. nethyr.js (713 dòng)
-6. hitekalum.js (719 dòng)
-7. lyvervon-system.js (721 dòng)
-8. dor.js (726 dòng)
-9. overyr.js (740 dòng)
-10. forstarsilum.js (741 dòng)
-11. maxitoner.js (813 dòng)
-12. plasanod.js (829 dòng)
-13. nucleytor.js (860 dòng)
-14. emperfum.js (873 dòng)
-15. tyteryi.js (922 dòng)
-16. dtg-soldern.js (925 dòng)
-17. emperical.js (1013 dòng)
-18. indeniter.js (1028 dòng)
-19. galaxvorram.js (1058 dòng)
-20. aether-spiral.js (1137 dòng)
-21. cos.js (1222 dòng)
-22. swordoder.js (1410 dòng)
-23. survivor-skills.js (1493 dòng)
-24. loadout-selection.js (1508 dòng)
-25. reflecounum.js (1542 dòng)
-26. cargo-drone.js (1814 dòng)
-27. thermion.js (1867 dòng)
-28. newmode-pvp.js (7993 dòng)
+1. lavunder.js (666 dòng)
+2. suv-27.js (666 dòng)
+3. lazash.js (678 dòng)
+4. nethyr.js (713 dòng)
+5. hitekalum.js (719 dòng)
+6. lyvervon-system.js (721 dòng)
+7. dor.js (726 dòng)
+8. overyr.js (740 dòng)
+9. forstarsilum.js (741 dòng)
+10. maxitoner.js (813 dòng)
+11. plasanod.js (829 dòng)
+12. nucleytor.js (860 dòng)
+13. emperfum.js (873 dòng)
+14. tyteryi.js (922 dòng)
+15. dtg-soldern.js (925 dòng)
+16. emperical.js (1013 dòng)
+17. indeniter.js (1028 dòng)
+18. galaxvorram.js (1058 dòng)
+19. aether-spiral.js (1137 dòng)
+20. cos.js (1222 dòng)
+21. swordoder.js (1410 dòng)
+22. survivor-skills.js (1493 dòng)
+23. loadout-selection.js (1508 dòng)
+24. reflecounum.js (1542 dòng)
+25. cargo-drone.js (1814 dòng)
+26. thermion.js (1867 dòng)
+27. newmode-pvp.js (7993 dòng)
