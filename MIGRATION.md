@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 73/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 25 file (~33 400 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 74/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 24 file (~32 700 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -85,7 +85,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | lyvervon-system.js | 721 | ⬜ chưa |
 | hitekalum.js | 719 | ⬜ chưa |
 | nethyr.js | 713 | ⬜ chưa |
-| lazash.js | 678 | ⬜ chưa |
+| lazash.js | 678 | ✅ xong → content/Lazash.java (đã biên dịch với server-release.jar v157.4, không lỗi) |
 | lavunder.js | 666 | ✅ xong → content/Lavunder.java (hjson không có `type:`; chưa biên dịch với jar) |
 | holyder-system.js | 650 | ✅ xong → content/Holyder.java (hjson không có `type:` nên giữ nguyên; chưa biên dịch với jar) |
 | endyr.js | 649 | ✅ xong → content/Endyr.java (block do endyr.hjson tạo; Java chỉ vá ở ContentInitEvent nên GIỮ `type:` trong hjson; chưa biên dịch với jar) |
@@ -176,8 +176,15 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 
 33. **Lỗi biên dịch thật từ CI (Suv27, Lavunder).** (a) `BulletType.copy()` trả `BulletType` — không có `frontColor/backColor` (chỉ `BasicBulletType`): phải `instanceof` + ép kiểu. (b) `Unit.added` không phải trường công khai → dùng `isAdded()`. (c) `Sounds.laserbig` không tồn tại: trong JS lời gọi nằm trong `try{}catch{}` nên lỗi bị nuốt và âm thanh chưa từng phát → Java bỏ lời gọi. Quy tắc: tên trường/âm thanh/hiệu ứng lấy từ JS mà javac không tìm thấy thì tra lại, nếu JS bọc try/catch thì rất có thể nó chưa từng chạy.
 
+28. *(khôi phục – bài gốc bị thiếu)* Block do Java tạo bằng `new XTurret("x")` thì hjson cùng tên phải BỎ `type:` cấp cao nhất (xem bài 29a).
+34. **Lazash – trường/hàm JS không có ở v157.** `targetBuildings` (Turret không có) và `powerCapacity` bị Rhino bỏ qua → Java không gán. hjson nạp SAU nên ghi đè `range 105`, `targetAir/Ground true`; chỉ `range()` của lớp Build (10605) thực sự quyết định tầm bắn.
+35. **`this.isShooting` thiếu `()` lần nữa (Lazash).** JS luôn truthy → khi người chơi điều khiển, pháo (và cả chuỗi pháo kề sát) bắn liên tục không cần bấm. Java gọi `isShooting()` thật (cùng hướng bài 10, 17). Muốn y hệt JS cũ: thay bằng `true`.
+36. **Dữ liệu hiệu ứng object literal `{len, widthMult}` / `{x, y}`** → lớp nhỏ `SlashData` / `Vec2`, đọc bằng `e.data instanceof ...`. Số truyền làm data (`vChargeFx.at(x, y, rot, range())`) phải ép `(Object) Float.valueOf(..)` để không rơi vào overload `Color`; đọc lại bằng `((Number) e.data).floatValue()`. `e.data.len` trong JS kiểm tra truthy → Java `len != 0f`.
+37. **`config(Integer.class, (LazashBuild t, Integer v) -> ...)`** thay `packCons2`; `typeof b.setSlaveCommand === "function"` → `b instanceof LazashBuild`. Lớp Build lồng trong lớp con của PowerTurret thì `buildType = LazashBuild::new` là đủ (không cần `outer.super()`).
+38. **Công cụ**: `splice.py` nay hỗ trợ marker `@@T:n@@` (lấy nguyên biểu thức `t("vi","en")` bắt đầu từ dòng n của JS, cân ngoặc, an toàn UTF-8). JDK 21 trong sandbox KHÔNG hỗ trợ `--release 8`: bỏ cờ này khi kiểm tra cục bộ, CI (Java 17 + Gradle) vẫn giữ `sourceCompatibility 1.8`. Dùng `java -m jdk.compiler/com.sun.tools.javac.Main` vì không có lệnh `javac`.
+
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
-1. lazash.js (678 dòng)
+1. ~~lazash.js~~ (xong)
 2. nethyr.js (713 dòng)
 3. hitekalum.js (719 dòng)
 4. lyvervon-system.js (721 dòng)
