@@ -102,7 +102,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | heliyron.js | 511 | ⬜ chưa |
 | tankani4k.js | 511 | ✅ xong → content/Tankani4k.java |
 | blaw.js | 499 | ⬜ chưa |
-| repulsyron.js | 459 | ⬜ chưa |
+| repulsyron.js | 459 | ✅ xong → content/Repulsyron.java |
 | drone-launcher.js | 454 | ✅ xong → content/DroneLauncher.java |
 | tankani500.js | 447 | ✅ xong → content/Tankani.java |
 | sonicor.js | 436 | ⬜ chưa |
