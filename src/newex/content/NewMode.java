@@ -12,7 +12,7 @@ import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.StateChangeEvent;
 import mindustry.game.EventType.WaveEvent;
-import mindustry.game.GameState;
+import mindustry.core.GameState;
 import mindustry.game.Gamemode;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
