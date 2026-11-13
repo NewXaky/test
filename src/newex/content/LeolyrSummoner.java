@@ -237,7 +237,7 @@ public final class LeolyrSummoner {
             }).size(300f, 42f).row();
             card.add().height(6f).row();
             card.add(desc).width(320f).get().setWrap(true);
-            card.getCells().peek().get().setAlignment(Align.left);
+            ((arc.scene.ui.Label) card.getCells().peek().get()).setAlignment(Align.left);
             card.row();
         }
 

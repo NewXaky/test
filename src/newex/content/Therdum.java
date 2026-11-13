@@ -182,7 +182,7 @@ public final class Therdum {
         public void updateTile() {
             super.updateTile();
             // Phúc lợi 3A: nạp đạn nhanh gấp đôi (2s -> 1s)
-            if (perkA == 3 && reloadCounter < block.reload) {
+            if (perkA == 3 && reloadCounter < ((ItemTurret) block).reload) {
                 reloadCounter += delta() * baseReloadSpeed();
             }
         }
@@ -203,7 +203,7 @@ public final class Therdum {
                     "[gold]CORE RESOURCE REQUIREMENTS (MK1 TIER):[]\n[yellow]★ ROLL PERK A:[] Copper: " + col(cu) + cu + "[]/2000 | Lead: " + col(pb) + pb + "[]/2000 | Silicon: " + col(si) + si + "[]/2000\n[gray](Therdum Mk1 upgrades directly via Perk system)[]");
             }
             dialog.cont.add(snap).width(380f).get().setWrap(true);
-            dialog.cont.getCells().peek().get().setAlignment(Align.left);
+            ((arc.scene.ui.Label) dialog.cont.getCells().peek().get()).setAlignment(Align.left);
             dialog.cont.row();
             dialog.cont.add().height(10f).row();
 
@@ -217,7 +217,7 @@ public final class Therdum {
                     "Kích hoạt giao thức nâng cấp ngẫu nhiên nhận 1 trong 3 phúc lợi A:\n • [green]Phúc lợi 1A:[] +50% Sát thương, Tầm bắn +50% (157.5px), +10 Viên đạn.\n • [green]Phúc lợi 2A:[] +20% Sát thương, Tầm bắn +20% (126px), +5 Dmg lan (10px).\n • [green]Phúc lợi 3A:[] +200% Sát thương, Tầm bắn -30% (73.5px), Nạp đạn nhanh (2s -> 1s).",
                     "Activate upgrade protocol to randomly get 1 of 3 Perk A choices:\n • [green]Perk 1A:[] +50% Damage, Range +50% (157.5px), +10 Bullets.\n • [green]Perk 2A:[] +20% Damage, Range +20% (126px), +5 Splash Dmg (10px).\n • [green]Perk 3A:[] +200% Damage, Range -30% (73.5px), Fast Reload (2s -> 1s)."
                 )).width(340f).get().setWrap(true);
-                boxA.getCells().peek().get().setAlignment(Align.left);
+                ((arc.scene.ui.Label) boxA.getCells().peek().get()).setAlignment(Align.left);
                 boxA.row();
 
                 boxA.button(t("[yellow]QUAY PHÚC LỢI A (2K Đồng/Chì/Silicon)[]", "[yellow]ROLL PERK A (2K Cop/Lead/Sil)[]"), () -> {
@@ -246,7 +246,7 @@ public final class Therdum {
                 if (perkA == 2) txt = t("[green]✔ ĐÃ KÍCH HOẠT: PHÚC LỢI 2A\n• Sát thương +20% (28.8)\n• Tầm bắn +20% (126px)\n• Gây thêm 5 Dmg lan (Phạm vi 10px)[]", "[green]✔ ACTIVATED: PERK 2A\n• Damage +20% (28.8)\n• Range +20% (126px)\n• +5 Splash Dmg (10px Radius)[]");
                 if (perkA == 3) txt = t("[green]✔ ĐÃ KÍCH HOẠT: PHÚC LỢI 3A\n• Sát thương +200% (72)\n• Tầm bắn -30% (73.5px)\n• Tốc độ nạp đạn tăng 100% (2s -> 1s)[]", "[green]✔ ACTIVATED: PERK 3A\n• Damage +200% (72)\n• Range -30% (73.5px)\n• Reload Speed +100% (2s -> 1s)[]");
                 boxA.add(txt).width(340f).get().setWrap(true);
-                boxA.getCells().peek().get().setAlignment(Align.left);
+                ((arc.scene.ui.Label) boxA.getCells().peek().get()).setAlignment(Align.left);
             }
 
             Table mainTable = new Table();
@@ -279,7 +279,7 @@ public final class Therdum {
             BaseDialog dialog = new BaseDialog(t(" Thông số pháo Therdum Mk1 ", " Therdum Mk1 Stats "));
             Table info = new Table();
             info.add(desc).width(360f).get().setWrap(true);
-            info.getCells().peek().get().setAlignment(Align.left);
+            ((arc.scene.ui.Label) info.getCells().peek().get()).setAlignment(Align.left);
             ScrollPane scroll = new ScrollPane(info);
             scroll.setScrollingDisabled(true, false);
             dialog.cont.add(scroll).maxHeight(400f);

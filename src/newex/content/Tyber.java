@@ -249,7 +249,7 @@ public final class Tyber {
             b.margin(12);
             b.add(title).row();
             b.add(desc).width(340).get().setWrap(true);
-            b.getCells().peek().get().setAlignment(Align.left);
+            ((arc.scene.ui.Label) b.getCells().peek().get()).setAlignment(Align.left);
             b.row();
             b.button(btn, () -> {
                 CoreBuild core = team.core();
@@ -271,7 +271,7 @@ public final class Tyber {
         private void openUpgradeDialog() {
             BaseDialog dialog = new BaseDialog(t("Tyber Turret Upgrade Center", "Trung tâm nâng cấp pháo Tyber"));
             dialog.cont.add(requirementText()).width(360f).get().setWrap(true);
-            dialog.cont.getCells().peek().get().setAlignment(Align.left);
+            ((arc.scene.ui.Label) dialog.cont.getCells().peek().get()).setAlignment(Align.left);
             dialog.cont.row();
             dialog.cont.add().height(10f).row();
 
@@ -331,7 +331,7 @@ public final class Tyber {
                 BaseDialog dialog = new BaseDialog(title);
                 Table info = new Table();
                 info.add(statsText(ev)).width(360f).get().setWrap(true);
-                info.getCells().peek().get().setAlignment(Align.left);
+                ((arc.scene.ui.Label) info.getCells().peek().get()).setAlignment(Align.left);
                 ScrollPane scroll = new ScrollPane(info);
                 scroll.setScrollingDisabled(true, false);
                 dialog.cont.add(scroll).maxHeight(400f);
