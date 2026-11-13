@@ -25,6 +25,7 @@ import newex.content.LaserBrey;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
+import newex.content.Buffetles;
 import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.ObsOre;
@@ -97,6 +98,7 @@ public class NexMod extends Mod {
         Cin.init();
         Tyber.init();
         NewMode.init();
+        Buffetles.init();
         Survival.init();
         LeolyrSummoner.init();
 
