@@ -165,7 +165,8 @@ public final class Shop {
         Table main = new Table();
         main.top().margin(8);
 
-        label(main, t("[accent]-- TURRET SHOP --[]", "[accent]-- CỬA HÀNG THÁP PHÁO --[]"), mob ? 1f : 1.2f, 6).row();
+        label(main, t("[accent]-- TURRET SHOP --[]", "[accent]-- CỬA HÀNG THÁP PHÁO --[]"), mob ? 1f : 1.2f, 6);
+        main.row();
         wrapLabel(main, t("Purchase turrets directly with points or try your luck with Gacha!",
             "Mua trực tiếp tháp pháo bằng điểm hoặc thử vận may với Gacha!"), mob ? 0.75f : 0.9f);
         main.row();
@@ -323,7 +324,8 @@ public final class Shop {
         Table main = new Table();
         main.top().margin(8);
 
-        label(main, t("[accent]-- RANDOM GACHA SYSTEM --[]", "[accent]-- HỆ THỐNG GACHA NGẪU NHIÊN --[]"), mob ? 1f : 1.2f, 6).row();
+        label(main, t("[accent]-- RANDOM GACHA SYSTEM --[]", "[accent]-- HỆ THỐNG GACHA NGẪU NHIÊN --[]"), mob ? 1f : 1.2f, 6);
+        main.row();
         wrapLabel(main, t("Try your luck spinning for turrets at a lower cost (10 pts/spin)!",
             "Thử vận may quay tháp pháo với chi phí rẻ hơn (10 điểm/lượt)!"), mob ? 0.75f : 0.9f);
         main.row();
