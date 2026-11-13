@@ -169,6 +169,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 26. **`Units.closestTarget(team,x,y,range,unitPred,tilePred)` với `tilePred = t -> true` có thể trả về Building** (laser Flazerd vẫn đánh được công trình); dùng `Teamc.id()/getX()/getY()` và cast `Healthc` để `damage()` (mở rộng bài 5).
 27. **`Mathf.sin(x)` nhận radian; `Mathf.PI` là float**: thay `Math.PI` khi truyền vào `Mathf.sin`.
 
+28. **LỖI RUNTIME `Two content objects defined with the same name: 'newex-X'`** (ravendes, tenytisyr, persefer). Nguyên nhân: Java đã `new ItemTurret("x")` trong `loadContent()`, nhưng `x.hjson` còn dòng `type: ItemTurret/PowerTurret` ở CẤP CAO NHẤT → game tạo thêm 1 block cùng tên. → Khi Java tạo block, hjson tương ứng phải BỎ dòng `type:` ngoài cùng (giữ `type:` bên trong drawer/ammo/bullet). hjson còn lại vẫn ghi đè thuộc tính như thường. Sau khi chuyển 1 file sang Java, kiểm tra ngay hjson cùng tên.
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. endyr.js (649 dòng)
