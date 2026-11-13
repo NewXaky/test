@@ -37,6 +37,7 @@ import newex.content.Pinfyr;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
+import newex.content.DroneLauncher;
 import newex.content.Tankani;
 import newex.content.Tankani4k;
 import newex.content.SyrufpatFactory;
@@ -109,6 +110,7 @@ public class NexMod extends Mod {
         LeolyrSummoner.init();
         Tankani.init();
         Tankani4k.init();
+        DroneLauncher.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
