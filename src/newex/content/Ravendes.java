@@ -426,11 +426,8 @@ public final class Ravendes {
             Draw.reset();
         }
 
-        @Override
-        public boolean shouldShoot() {
-            if (getTier() == 2) return false;
-            return super.shouldShoot();
-        }
+        // JS gốc có override shouldShoot() (tier 2 trả false) nhưng TurretBuild v157 không có hàm này,
+        // nên trong Rhino nó không bao giờ được gọi. Bỏ đi để giữ đúng hành vi thực tế (MIGRATION bài học 15).
 
         @Override
         protected void shoot(BulletType type) {

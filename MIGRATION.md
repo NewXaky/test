@@ -155,7 +155,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 12. **`Lines.circle(Color)` không tồn tại** (Tenytisyr, hiệu ứng nổ MK2B: `Lines.circle(ringColors[i])`). Rhino chỉ báo lỗi lúc chạy; Java báo lỗi biên dịch. → Bỏ dòng đó, giữ `Draw.color(...)` + `Lines.circle(x, y, r)`.
 13. **`block.basePrefix` không tồn tại trên Turret v157** (nó thuộc `DrawTurret`). `PerfCore.region(block.basePrefix + size)` ra `"undefined4"` → không tìm thấy → luôn chạy `super.draw()`. → Java gọi thẳng `super.draw()` rồi vẽ nòng, khỏi tạo chuỗi tên giả.
 14. **Biến cục bộ bị lambda sửa**: Java không cho lambda gán lại biến cục bộ (JS `rx += x` trong `randLenVectors`). → Dùng mảng 1 phần tử `final float[] pos = {x, y}`.
-15. **Ghi đè `shouldShoot()` nên khai báo `public`** (nếu lớp cha là protected thì public vẫn hợp lệ, ngược lại thì lỗi biên dịch). Ghi chú: `isGalileoJS` của JS → `instanceof LeveledUnit` trong Java.
+15. **`shouldShoot()` KHÔNG tồn tại trên `Turret.TurretBuild` v157** (Ravendes: `cannot find symbol` + `does not override`). JS override hàm không có thì Rhino bỏ qua, nên hàm đó chưa từng chạy. → Xóa override, giữ đúng hành vi thật (MK2B vẫn bắn thường + shotgun). Muốn tắt bắn thường ở MK2B thì phải chặn trong `shoot(BulletType)` (tier==2 → return). Tổng quát: trước khi `@Override`, kiểm tra hàm có thật trong v157; `@Override` lỗi = JS gốc đang chạy ngầm không tác dụng. `isGalileoJS` của JS → `instanceof LeveledUnit`.
 16. **Các file Tenytisyr/Ravendes được viết trong môi trường không có Mindustry jar** nên CHƯA biên dịch. Chạy lệnh ở mục 9 trước khi push.
 
 
