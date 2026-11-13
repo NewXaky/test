@@ -100,7 +100,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | erysidus.js | 533 | ⬜ chưa |
 | xylaon.js | 515 | ⬜ chưa |
 | heliyron.js | 511 | ⬜ chưa |
-| tankani4k.js | 511 | ⬜ chưa |
+| tankani4k.js | 511 | ✅ xong → content/Tankani4k.java |
 | blaw.js | 499 | ⬜ chưa |
 | repulsyron.js | 459 | ⬜ chưa |
 | drone-launcher.js | 454 | ⬜ chưa |
