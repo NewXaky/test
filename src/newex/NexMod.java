@@ -29,6 +29,7 @@ import newex.content.Buffetles;
 import newex.content.Elorix;
 import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
+import newex.content.Sonicor;
 import newex.content.ObsOre;
 import newex.content.Survival;
 import newex.content.Therdum;
@@ -99,6 +100,7 @@ public class NexMod extends Mod {
         Cin.init();
         Tyber.init();
         NewMode.init();
+        Sonicor.init();
         Elorix.init();
         Buffetles.init();
         Survival.init();
