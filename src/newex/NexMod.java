@@ -28,6 +28,7 @@ import newex.content.Crynex;
 import newex.content.DrexkouDrills;
 import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
+import newex.content.Erysidus;
 import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
 import newex.content.ExzoryCore;
@@ -141,6 +142,7 @@ public class NexMod extends Mod {
         DroneLauncher.init();
         Repulsyron.init();
         ArchuengPvp.init();
+        Erysidus.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
