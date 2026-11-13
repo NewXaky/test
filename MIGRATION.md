@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 67/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 31 file (~37 230 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 68/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 30 file (~36 600 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -90,7 +90,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | holyder-system.js | 650 | ⬜ chưa |
 | endyr.js | 649 | ⬜ chưa |
 | flazerd.js | 645 | ⬜ chưa |
-| rangtaturs.js | 625 | ⬜ chưa |
+| rangtaturs.js | 625 | ✅ xong → content/Rangtaturs.java (chưa biên dịch với jar Mindustry; đã qua kiểm tra cú pháp javac) |
 | persefer.js | 622 | ✅ xong → content/Persefer.java (chưa biên dịch thử) |
 | ravendes.js | 604 | ✅ xong → content/Ravendes.java (chưa biên dịch thử) |
 | blixalum.js | 573 | ✅ xong → content/Blixalum.java |
@@ -160,37 +160,41 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 17. **Persefer: `this.isShooting` thiếu ngoặc đổi hành vi rõ rệt.** JS luôn truthy nên halo hiện liên tục và `continuousShootTime` chỉ tăng (kể cả không bắn → đạn Star tới 100% sau 22s đứng yên). Bản Java gọi `isShooting()` thật nên halo/đạn Star chỉ tăng khi đang bắn. Nếu muốn y hệt bản cũ: thay bằng `if (true)`.
 18. **hjson có `ammoTypes` + JS `ammoTypes.clear()/put()` lúc ContentInitEvent**: hjson nạp SAU `loadContent()` nên sẽ ghi đè đạn đặt trong code. → Đặt lại đạn ở `Events.on(ContentInitEvent.class, ...)` (Persefer.init()).
 19. **`hit(b, x, y)` ghi đè không gọi `super`** (Persefer): mất splash/âm thanh/lightning mặc định của BulletType. Java giữ nguyên (không gọi super). `hitEffect.at(x, y, rot, Color)` là overload gán `e.color` (bài học 2).
+20. **Rhino ưu tiên overload `float` hơn `int` cho số literal.** `Mathf.rand.random(2, 14)` / `random(360)` / `Mathf.range(8)` trong JS luôn chạy bản float (liên tục). → Java phải viết `2f, 14f`, `360f`, `8f`; viết `int` sẽ ra số nguyên rời rạc, sai hiệu ứng.
+21. **Ghép nguyên văn khối chuỗi song ngữ bằng script** (`splice.py`: skeleton Java có dòng `//@@JS a b`, script chép dòng a..b của file JS vào) để khỏi gõ lại vài KB tiếng Việt/Anh (tiết kiệm token, không sai chính tả). Chỉ cần đổi: `let x` → `String x`; `this.health` → `Math.round(health)`, `this.block.range` → `Math.round(block.range)` (vì nối `float` vào chuỗi Java ra `"950.0"`, JS ra `"950"`); `this.block.size` → `block.size`. Dùng Python để in/cắt dòng UTF-8 (`cut -c`, `head -c` làm hỏng ký tự đa byte và làm tool báo lỗi).
+22. **Kiểm tra cú pháp khi không có jar Mindustry**: `java -m jdk.compiler/com.sun.tools.javac.Main -proc:none -nowarn -encoding UTF-8 -d cls file.java 2>&1 | grep error: | grep -v -E "cannot find symbol|does not exist"`. Lỗi "does not override", "lambda not expected", "non-static variable super" chỉ là hệ quả của việc không tìm được lớp cha → bỏ qua; chỉ lo lỗi kiểu `expected`, `illegal start`, `unclosed`. Vẫn phải chạy lệnh ở mục 9 trước khi push.
+23. **hjson ghi đè health/reload/range/ammoTypes đặt trong code** (Rangtaturs: hjson đặt `health 950, reload 20, range 352` và `ammoTypes: titanium` đạn giả `damage 1`). Java đặt giá trị như JS rồi để hjson ghi đè sau (cùng thứ tự với JS) nên KHÔNG cần ContentInitEvent như bài học 18. **Cảnh báo hành vi cũ**: laser lấy `peekAmmo().damage × 2.8/3.1/3.1`, mà đạn nào cũng `damage = 1` nên laser thực tế chỉ ~2.8–3.1 sát thương (+hiệu ứng trạng thái). Đã giữ nguyên; muốn laser mạnh thật (45/50/65) thì đặt `baseDmg` cố định thay vì lấy từ đạn.
+24. **Trường trong JS nhưng chưa chắc có ở v157** (`chargeEffect` của LaserBulletType): Rhino bỏ qua im lặng, Java có thể lỗi biên dịch. Pháo không dùng `shoot.firstShotDelay` nên hiệu ứng này không bao giờ phát → bỏ, có chú thích trong code. Trước khi gán trường lạ, grep xem file Java đã biên dịch được nào dùng chưa (vd `squareSprite` đã có ở Blixalum nên an toàn).
 
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
-1. rangtaturs.js (625 dòng)
-2. flazerd.js (645 dòng)
-3. endyr.js (649 dòng)
-4. holyder-system.js (650 dòng)
-5. lavunder.js (666 dòng)
-6. suv-27.js (666 dòng)
-7. lazash.js (678 dòng)
-8. nethyr.js (713 dòng)
-9. hitekalum.js (719 dòng)
-10. lyvervon-system.js (721 dòng)
-11. dor.js (726 dòng)
-12. overyr.js (740 dòng)
-13. forstarsilum.js (741 dòng)
-14. maxitoner.js (813 dòng)
-15. plasanod.js (829 dòng)
-16. nucleytor.js (860 dòng)
-17. emperfum.js (873 dòng)
-18. tyteryi.js (922 dòng)
-19. dtg-soldern.js (925 dòng)
-20. emperical.js (1013 dòng)
-21. indeniter.js (1028 dòng)
-22. galaxvorram.js (1058 dòng)
-23. aether-spiral.js (1137 dòng)
-24. cos.js (1222 dòng)
-25. swordoder.js (1410 dòng)
-26. survivor-skills.js (1493 dòng)
-27. loadout-selection.js (1508 dòng)
-28. reflecounum.js (1542 dòng)
-29. cargo-drone.js (1814 dòng)
-30. thermion.js (1867 dòng)
-31. newmode-pvp.js (7993 dòng)
+1. flazerd.js (645 dòng)
+2. endyr.js (649 dòng)
+3. holyder-system.js (650 dòng)
+4. lavunder.js (666 dòng)
+5. suv-27.js (666 dòng)
+6. lazash.js (678 dòng)
+7. nethyr.js (713 dòng)
+8. hitekalum.js (719 dòng)
+9. lyvervon-system.js (721 dòng)
+10. dor.js (726 dòng)
+11. overyr.js (740 dòng)
+12. forstarsilum.js (741 dòng)
+13. maxitoner.js (813 dòng)
+14. plasanod.js (829 dòng)
+15. nucleytor.js (860 dòng)
+16. emperfum.js (873 dòng)
+17. tyteryi.js (922 dòng)
+18. dtg-soldern.js (925 dòng)
+19. emperical.js (1013 dòng)
+20. indeniter.js (1028 dòng)
+21. galaxvorram.js (1058 dòng)
+22. aether-spiral.js (1137 dòng)
+23. cos.js (1222 dòng)
+24. swordoder.js (1410 dòng)
+25. survivor-skills.js (1493 dòng)
+26. loadout-selection.js (1508 dòng)
+27. reflecounum.js (1542 dòng)
+28. cargo-drone.js (1814 dòng)
+29. thermion.js (1867 dòng)
+30. newmode-pvp.js (7993 dòng)

@@ -52,6 +52,7 @@ import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
 import newex.content.Persefer;
+import newex.content.Rangtaturs;
 import newex.content.Ravendes;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
@@ -179,6 +180,7 @@ public class NexMod extends Mod {
         Tenytisyr.create();
         Ravendes.create();
         Persefer.create();
+        Rangtaturs.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
