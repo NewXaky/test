@@ -233,7 +233,6 @@ public class NexMod extends Mod {
             r.bannedBlocks.clear();
             r.schematicsAllowed = true;
             r.waveTeam = Team.crux;
-            r.hideSpawns = true;
             r.coreDestroyClear = true;
         };
     }

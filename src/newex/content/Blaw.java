@@ -10,7 +10,7 @@ import arc.math.Mathf;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
-import arc.util.Interp;
+import arc.math.Interp;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
@@ -213,7 +213,7 @@ public final class Blaw {
             if (customBaseRegion != null && customBaseRegion.found()) {
                 Draw.rect(customBaseRegion, x, y);
             } else {
-                Draw.rect(base.baseRegion, x, y);
+                Draw.rect(Core.atlas.find("block-" + base.size), x, y);
             }
 
             float angleRad = rotation * Mathf.degRad;
