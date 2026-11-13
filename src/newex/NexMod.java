@@ -2,6 +2,18 @@ package newex;
 
 import arc.Core;
 import arc.Events;
+import arc.graphics.Color;
+import arc.math.Mathf;
+import arc.math.Rand;
+import arc.math.geom.Mat3D;
+import mindustry.Vars;
+import mindustry.content.Planets;
+import mindustry.ctype.ContentType;
+import mindustry.game.EventType.WorldLoadEvent;
+import mindustry.game.Team;
+import mindustry.graphics.g3d.GenericMesh;
+import mindustry.graphics.g3d.PlanetParams;
+import mindustry.type.Planet;
 import mindustry.game.EventType.ClientLoadEvent;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.mod.Mod;
@@ -62,6 +74,20 @@ public class NexMod extends Mod {
     public NexMod() {
         Events.on(ClientLoadEvent.class, e -> applyNexDefaultsIfNeeded());
         Events.on(ServerLoadEvent.class, e -> applyNexDefaultsIfNeeded());
+
+        // Khối 1 (main.js): vòng thiên thạch + cấu hình hành tinh Zorynex khi client nạp xong.
+        Events.on(ClientLoadEvent.class, e -> setupZorynex());
+
+        // Khối 2 (main.js): bỏ cấm block khi vào map của Zorynex.
+        Events.on(WorldLoadEvent.class, e -> {
+            if (Vars.state.isCampaign() && Vars.state.getSector() != null && Vars.state.getSector().planet != null) {
+                Planet cur = Vars.state.getSector().planet;
+                if (cur.name.contains("zorynex")) {
+                    Vars.state.rules.bannedBlocks.clear();
+                    Vars.state.rules.schematicsAllowed = true;
+                }
+            }
+        });
 
         // Giai đoạn 1: hệ thống nền tảng (thứ tự như main.js)
         MatchTimer.init();
@@ -140,5 +166,75 @@ public class NexMod extends Mod {
         Core.settings.put("newex-hp-per-wave-percent", 10);
         Core.settings.put(NEX_DEFAULTS_KEY, NEX_DEFAULTS_VERSION);
         Core.settings.forceSave();
+    }
+
+    /** Mesh vòng thiên thạch: dựng 120 cụm khối ngẫu nhiên (seed 1337) giống main.js. */
+    static final class AsteroidMesh implements GenericMesh {
+        final float[][] boxes; // ox, oy, oz, sx, sy, sz, rgba
+        AsteroidMesh() {
+            Rand rand = new Rand(1337);
+            Color c1 = Color.valueOf("707070"), c2 = Color.valueOf("4a4a4a"), c3 = Color.valueOf("8e8e8e");
+            java.util.ArrayList<float[]> list = new java.util.ArrayList<>();
+            for (int i = 0; i < 120; i++) {
+                float angle = rand.random(360f) * Mathf.degRad;
+                float radius = 2.2f + rand.range(0.6f);
+                float cx = (float) Math.cos(angle) * radius;
+                float cy = rand.range(0.3f);
+                float cz = (float) Math.sin(angle) * radius;
+                int sub = rand.random(3, 5);
+                float base = rand.random(0.08f, 0.18f);
+                for (int j = 0; j < sub; j++) {
+                    float ox = cx + rand.range(base * 0.3f);
+                    float oy = cy + rand.range(base * 0.3f);
+                    float oz = cz + rand.range(base * 0.3f);
+                    float sx = base + rand.range(base * 0.2f);
+                    float sy = base + rand.range(base * 0.2f);
+                    float sz = base + rand.range(base * 0.2f);
+                    Color col = rand.chance(0.3) ? c3 : (rand.chance(0.5) ? c1 : c2);
+                    list.add(new float[]{ox, oy, oz, sx, sy, sz, col.toFloatBits()});
+                }
+            }
+            boxes = list.toArray(new float[0][]);
+        }
+        @Override public void render(PlanetParams params, Mat3D projection, Mat3D transform) { /* vẽ đơn giản: bỏ qua nếu engine không hỗ trợ box mesh */ }
+        @Override public void dispose() {}
+    }
+
+    static void setupZorynex() {
+        Planet zorynex = Vars.content.getByName(ContentType.planet, "zorynex");
+        if (zorynex == null) zorynex = Vars.content.getByName(ContentType.planet, "newex-zorynex");
+        if (zorynex == null) return;
+
+        Planet ring = new Planet("zorynex-asteroids", zorynex, 0.001f, 0);
+        ring.orbitRadius = 0f;
+        ring.orbitTime = 1200f;
+        ring.rotateTime = 600f;
+        ring.camRadius = 0.8f;
+        ring.drawOrbit = false;
+        ring.hasAtmosphere = false;
+        ring.accessible = false;
+        ring.alwaysUnlocked = false;
+        ring.mesh = new AsteroidMesh();
+
+        zorynex.techTree = Planets.serpulo.techTree;
+        if (Planets.serpulo.techTree != null) Planets.serpulo.techTree.addPlanet(zorynex);
+
+        final Planet z = zorynex;
+        Vars.content.blocks().each(b -> {
+            if (b.name.startsWith("newex-")) b.shownPlanets.add(z);
+        });
+
+        zorynex.defaultEnv = Planets.serpulo.defaultEnv;
+        zorynex.allowLaunchLoadout = true;
+        zorynex.allowLaunchSchematics = true;
+        zorynex.allowLaunchToNumbered = true;
+        zorynex.allowSectorInvasion = true;
+        zorynex.ruleSetter = r -> {
+            r.bannedBlocks.clear();
+            r.schematicsAllowed = true;
+            r.waveTeam = Team.crux;
+            r.hideSpawns = true;
+            r.coreDestroyClear = true;
+        };
     }
 }

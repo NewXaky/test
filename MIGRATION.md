@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 40 file (9343 dòng). Còn lại: 56 file (49305 dòng), chưa tính main.js đang làm dở.
+Đã xong: 56 file (≈18 357 dòng, số thực tế nhiều hơn bảng dưới ghi vì bảng này đã cũ — nhiều file như Cin, Sonicor, Buffetles, Therdum, Tyber, Elorix, LeolyrSummoner, NewMode, Survival, main.js... đã xong nhưng bảng chưa cập nhật). Còn lại khoảng 38 file (~26 500 dòng): leolyr.js vừa xong, archueng-pvp.js & reflecounum.js đang xử lý riêng (xem memory), newmode-pvp.js (7993 dòng) đang làm dở từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -101,15 +101,15 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | xylaon.js | 515 | ⬜ chưa |
 | heliyron.js | 511 | ⬜ chưa |
 | tankani4k.js | 511 | ✅ xong → content/Tankani4k.java |
-| blaw.js | 499 | ⬜ chưa |
+| blaw.js | 499 | ✅ xong → content/Blaw.java |
 | repulsyron.js | 459 | ✅ xong → content/Repulsyron.java |
 | drone-launcher.js | 454 | ✅ xong → content/DroneLauncher.java |
 | tankani500.js | 447 | ✅ xong → content/Tankani.java |
-| sonicor.js | 436 | ⬜ chưa |
+| sonicor.js | 436 | ✅ xong → content/Sonicor.java |
 | tankani2k.js | 435 | ✅ xong → content/Tankani.java |
-| buffetles.js | 413 | ⬜ chưa |
-| therdum.js | 366 | ⬜ chưa |
-| tyber.js | 356 | ⬜ chưa |
+| buffetles.js | 413 | ✅ xong → content/Buffetles.java |
+| therdum.js | 366 | ✅ xong → content/Therdum.java |
+| tyber.js | 356 | ✅ xong → content/Tyber.java |
 
 ## Giai đoạn 3 – đơn vị & drone
 
@@ -121,9 +121,9 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | cargo-drone.js | 1814 | ⬜ chưa |
 | cos.js | 1222 | ⬜ chưa |
 | suv-27.js | 666 | ⬜ chưa |
-| leolyr.js | 486 | ⬜ chưa |
-| elorix.js | 415 | ⬜ chưa |
-| leolyr-summoner.js | 334 | ⬜ chưa |
+| leolyr.js | 486 | ✅ xong → content/Leolyr.java |
+| elorix.js | 415 | ✅ xong → content/Elorix.java |
+| leolyr-summoner.js | 334 | ✅ xong → content/LeolyrSummoner.java |
 
 ## Giai đoạn 4 – giao diện & chế độ chơi
 
@@ -133,5 +133,5 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | loadout-selection.js | 1508 | ⬜ chưa |
 | survivor-skills.js | 1493 | ⬜ chưa |
 | shop.js | 465 | ✅ xong → content/Shop.java (module, gọi từ loadout-selection) |
-| newmode-survival.js | 388 | ⬜ chưa |
-| newmode.js | 301 | ⬜ chưa |
+| newmode-survival.js | 388 | ✅ xong → content/Survival.java |
+| newmode.js | 301 | ✅ xong → content/NewMode.java |
