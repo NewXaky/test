@@ -34,6 +34,7 @@ import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
 import newex.content.ExzoryCore;
 import newex.content.FixSave;
+import newex.content.Flazerd;
 import newex.content.FlasallowFactory;
 import newex.content.GeneratMachine;
 import newex.content.Heliyron;
@@ -181,6 +182,7 @@ public class NexMod extends Mod {
         Ravendes.create();
         Persefer.create();
         Rangtaturs.create();
+        Flazerd.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
