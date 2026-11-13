@@ -29,6 +29,7 @@ import mindustry.gen.Bullet;
 import mindustry.gen.Healthc;
 import mindustry.gen.Hitboxc;
 import mindustry.gen.Icon;
+import mindustry.gen.Teamc;
 import mindustry.gen.Unit;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Pal;
@@ -37,6 +38,7 @@ import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
+import newex.DamageDisplay;
 import newex.NexNet;
 import newex.PerfCore;
 
@@ -211,7 +213,7 @@ public final class Erysidus {
             super.updateTile();
             int tier = getTier();
 
-            Unit beamTarget = Units.bestTarget(team, x, y, 700f, e -> e.checkTarget(true, true), tb -> true, (u, ux, uy) -> -u.health);
+            Teamc beamTarget = Units.bestTarget(team, x, y, 700f, e -> e.checkTarget(true, true), tb -> true, (u, ux, uy) -> -u.health);
             boolean inBeamRange = beamTarget != null || (target != null && dst(target) <= 700f);
 
             if (hasAmmo()) {
