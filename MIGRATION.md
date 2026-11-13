@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 69/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 29 file (~36 000 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 70/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 28 file (~35 400 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -88,7 +88,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | lazash.js | 678 | ⬜ chưa |
 | lavunder.js | 666 | ⬜ chưa |
 | holyder-system.js | 650 | ⬜ chưa |
-| endyr.js | 649 | ⬜ chưa |
+| endyr.js | 649 | ✅ xong → content/Endyr.java (block do endyr.hjson tạo; Java chỉ vá ở ContentInitEvent nên GIỮ `type:` trong hjson; chưa biên dịch với jar) |
 | flazerd.js | 645 | ✅ xong → content/Flazerd.java (chưa biên dịch với jar Mindustry) |
 | rangtaturs.js | 625 | ✅ xong → content/Rangtaturs.java (chưa biên dịch với jar Mindustry; đã qua kiểm tra cú pháp javac) |
 | persefer.js | 622 | ✅ xong → content/Persefer.java (chưa biên dịch thử) |
@@ -168,36 +168,36 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 25. **Override JS không tồn tại ở v157** (Flazerd `destroyed()`; trước đó `shouldShoot` bài 15): kiểm tra tên hàm thật; nếu mục đích là dọn bộ nhớ thì dùng `onRemoved()`. Map `ObjectMap` theo id pháo trong JS → gộp thành 1 lớp `State` trong `HashMap<Integer,State>`.
 26. **`Units.closestTarget(team,x,y,range,unitPred,tilePred)` với `tilePred = t -> true` có thể trả về Building** (laser Flazerd vẫn đánh được công trình); dùng `Teamc.id()/getX()/getY()` và cast `Healthc` để `damage()` (mở rộng bài 5).
 27. **`Mathf.sin(x)` nhận radian; `Mathf.PI` là float**: thay `Math.PI` khi truyền vào `Mathf.sin`.
+29. **Hai kiểu block, hai cách xử lý hjson.** (a) Java tạo block bằng `new XTurret("x")` → hjson cùng tên phải BỎ `type:` cấp cao nhất (bài 28). (b) hjson tạo block (có `type: ItemTurret`), JS chỉ vá bằng `Vars.content.getByName(...)` lúc `ContentInitEvent` (endyr) → Java cũng chỉ vá ở `ContentInitEvent` (đăng ký trong `init()`), KHÔNG `new`, và GIỮ nguyên hjson. Nhìn đầu file JS: có `extend(ItemTurret, "name"...)` là (a), có `getByName(...)` là (b).
+    Phụ: `configured()` JS kiểm tra `typeof value === "number"` luôn sai với `java.lang.Integer` nên chưa từng chạy; `config()` của Endyr trả mặt nạ ô trang bị KHÔNG có bit 15 nên khi copy/dán bản thiết kế sẽ bị hiểu là toạ độ bắn (giữ nguyên hành vi cũ). `global.NexReflect.isProtected` → `Endyr.reflectProtected` (Boolf) để nối khi chuyển reflecounum.js.
 
-28. **LỖI RUNTIME `Two content objects defined with the same name: 'newex-X'`** (ravendes, tenytisyr, persefer). Nguyên nhân: Java đã `new ItemTurret("x")` trong `loadContent()`, nhưng `x.hjson` còn dòng `type: ItemTurret/PowerTurret` ở CẤP CAO NHẤT → game tạo thêm 1 block cùng tên. → Khi Java tạo block, hjson tương ứng phải BỎ dòng `type:` ngoài cùng (giữ `type:` bên trong drawer/ammo/bullet). hjson còn lại vẫn ghi đè thuộc tính như thường. Sau khi chuyển 1 file sang Java, kiểm tra ngay hjson cùng tên.
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
-1. endyr.js (649 dòng)
-2. holyder-system.js (650 dòng)
-3. lavunder.js (666 dòng)
-4. suv-27.js (666 dòng)
-5. lazash.js (678 dòng)
-6. nethyr.js (713 dòng)
-7. hitekalum.js (719 dòng)
-8. lyvervon-system.js (721 dòng)
-9. dor.js (726 dòng)
-10. overyr.js (740 dòng)
-11. forstarsilum.js (741 dòng)
-12. maxitoner.js (813 dòng)
-13. plasanod.js (829 dòng)
-14. nucleytor.js (860 dòng)
-15. emperfum.js (873 dòng)
-16. tyteryi.js (922 dòng)
-17. dtg-soldern.js (925 dòng)
-18. emperical.js (1013 dòng)
-19. indeniter.js (1028 dòng)
-20. galaxvorram.js (1058 dòng)
-21. aether-spiral.js (1137 dòng)
-22. cos.js (1222 dòng)
-23. swordoder.js (1410 dòng)
-24. survivor-skills.js (1493 dòng)
-25. loadout-selection.js (1508 dòng)
-26. reflecounum.js (1542 dòng)
-27. cargo-drone.js (1814 dòng)
-28. thermion.js (1867 dòng)
-29. newmode-pvp.js (7993 dòng)
+1. holyder-system.js (650 dòng)
+2. lavunder.js (666 dòng)
+3. suv-27.js (666 dòng)
+4. lazash.js (678 dòng)
+5. nethyr.js (713 dòng)
+6. hitekalum.js (719 dòng)
+7. lyvervon-system.js (721 dòng)
+8. dor.js (726 dòng)
+9. overyr.js (740 dòng)
+10. forstarsilum.js (741 dòng)
+11. maxitoner.js (813 dòng)
+12. plasanod.js (829 dòng)
+13. nucleytor.js (860 dòng)
+14. emperfum.js (873 dòng)
+15. tyteryi.js (922 dòng)
+16. dtg-soldern.js (925 dòng)
+17. emperical.js (1013 dòng)
+18. indeniter.js (1028 dòng)
+19. galaxvorram.js (1058 dòng)
+20. aether-spiral.js (1137 dòng)
+21. cos.js (1222 dòng)
+22. swordoder.js (1410 dòng)
+23. survivor-skills.js (1493 dòng)
+24. loadout-selection.js (1508 dòng)
+25. reflecounum.js (1542 dòng)
+26. cargo-drone.js (1814 dòng)
+27. thermion.js (1867 dòng)
+28. newmode-pvp.js (7993 dòng)

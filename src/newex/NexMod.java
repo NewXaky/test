@@ -29,6 +29,7 @@ import newex.content.Crynex;
 import newex.content.DrexkouDrills;
 import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
+import newex.content.Endyr;
 import newex.content.Erysidus;
 import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
@@ -155,6 +156,7 @@ public class NexMod extends Mod {
         Erysidus.init();
         Ravendes.init();
         Persefer.init();
+        Endyr.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
