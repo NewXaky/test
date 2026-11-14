@@ -58,6 +58,7 @@ import newex.content.NewMode;
 import newex.content.Sonicor;
 import newex.content.ObsOre;
 import newex.content.Survival;
+import newex.content.SurvivorSkills;
 import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
@@ -171,6 +172,7 @@ public class NexMod extends Mod {
         Elorix.init();
         Buffetles.init();
         Survival.init();
+        SurvivorSkills.init();
         LeolyrSummoner.init();
         Tankani.init();
         Tankani4k.init();
