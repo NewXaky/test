@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 80/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 18 file (~28 420 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 81/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 17 file (~27 600 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -78,7 +78,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | emperfum.js | 873 | ⬜ chưa |
 | nucleytor.js | 860 | ⬜ chưa |
 | plasanod.js | 829 | ⬜ chưa |
-| maxitoner.js | 813 | ⬜ chưa |
+| maxitoner.js | 813 | ✅ xong → content/Maxitoner.java (Maxitoner.create() trong NexMod.loadContent; hjson KHÔNG có `type:` cấp cao nhất nên giữ nguyên; kiểm tra cú pháp OK, chưa biên dịch với jar) |
 | forstarsilum.js | 741 | ✅ xong → content/Forstarsilum.java (block do hjson tạo, `type: PowerTurret` giữ nguyên; Forstarsilum.init() trong NexMod; chưa biên dịch với jar) |
 | overyr.js | 740 | ✅ xong → content/Overyr.java (dựng từ Nethyr.java; Overyr.init() trong NexMod; giữ `type:` trong hjson; chưa biên dịch với jar) |
 | dor.js | 726 | ✅ xong → content/Dor.java (Dor.create() trong NexMod; chưa biên dịch với jar, đã qua kiểm tra cú pháp) |
@@ -208,6 +208,11 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 59. **Forstarsilum – chi tiết khác.** `armorPiercing: 0.80` không phải trường BulletType v157 (Rhino bỏ qua) → không gán. `entity.armor` chỉ có ở `Unit`: Java kiểm tra `instanceof Unit`; đạn Ult mỗi lần trúng nhân giáp x0.5 VĨNH VIỄN lên đơn vị (giữ nguyên). `entity.damagePierce/maxHealth/dead` → ép `Healthc`. `ultBullet.create(..., 1.0, 1.0)` là (velocityScl, lifetimeScl) (bài 3). `block.basePrefix` không tồn tại → `super.draw()` (bài 13). `addBar` dùng `(Building e) -> new Bar((Prov<CharSequence>) ..., (Prov<Color>) ..., (Floatp) ...)`; `Math.floor` → `Mathf.floor` (int) để chữ in "12" thay vì "12.0" (khác bài 31 vì JS in số nguyên đúng ở đây). `ParticleEffect`: `extend(ParticleEffect,{...})` → `new ParticleEffect()` rồi gán trường (`lifetime` thuộc Effect).
 60. **Công cụ:** `splice2.py` nay nhận `english ? A : B` (biến cục bộ `english`) và `@@R:a-b@@` rất hợp khi khai báo `static final class Req {titanium,...}` để chép nguyên văn `reqMK2.titanium` trong khối chuỗi.
 
+61. **Maxitoner – `this.isShooting` thiếu `()` (lần 6).** JS luôn truthy nên phúc lợi 1C (tự bắn 3 đạn phụ mỗi 1s) chạy cả khi KHÔNG bắn. Java gọi `isShooting()` thật nên chỉ tự bắn khi đang bắn. Muốn y hệt JS cũ: bỏ `isShooting() &&`.
+62. **Maxitoner – `this.reloadTime = ...` không có tác dụng:** Build v157 không có trường `reloadTime` (Rhino chỉ tạo thuộc tính rác) → tốc bắn của phúc lợi 2A/3A/1B/2B ("+80%", "+120%", "-50%"...) CHƯA BAO GIỜ hoạt động. Java bỏ dòng này (parity). Muốn làm thật: override `baseReloadSpeed()` trong lớp Build, trả `efficiency * reloadMult`. Cũng như vậy `maxitoner.shootEffect` không có trên Turret v157 → bỏ (bài 24).
+63. **Sửa `b.type` của đạn dùng chung (Maxitoner 3C):** `b.type.pierce/pierceCap/homingPower` đổi thẳng lên đối tượng BulletType dùng chung nên sau lần đầu 3C bắn, MỌI viên đạn Maxitoner đều xuyên/đuổi vĩnh viễn (JS và Java như nhau, giữ nguyên). Muốn đúng nên tạo bản `copy()` riêng cho 3C.
+64. **Cách làm nhanh/tiết kiệm token cho file có hộp phúc lợi A/B/C:** gộp 3 khối UI gần giống nhau thành 1 hàm `perkBox(...)` + chép chuỗi bằng `splice2.py`. Mẹo: `sed 's/isEnglish()/isEn()/g'` trên bản JS tạm để marker `@@E:n@@` nhận ra hàm kiểm tra ngôn ngữ; marker `@@R:a-b@@` chép nguyên cả khối `if (isEn()) { if (perkA == 1) txtA = "..." ... }` vì nó đã là Java hợp lệ (chỉ cần tự khai báo `String txtA = "";`).
+
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -216,7 +221,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 5. ~~dor.js~~ (xong)
 6. ~~overyr.js~~ (xong)
 7. ~~forstarsilum.js~~ (xong)
-8. maxitoner.js (813 dòng)
+8. ~~maxitoner.js~~ (xong)
 9. plasanod.js (829 dòng)
 10. nucleytor.js (860 dòng)
 11. emperfum.js (873 dòng)

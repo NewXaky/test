@@ -45,6 +45,7 @@ import newex.content.Heliyron;
 import newex.content.LaserBrey;
 import newex.content.Lazash;
 import newex.content.Lyvervon;
+import newex.content.Maxitoner;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
@@ -205,6 +206,7 @@ public class NexMod extends Mod {
         Lazash.create();
         Lyvervon.create();
         Dor.create();
+        Maxitoner.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
