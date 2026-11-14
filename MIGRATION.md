@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 88/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 10 file (~21 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 89/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 9 file (~20 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -70,7 +70,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | reflecounum.js | 1542 | ⬜ chưa |
 | swordoder.js | 1410 | ⬜ chưa |
 | aether-spiral.js | 1137 | ⬜ chưa |
-| galaxvorram.js | 1058 | ⬜ chưa |
+| galaxvorram.js | 1057 | ✅ xong → content/Galaxvorram.java (block `new PowerTurret("galaxvorram")`, hjson không có `type:`; Galaxvorram.create() trong NexMod sau Indeniter; biên dịch với jar v157.4, 0 lỗi; bài 89–90) |
 | indeniter.js | 1027 | ✅ xong → content/Indeniter.java (block `new ItemTurret("indeniter")`, hjson không có `type:`; Indeniter.create() trong NexMod sau DtgSoldern; biên dịch với jar v157.4, 0 lỗi; bài 85–88) |
 | emperical.js | 1012 | ✅ xong → content/Emperical.java (hjson có `type: ItemTurret` nên GIỮ hjson, Java vá ở ContentInitEvent; Emperical.init() trong NexMod sau Hitekalum; biên dịch với jar v157.4, 0 lỗi; bài 82–84) |
 | dtg-soldern.js | 925 | ✅ xong → content/DtgSoldern.java (block `new ItemTurret("dtg-soldern")`, hjson không có `type:` nên giữ nguyên; DtgSoldern.create() trong NexMod sau Tyteryi; đã biên dịch với jar v157.4, 0 lỗi; xem bài 79–80) |
@@ -243,6 +243,9 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 87. **Indeniter – `this.reload` không tồn tại ở Build.** `setTier` gán `this.reload = 60/pMult, 52/pMult, 180/pMult` nhưng Build v157 không có trường `reload` (chỉ block có; Rhino tạo thuộc tính JS rác) → tốc bắn theo tầng THỰC TẾ do hjson (`reload: 20`) quyết định, không phải 60/52/180. Java bỏ dòng gán (giữ hành vi), chỉ giữ `health`/`maxHealth`. Muốn tốc bắn theo tầng thật: đổi `turret.reload` hoặc dùng `reloadCounter`/`baseReloadSpeed()`. Cùng họ bài 62. `TurretBuild.version()` = 1 sẵn có nên `revision >= 1` ở `read()` đọc được byte perk (không cần override `version()`).
 88. **Indeniter – `isShooting` thiếu `()` (lần 9, ba chỗ) + API.** `target != null || this.isShooting` (luôn truthy → cánh luôn bung), `(this.isShooting || this.isBursting) && hasAmmo()` (nạp năng lượng khi chỉ cần có đạn), `perk == 4 && hasAmmo() && this.isShooting` (đạn phụ bắn không cần mục tiêu). Java gọi `isShooting()` thật. `backColor` chỉ ở `BasicBulletType` (bài 33a). Đạn tuỳ biến: lớp `IBullet extends BasicBulletType` ghi đè `hitEntity` rồi gọi `handleBulletHit` của pháo chủ (chỉ khi `other instanceof Unit`). Biến bị lambda sửa (`furthestTarget`, `maxDist`) → mảng 1 phần tử (bài 14). `Seq.sort(Floatf)` thay `candidates.sort((a,b)=>…)`; `timer.get(0, 300f)` dùng Interval có sẵn.
 
+89. **Galaxvorram – các lỗi JS (Java đã sửa/ghi chú).** (a) `galaxvorram.powerCapacity = 10000`, `targetBuildings = true`, `acceptItem = func(...)` KHÔNG phải trường/phương thức của Block/Turret v157 → chỉ là thuộc tính JS, không tác dụng (Java: hằng `POWER_CAP = 10000f`; `acceptItem` thật nằm ở Build và đã được ghi đè). `b.block.powerCapacity || 4000` luôn ra 4000 → hằng `OTHER_POWER_CAP`. (b) `pinfyrLaser.create(..., 1.0, 1.0)` truyền damage = 1.0 (tham số thứ 6 của `create` là DAMAGE, không phải hệ số) → tia Pinfyr chỉ gây 1 sát thương dù khai 2002; Java truyền `-1f` (= dùng damage của loại đạn: 2002). Muốn như cũ: truyền `1f`. (c) `armorPiercing: true` không phải trường BulletType (chỉ có `pierceArmor`) → bỏ. (d) `vTargetWarningFx.at(x, y, 0, ammo.c1)` chọn overload `at(..., Color)` (đặt `e.color`, không phải `e.data`) nên hiệu ứng luôn dùng tím mặc định; Java ép `(Object)` để màu theo loại đạn (mảng `colors` truyền cho các hiệu ứng khác vốn đã đi qua `data`). (e) `pinfyrList.each((b, i) => …)`: `Seq.each` chỉ truyền 1 đối số nên `i` undefined → hộp thông tin ghi "Pinfyr Block #NaN"; Java dùng chỉ số vòng lặp thật. (f) `createPinfyrDynamicLaser` tạo một loại đạn mới mỗi phát → Java dùng chung 1 `LaserBulletType` và đặt `length` trước mỗi `create`. (g) `StatusEffect.update` ở v157 có chữ ký `(Unit, StatusEntry)`; `turnToTarget(float)` là `protected`; `Damage.damage(team,x,y,r,dmg,air,ground)` có bản 7 tham số.
+90. **Galaxvorram – `isShooting` thiếu `()` (lần 10).** `canShoot = this.isShooting` (điều khiển trực tiếp) và `syncChainCommand(..., this.isShooting, ...)`: JS luôn truthy → khi người chơi/logic điều khiển pháo là bắn ngay khi đã ngắm đúng và đủ điện+đạn, và lệnh bắn lan sang pháo kề; Java dùng `isShooting()` thật (chỉ bắn khi đang bấm bắn). `itemObs` (item `newex-obs`) nạp sau `create()` nên tra lười bằng `obs()`; `AMMO_DATA` được sinh tự động từ JS bằng script (chỉ `reqItem` của loại 5 để null, dùng `obs()` lúc chạy như JS). `range()` gọi quét công trình mỗi lần (giữ nguyên như JS, bán kính nhỏ).
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -259,7 +262,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 13. ~~dtg-soldern.js~~ (xong)
 14. ~~emperical.js~~ (xong)
 15. ~~indeniter.js~~ (xong)
-16. galaxvorram.js (1058 dòng)
+16. ~~galaxvorram.js~~ (xong)
 17. aether-spiral.js (1137 dòng)
 18. cos.js (1222 dòng, dòng thực tế hiện ~1221)
 19. swordoder.js (1409 dòng)

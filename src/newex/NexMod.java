@@ -85,6 +85,7 @@ import newex.content.Tyteryi;
 import newex.content.DtgSoldern;
 import newex.content.Emperical;
 import newex.content.Indeniter;
+import newex.content.Galaxvorram;
 import newex.content.UnitReactor;
 import newex.content.Vendicum;
 import newex.content.UranilumReactor;
@@ -207,6 +208,7 @@ public class NexMod extends Mod {
         Tyteryi.create();
         DtgSoldern.create();
         Indeniter.create();
+        Galaxvorram.create();
         Reguilater.create();
         Tenytisyr.create();
         Ravendes.create();
