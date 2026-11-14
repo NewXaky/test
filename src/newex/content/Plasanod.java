@@ -242,7 +242,7 @@ public final class Plasanod {
     static PointLaserBulletType createPlasanodLaser(float baseDmg, String hitHex, float beamLen) {
         PointLaserBulletType b = new PointLaserBulletType();
         b.damage = baseDmg;
-        b.beamLength = beamLen;
+        // JS gán beamLength: PointLaserBulletType v157 không có trường này (bài học 69) → bỏ; tầm tia do range() của pháo quyết định.
         b.buildingDamageMultiplier = 0.4f;
         b.hitColor = Color.valueOf(hitHex);
         b.status = Sta.cei != null ? Sta.cei : StatusEffects.freezing;
