@@ -56,6 +56,7 @@ import newex.content.Survival;
 import newex.content.Therdum;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
+import newex.content.Hitekalum;
 import newex.content.Nethyr;
 import newex.content.Persefer;
 import newex.content.Suv27;
@@ -163,6 +164,7 @@ public class NexMod extends Mod {
         Persefer.init();
         Endyr.init();
         Nethyr.init();
+        Hitekalum.init();
         Suv27.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).

@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 75/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 23 file (~32 000 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 76/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 22 file (~31 300 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -83,7 +83,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | overyr.js | 740 | ⬜ chưa |
 | dor.js | 726 | ⬜ chưa |
 | lyvervon-system.js | 721 | ⬜ chưa |
-| hitekalum.js | 719 | ⬜ chưa |
+| hitekalum.js | 719 | ✅ xong → content/Hitekalum.java (Hitekalum.init() trong NexMod) |
 | nethyr.js | 713 | ✅ xong → content/Nethyr.java (dựng từ Endyr.java; Nethyr.init() trong NexMod) |
 | lazash.js | 678 | ✅ xong → content/Lazash.java (đã biên dịch với server-release.jar v157.4, không lỗi) |
 | lavunder.js | 666 | ✅ xong → content/Lavunder.java (hjson không có `type:`; chưa biên dịch với jar) |
@@ -186,11 +186,16 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 40. **Object literal làm trạng thái (`orbitingBullets.push({...})`)** → lớp `Orb` + `ArrayList`; `state: "orbit"/"launch"` → `boolean launch`. Vòng lặp ngược + `splice(i,1)` → `orbs.remove(i)` (thêm đạn mới vào cuối trong vòng lặp vẫn an toàn vì duyệt ngược).
 41. **Biến bị gán trong callback JS (`targetEnemyFound = true`, `chosenTarget = u`)** → Java lambda không sửa được biến cục bộ: dùng mảng 1 phần tử `boolean[]`/`Unit[]`.
 42. **`global.NexReflect.isProtected`** của Nethyr dùng chung `Endyr.reflectProtected` (gán một lần khi chuyển reflecounum).
+43. **Hitekalum – lỗi hiển thị của JS được giữ nguyên (parity), đã ghi chú trong code:** `microLightningEffect.at((x1+x2)/2, (x2+x2)/2, ...)` (toạ độ y dùng x2) và `Fill.circle(e.x + x, y + y, ...)` trong `mk3ExplosionFX` (`y + y`). Muốn sửa: đổi thành `(y1+y2)/2` và `e.y + py`.
+44. **`config()` không khớp `setPerkData`:** `config()` trả `A*100+B*10+C` nhưng `setPerkData` đọc mốc 10/20/30 → sao chép/dựng lại block sẽ ra phúc lợi sai (ví dụ 123 → C = 93). Giữ nguyên; sửa đúng là trả `10+A, 20+B, 30+C` rồi cấu hình từng giá trị.
+45. **`typeof other.damage === "function"` trên Bullet là setter `damage(float)`** (Rhino coi field+method cùng tên là function) → JS thực chất đặt sát thương đạn = 90% máu pháo, KHÔNG phải gây sát thương lên kẻ địch như mô tả "phản 15% sát thương". Java giữ `other.damage(maxHealth * 0.9f)`. Ngoài ra `Fx.spark` không tồn tại ở v157 (JS ném TypeError mỗi lần trúng đạn khi có phúc lợi 1B) → Java dùng `Fx.sparkShoot`. Bài chung: hàm/hiệu ứng JS gọi trên thuộc tính `undefined` chỉ lỗi lúc chạy; Java báo ngay lúc biên dịch – đọc kỹ các lỗi `cannot find symbol` vì chúng lộ ra bug cũ.
+46. **`this.healthMultiplier = mult` không có tác dụng:** `Building` v157 không có trường này (chỉ `Unit`), JS chỉ tạo thuộc tính rác trên wrapper → "+200% máu" của phúc lợi 1B/3C/4C chưa bao giờ hoạt động. Java bỏ gán (parity). Muốn làm thật: override `maxHealth()`/nhân `health` khi nhận sát thương.
+47. **`target` của Turret là `Posc` (có thể là công trình), không phải Unit:** JS gọi `hasEffect/apply` lên công trình sẽ lỗi; Java kiểm tra `instanceof Unit`, công trình chỉ nhận sát thương thường (`Healthc.damage`). `target.dead` → `isDead(Posc)`; `target.x` → `getX()`. Tool: `splice2.py` thêm marker `@@E:n@@` (nguyên biểu thức `isEn() ? vi : en`, n là số dòng hoặc `~đoạn-chữ`) và `@@S:n@@` (một chuỗi) – dùng cho các file viết `isEn() ? ... :` thay vì `t(vi,en)`. `Func<Integer,String>` (không phải `Intf`) cho lambda int→String.
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
-3. hitekalum.js (719 dòng)
+3. ~~hitekalum.js~~ (xong)
 4. lyvervon-system.js (721 dòng)
 5. dor.js (726 dòng)
 6. overyr.js (740 dòng)
