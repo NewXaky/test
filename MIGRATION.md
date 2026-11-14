@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 84/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 14 file (~25 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); Nucleytor.java và Emperfum.java (mới) MỚI CHỈ kiểm tra cú pháp bằng `java -m jdk.compiler/com.sun.tools.javac.Main` (không có jar trong sandbox lần chuyển này — bài học 22), CẦN chạy lại lệnh ở mục 9 với server-release.jar trước khi push. reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 85/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 13 file (~24 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); Nucleytor.java, Emperfum.java, Tyteryi.java MỚI CHỈ kiểm tra cú pháp bằng `java -m jdk.compiler/com.sun.tools.javac.Main` (không có jar trong sandbox lần chuyển này — bài học 22), CẦN chạy lại lệnh ở mục 9 với server-release.jar trước khi push. reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -74,7 +74,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | indeniter.js | 1028 | ⬜ chưa |
 | emperical.js | 1013 | ⬜ chưa |
 | dtg-soldern.js | 925 | ⬜ chưa |
-| tyteryi.js | 922 | ⬜ chưa |
+| tyteryi.js | 922 | ✅ xong → content/Tyteryi.java (block `new ItemTurret("tyteryi")`, giữ hjson không `type:`; Tyteryi.create() trong NexMod sau Emperfum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 76–78) |
 | emperfum.js | 873 | ✅ xong → content/Emperfum.java (block `new ItemTurret("emperfum")` nên hjson giữ nguyên không `type:`; Emperfum.create() trong NexMod.loadContent sau Blixalum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 70–73) |
 | nucleytor.js | 860 | ✅ xong → content/Nucleytor.java (3 bullet dùng chung lớp `NucleytorBullet`; cơ chế true-damage qua `activeBullets`; chưa biên dịch với jar) |
 | plasanod.js | 829 | ✅ xong → content/Plasanod.java (ContinuousTurret; Plasanod.create() trong NexMod.loadContent SAU Sta.create(); hjson không có `type:` nên giữ; chưa biên dịch với jar) |
@@ -226,6 +226,9 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 73. **Một lớp đạn tham số hoá thay hai bản sao (ground/air, tier)**: JS nhân bản 10 đối tượng `extend(BasicBulletType,{...})` gần y hệt; Java dùng `MicroBullet(boolean air)`, `SubBullet(boolean air)`, `ClusterBullet(boolean air)`, `MainBullet(int tier)` → ~300 dòng thay vì ~320 dòng JS lặp, dễ soát lệch số. Lệnh `Mathf.range(15)`/`Mathf.random(10, 20)` đổi thành `15f`/`10f, 20f` (bài 20). Khối chuỗi UI chép bằng `splice.py` marker `//@@JS a b` (đổi `let` đầu dòng → `String`) nên không gõ lại ~6 KB tiếng Việt/Anh; đối chiếu 125 chuỗi literal JS đều có trong Java.
 74. **Lỗi CI thật (Nucleytor): `circleCheck` không phải trường của BasicBulletType v157** (cùng dạng rác như `workspace`, bài 66; Rhino bỏ qua im lặng). → Bỏ. Mỗi lần thêm trường lạ lấy từ object literal JS đều phải nghi ngờ.
 75. **Lỗi CI thật (Nucleytor): `armor()` không tồn tại trên `Building`** (armor là trường của `Block`; chỉ `Unit` có `armor()`). `@Override armor() { return super$armor() + 20 }` của JS chưa từng chạy → giáp +20 khi khuếch đại KHÔNG có thật. Java bỏ override. Muốn làm thật: trừ sát thương nhận vào trong `damage(float)`/`handleDamage`. Gặp lại bài 15/25: `@Override` báo "does not override" = hàm không có ở v157.
+76. **Tyteryi – hjson dùng khoá `ammo:` (không phải `ammoTypes`)**: ContentParser gọi `ammo(...)` nên THAY CẢ map đạn (silicon 67.5 / copper 33.75) sau khi Java `ammoTypes.put(silicon, kiếm MK1)`. Vô hại vì `shoot()` JS/Java tự `create` đạn kiếm và KHÔNG gọi `useAmmo()` (pháo không tốn đạn, chỉ cần `hasAmmo`). `this.inaccuracy` trên Build là trường rác (v157 chỉ có ở Block) → bỏ. `block.reload = 14/34` gán MỖI TICK lên block dùng chung nên nhiều pháo khác tier ghi đè nhau (giữ nguyên). hjson đặt `size 4, range 320, reload 34` thắng code; `range()` của lớp Build quyết định tầm thật.
+77. **Đạn trúng đích (`hitEntity(b, entity, health)`)**: `entity` là `Hitboxc`; `entity.maxHealth`/`entity.damage` → ép `Healthc` (`maxHealth()`, `damage(float)`), `entity.x/y` → `Posc.getX()/getY()`, `entity.isGalileoJS` → `instanceof LeveledUnit` (bài 15), `entity.type.name` → ép `Unit`. `b.owner.getTier !== undefined` / `addCharge !== undefined` → `b.owner instanceof TyterYiBuild`. `Fx.itemTransfer.at(x, y, 6, Color)` là overload (x, y, rot, Color) nên giữ `6f`.
+78. **Gộp lớp đạn bằng tham số**: 14 object `extend(BasicBulletType,…)` → `FlatSword(…, wave)` (micro/mini/mưa) + `SwordBullet(…, hpFrac, abetaHp)` (6 kiếm chính). Hai vòng for của `jigsawAssembleFx` gộp thành vòng `side`; seed `Mathf.randomSeed(seed, -45f, 45f)` dùng float (bài 20). `Math.floor(x) + "%"` trong JS in số nguyên → Java `Mathf.floor(x) + "%"`. Splice nay chép MỌI dòng bắt đầu bằng `let` (đổi → `String`), tham số thứ 3 là tên file JS.
 
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
@@ -239,7 +242,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 9. ~~plasanod.js~~ (xong)
 10. ~~nucleytor.js~~ (xong)
 11. ~~emperfum.js~~ (xong)
-12. tyteryi.js (922 dòng)
+12. ~~tyteryi.js~~ (xong)
 13. dtg-soldern.js (925 dòng)
 14. emperical.js (1013 dòng)
 15. indeniter.js (1028 dòng)
