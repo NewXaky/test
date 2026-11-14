@@ -2,7 +2,7 @@
 
 Tổng: 98 file JS, ~58800 dòng (thêm flarmed.js).
 
-Đã xong: 93/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 6 file (~16 400 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 94/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 5 file: cargo-drone, loadout-selection, survivor-skills, thermion, newmode-pvp (~16 500 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -68,7 +68,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | laytery.js | 281 | ✅ xong → content/Laytery.java |
 | zoj.js | 98 | ✅ xong → content/Zoj.java |
 | thermion.js | 1867 | ⬜ chưa |
-| reflecounum.js | 1542 | ⬜ chưa |
+| reflecounum.js | 1542 | ✅ xong → content/Reflecounum.java (block `new Turret("reflecounum")`, hjson không có `type:`; NexReflect nằm trong cùng lớp, gán `Endyr.reflectProtected`; Reflecounum.create() trong NexMod.loadContent sau Indeniter; CHƯA biên dịch thật, bài 101–103) |
 | swordoder.js | 1410 | ✅ xong → content/Swordoder.java (block `new ItemTurret("swordoder")`, hjson không có `type:` nên giữ; Swordoder.create() trong NexMod.loadContent sau Cos.create(); biên dịch THẬT với jar v157.4, 0 lỗi; bài 98–100) |
 | aether-spiral.js | 1136 | ✅ xong → content/AetherSpiral.java (chưa biên dịch thật, bài 93/94) |
 | galaxvorram.js | 1057 | ✅ xong → content/Galaxvorram.java (block `new PowerTurret("galaxvorram")`, hjson không có `type:`; Galaxvorram.create() trong NexMod sau Indeniter; biên dịch với jar v157.4, 0 lỗi; bài 89–90) |
@@ -260,6 +260,11 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 99. **Swordoder – `isShooting` thiếu `()` (lần 11).** `isControlled && this.isShooting` luôn truthy trong JS → Java gọi `isShooting()` thật (khi người chơi/logic điều khiển mà không bấm bắn thì không bắn). Phần MK2B `range() = 210*4.8 = 1008` trong khi UI ghi 1260 px (sai số JS, giữ nguyên).
 100. **Swordoder – kỹ thuật.** (a) Object literal truyền vào Effect (`{lod,len,hw,geom}`) → lớp `RiftData` với `Float len/hw` (null = `undefined` trong JS). (b) `Cell<?>.get()` trả `Element`, phải ép `(Label)` mới gọi `setWrap/setAlignment` (lỗi biên dịch thật). (c) Chuỗi UI song ngữ ~80 dòng chép tự động bằng marker `//@@R a b` + `gen/splice.py` (chỉ chép phần đối số của `t(`...`)`), nhớ khai biến cùng tên như JS (`colCop`, `reqMK2.copper`, `rangePx`, `rangeTiles`). (d) `Mathf.randomSeed(long, float, float)` luôn dùng literal float (bài 20); seed `e.id * 977` dùng `long`. (e) Mảng dùng chung `riftHl/riftHr` tĩnh (kích thước 27) vẫn an toàn vì vẽ chạy đơn luồng.
 
+101. **Reflecounum – `BlockPlan.block` là id `short`, không phải đối tượng Block (v157).** JS `plan.block != null` luôn đúng, `tile.block() === plan.block` luôn sai, `plan.block.size` là `undefined` và `tile.setNet(plan.block, ...)` truyền số vào tham số `Block` nên phúc lợi 2 (tự xây lại công trình hỏng) chưa từng chạy đúng. Java: `Block pb = Vars.content.block(plan.block)` rồi mới `tile.setNet(pb, team, plan.rotation)`. `teamData.plans` là `Queue<BlockPlan>`: dùng `removeIndex(i)`; JS `plans.remove(i)` có thể rơi vào `remove(Object)` nên không xoá được. Đây là chỗ Java chạy ĐÚNG ý đồ chứ không còn giống hệt JS.
+102. **Reflecounum – save lệch luồng do `revision`.** `write()` luôn ghi byte phúc lợi nhưng `read()` JS chỉ đọc khi `revision >= 1`, mà `version()` của Build không bao giờ override (luôn 0) nên byte phúc lợi bị đọc nhầm thành 1 byte của `shieldHp` (HP khiên/`shieldBroken` đọc sai sau khi tải save). Java: luôn đọc byte phúc lợi (đúng với mọi save mà JS từng ghi). Quy tắc chung: nếu `write` thêm trường mới thì phải override `version()`, đừng dựa vào `revision` mặc định.
+103. **Reflecounum – kỹ thuật chuyển.** (a) `global.NexReflect` → các thành viên `static` của lớp ngoài; mỗi đối tượng JS tạm (`{unit, shield, base, buf}`) → lớp `Buf/BBuf/Line/LineInfo` + `Seq` tái dùng theo chỉ số (giữ ý đồ không cấp phát mỗi frame). (b) Thuộc tính gán tạm lên block (`s._cb0`, `s._hitTimer`) → trường của lớp Build. (c) `Number(type.length)`/`type.width` (có thể `undefined`) → `numField()` đọc trường public bằng reflection, cache theo `type.id`. (d) `Units.nearby/nearbyEnemies(team, x, y, radius, cons)` dạng bán kính chưa chắc có/đã biên dịch ở repo này → dùng dạng hình chữ nhật `(team, x-r, y-r, 2r, 2r, cons)` + lọc `within(r + hitSize/2)` (đúng bản đã biên dịch ở Tankani/Nucleytor). (e) `addBar` gọi trong `create()` sau `new`, không để trong constructor (giống Nucleytor). (f) Tooltip động `Prov` của nút bật/tắt effect đổi thành chuỗi tĩnh (không chắc `Cell.tooltip(Prov)` có sẵn); công tắc vẫn lưu `reflecounum-opt-fx`. (g) Dùng `Trigger.beforeGameUpdate/afterGameUpdate` trực tiếp, bỏ nhánh dự phòng `Trigger.update` của JS. (h) Khối chuỗi song ngữ (~120 dòng) ghép bằng script `@@R:a-b@@` / `@@S:a-b@@` (let→String) từ chính file JS: biểu thức `isEn() ? "..." + "..." : "..."` của JS là Java hợp lệ nguyên văn. **Chưa biên dịch với jar** (sandbox tắt mạng, không có server-release.jar): chỉ kiểm cú pháp (bài 22), 0 lỗi ngoài "cannot find symbol". Chỗ dễ lỗi nhất khi build thật: `Call.tileDamage`, `Cell.update(Cons)`, `Renderer.animateShields/getScale`, `Teams.BlockPlan` (bài 101), `Units.bestTarget` Sortf.
+104. **main.js – phần còn thiếu trong NexMod (chưa sửa, ghi để làm sau).** `AsteroidMesh.render()` đang rỗng nên vòng thiên thạch không vẽ; JS còn `block.miniverse != null` và `r.hideSpawns = true` (nghi không có ở v157, chưa xác minh) mà Java đã bỏ. Hai việc này nhỏ, làm khi build thật được.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -282,7 +287,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 19. ~~swordoder.js~~ (xong)
 20. survivor-skills.js (1493 dòng, dòng thực tế hiện ~1492)
 21. loadout-selection.js (1508 dòng, dòng thực tế hiện ~1737 — đã tăng, kiểm tra lại trước khi làm)
-22. reflecounum.js (1541 dòng)
+22. ~~reflecounum.js~~ (xong)
 23. cargo-drone.js (1814 dòng, dòng thực tế hiện ~2560 — đã tăng nhiều, kiểm tra lại trước khi làm)
 24. thermion.js (1866 dòng)
 25. newmode-pvp.js (7993 dòng, dòng thực tế hiện ~8833 — đang được chỉnh ở nhánh khác, xem areas/neowex-java-port)

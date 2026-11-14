@@ -74,6 +74,7 @@ import newex.content.Cos;
 import newex.content.Swordoder;
 import newex.content.Rangtaturs;
 import newex.content.Ravendes;
+import newex.content.Reflecounum;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
@@ -215,6 +216,7 @@ public class NexMod extends Mod {
         Tyteryi.create();
         DtgSoldern.create();
         Indeniter.create();
+        Reflecounum.create(); // sau Indeniter như main.js; gán Endyr.reflectProtected
         Galaxvorram.create();
         Reguilater.create();
         Tenytisyr.create();
