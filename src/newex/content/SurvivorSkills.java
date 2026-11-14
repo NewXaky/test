@@ -10,6 +10,7 @@ import arc.math.Mathf;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
+import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Log;
@@ -28,6 +29,7 @@ import mindustry.game.EventType.Trigger;
 import mindustry.game.EventType.UnitDestroyEvent;
 import mindustry.game.EventType.WorldLoadEvent;
 import mindustry.gen.Building;
+import mindustry.gen.Bullet;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.gen.Unit;
@@ -408,7 +410,7 @@ public final class SurvivorSkills {
         }
         if (o.lightning > 0) {
             b.lightning = (int) o.lightning;
-            b.lightningLength = o.lightningLen > 0 ? o.lightningLen : 6;
+            b.lightningLength = o.lightningLen > 0 ? (int) o.lightningLen : 6;
             b.lightningDamage = o.lightningDmg >= 0 ? o.lightningDmg : Math.max(1, o.dmg * 0.6f);
             b.lightningColor = c(o.back);
         }
@@ -431,7 +433,7 @@ public final class SurvivorSkills {
     }
 
     static BulletType mkBullet(SkillSrc o) {
-        BulletType b = "missile".equals(o.kind) ? new MissileBulletType(o.speed, o.dmg) : new BasicBulletType(o.speed, o.dmg);
+        BasicBulletType b = "missile".equals(o.kind) ? new MissileBulletType(o.speed, o.dmg) : new BasicBulletType(o.speed, o.dmg);
         b.lifetime = o.life;
         b.width = o.w > 0 ? o.w : 7;
         b.height = o.h > 0 ? o.h : 10;
@@ -521,7 +523,7 @@ public final class SurvivorSkills {
         Item best = null;
         try {
             ItemTurret it = (ItemTurret) block;
-            for (var e : it.ammoTypes) {
+            for (ObjectMap.Entry<Item, BulletType> e : it.ammoTypes) {
                 Item item = e.key;
                 BulletType bt = e.value;
                 if (bt == null) continue;
@@ -555,7 +557,6 @@ public final class SurvivorSkills {
 
     static void disposeVirtual(Building b) {
         if (b == null) return;
-        try { if (b.sound != null) b.sound.stop(); } catch (Throwable ignored) {}
         try { if (b.tile != null && b.tile.build == b) b.tile.build = null; } catch (Throwable ignored) {}
     }
 
@@ -570,7 +571,7 @@ public final class SurvivorSkills {
 
     static void feedAmmo(Building b, SkillDef def) {
         if (!def.isItem || def.ammoItem == null) return;
-        int max = def.block.maxAmmo;
+        int max = def.block instanceof Turret ? ((Turret) def.block).maxAmmo : 30;
         int guard = 0;
         while (((ItemTurret.ItemTurretBuild) b).totalAmmo < max * 0.7f && guard < 6) {
             guard++;
@@ -590,9 +591,9 @@ public final class SurvivorSkills {
         try { r = tb.range(); } catch (Throwable ignored) {}
         Unit t = Units.closestEnemy(unit.team, sk.px, sk.py, r, e -> e != null && !e.dead);
         if (t != null) {
-            tb.targetX = t.x; tb.targetY = t.y; tb.hasTargetSet = true;
+            tb.target = t; tb.targetPos.set(t.x, t.y);
         } else {
-            tb.hasTargetSet = false;
+            tb.target = null;
         }
     }
 
@@ -611,10 +612,9 @@ public final class SurvivorSkills {
         try { if (b.power != null) b.power.status = 1; } catch (Throwable ignored) {}
 
         float fireRateMult = statMult(sk.ownerState, "firerate");
-        try { b.timeScale = fireRateMult; b.timeScaleDuration = 5; } catch (Throwable ignored) {}
+        try { b.applyBoost(fireRateMult, 5f); } catch (Throwable ignored) {}
 
         Turret.TurretBuild tb = b instanceof Turret.TurretBuild ? (Turret.TurretBuild) b : null;
-        try { if (tb != null) tb.limitCheck = -1_000_000; } catch (Throwable ignored) {}
         try { if (tb != null && tb.totalShots > 50) tb.totalShots = 0; } catch (Throwable ignored) {}
 
         feedAmmo(b, def);
@@ -679,7 +679,8 @@ public final class SurvivorSkills {
         if (b == null || sk.drawErr >= 3) return;
         DrawBlock drawer = getNoBodyDrawer();
         if (drawer == null) return;
-        Block blk = sk.def.block;
+        if (!(sk.def.block instanceof Turret)) return;
+        Turret blk = (Turret) sk.def.block;
         DrawBlock old = null;
         boolean swapped = false;
         try {
@@ -1199,7 +1200,7 @@ public final class SurvivorSkills {
         try {
             for (int s = 0; s < count; s++) {
                 BulletType b = pickBullet(def, sk);
-                var bullet = b.create(unit, unit.team, ox, oy, angle + Mathf.range(def.spread));
+                Bullet bullet = b.create(unit, unit.team, ox, oy, angle + Mathf.range(def.spread));
                 try {
                     if (bullet != null && dmgMult != 1) bullet.damage *= dmgMult;
                     if (bullet != null && critChance > 0 && Mathf.chance(critChance)) bullet.damage *= critMult;
