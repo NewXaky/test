@@ -2,7 +2,7 @@
 
 Tổng: 98 file JS, ~58800 dòng (thêm flarmed.js).
 
-Đã xong: 91/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 8 file (~19 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 92/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 7 file (~17 800 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -120,7 +120,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | erysidus-drone.js | 160 | ✅ xong → content/ErysidusDrone.java |
 | explayder.js | 75 | ✅ xong → content/ExplayderAbility.java |
 | cargo-drone.js | 1814 | ⬜ chưa |
-| cos.js | 1222 | ⬜ chưa |
+| cos.js | 1222 | ✅ xong → content/Cos.java (đơn vị do hjson tạo, Java vá ở ContentInitEvent/ClientLoadEvent; StatusEffect `cos-core` tạo trong Cos.create() ở NexMod.loadContent sau Nucleytor; Cos.init() sau Suv27; biên dịch THẬT với jar v157.4, 0 lỗi; bài 95–97) |
 | suv-27.js | 666 | ✅ xong → content/Suv27.java (đơn vị do hjson tạo; Java vá ở ClientLoadEvent; chưa biên dịch với jar) |
 | leolyr.js | 486 | ✅ xong → content/Leolyr.java |
 | elorix.js | 415 | ✅ xong → content/Elorix.java |
@@ -252,6 +252,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 93. **Lần này KHÔNG biên dịch thật (sandbox tắt mạng, không tải được server-release.jar).** Chỉ kiểm cú pháp (bài 22): không có lỗi ngoài "cannot find symbol/does not override". Cần chạy lệnh bài 81 trước khi push; chỗ dễ lỗi nhất: `Draw.color(Color, Color, Color, float)` của JS đã thay bằng hàm `mix3` tự cài (nội suy a→b→c, có thể lệch nhẹ so với overload gốc), `Turret.TurretBuild.rotation` / `Bullet.timer`/`Bullet.data` truy cập công khai, `StatusEffect.damage/permanent/color` gán trường, `Core.scene.hasMouse(float,float)`.
 94. **Aether Spiral (họ Endyr, kiểu b).** (a) Tái dùng `Endyr.getItemBySlotType/getSlotTypeByItem` (cùng package) thay vì chép lại; chỉ viết lại `statDesc` (sallowyr khác: "+1 Đạn/lần bắn") và `buildSlotUI/showItemSelectionDialog` cho `AetherBuild`. Khối chuỗi thống kê ~40 dòng song ngữ được CHÉP bằng script từ JS (đổi `this.getItemCount`→`getItemCount`, `let`→`String`), không gõ tay. (b) **Đạn tạo ở `create()` (loadContent), KHÔNG tạo trong ContentInitEvent:** JS tạo `extend(BasicBulletType,{init(){...}})` lúc nạp script nên `init()` được game gọi; đạn tạo sau `ContentInitEvent` thì `init()` không bao giờ chạy → mất hết giá trị đặt trong `init()`. Đạn đặt giá trị trong `init()` sau `super.init()` đúng như JS. (c) `this.isShooting` thiếu `()` (lần 11): JS luôn truthy nên khi người chơi điều khiển pháo tự bắn không cần bấm; Java gọi `isShooting()` thật. (d) Buff "Tốc độ bắn" chỉ nhân `dt` của đồng hồ sạc, KHÔNG nhân `reload` thật (JS không override `baseReloadSpeed`) → giữ nguyên. `rotateSpeed: 5.0` là trường tự thêm trên đối tượng Build JS → hằng `ROT_SPEED`. (e) `hitEntity` của 3 loại đạn: `super.hitEntity` đã gây sát thương rồi JS còn `applyDamageWithStarlight` thêm một lần nữa (đòn kép, giữ nguyên); `other` là `Hitboxc` → kiểm `instanceof Unit`. Sao Đen Tím gây thêm 50% máu tối đa. (f) `topRegion.found` thiếu `()` (bài 51) → dùng `found()`, tra sprite một lần (bài 67). (g) `Mathf.rand.random(360)`/`range(20)` → float (bài 20); `Mathf.randomSeed(id+i, 360)` → `randomSeed(seed, 0f, 360f)`. (h) Hai sóng xung kích gộp hàm `ellipseLine`. (i) `BlockDestroyEvent` dùng `Groups.build.each` + danh sách thay mảng JS; `list.remove(last)` thay `pop()`.
 
+95. **CẢNH BÁO CÔNG CỤ – `javac` không có trong sandbox (chỉ có JRE).** Lệnh `javac ... 2>&1 | grep -c 'error:'` in `0` dù KHÔNG biên dịch gì (báo "command not found", exit 127, không chứa chữ `error:`) → kết quả "0 lỗi" là GIẢ. Cách đúng: `java -m jdk.compiler/com.sun.tools.javac.Main -nowarn -encoding UTF-8 -cp server-release.jar -d out $(find src -name '*.java') > javac.log 2>&1; echo "exit=$?"` rồi kiểm tra `exit=0` VÀ có file `.class` trong `out/`. Bài 9/81 phải dùng đúng lệnh này.
+96. **Cos – 2 lỗi biên dịch thật.** (a) `Intersector` nằm ở `arc.math.geom.Intersector` (không phải `arc.math`). (b) `StatusEffect.update` ở v157.4 là `update(Unit, StatusEntry)`; bản đầu viết `(Unit, float)` bị lỗi `does not override` (xác nhận lại bài 65) → import `mindustry.entities.units.StatusEntry`.
+97. **Cos – hành vi JS giữ nguyên (parity) / cách chuyển.** (a) `Fx.healBlock.at(b.x * tilesize, ...)` nhân tọa độ thế giới với tilesize lần nữa → hiệu ứng hồi máu block hiện lệch rất xa (chỉ ảnh hưởng hình ảnh; Java giữ nguyên, có ghi chú). (b) `Units.nearby(unit.team, ...)` trong xung sét cũng hồi máu chính Cos (không loại `u != unit`). (c) `Lightning.create(..., length)` nhận `int`: JS truyền float, Java ép `(int)` (cắt phần thập phân, bài 20). (d) Object literal dữ liệu tia (`buildBeamData`) → lớp `BeamData`, mảng phẳng `float[]` với bước nhảy PT/CK/RB/CP/AR/RG giữ nguyên chỉ số như JS để đối chiếu dễ; `ArrayList<Beam>` thay `beams.push/splice`. (e) Biến bị lambda sửa (`count`, `hit`, `found`) → mảng 1 phần tử (bài 14/41); biến dùng trong `Time.run(...)` phải `final`. (f) `Layer.debris` tồn tại ở v157 nên giữ nguyên, không cần `Layer.bullet - 1`. (g) `Units.closestTarget` trả `Teamc` → ép `Posc`/`Healthc` (bài 5/26).
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -270,7 +274,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 15. ~~indeniter.js~~ (xong)
 16. ~~galaxvorram.js~~ (xong)
 17. ~~aether-spiral.js~~ (xong)
-18. cos.js (1222 dòng, dòng thực tế hiện ~1221)
+18. ~~cos.js~~ (xong)
 19. swordoder.js (1409 dòng)
 20. survivor-skills.js (1493 dòng, dòng thực tế hiện ~1492)
 21. loadout-selection.js (1508 dòng, dòng thực tế hiện ~1737 — đã tăng, kiểm tra lại trước khi làm)

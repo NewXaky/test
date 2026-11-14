@@ -70,6 +70,7 @@ import newex.content.Flarmed;
 import newex.content.Persefer;
 import newex.content.Plasanod;
 import newex.content.Suv27;
+import newex.content.Cos;
 import newex.content.Rangtaturs;
 import newex.content.Ravendes;
 import newex.content.RedstoneWall;
@@ -186,6 +187,7 @@ public class NexMod extends Mod {
         Flarmed.init();
         AetherSpiral.init();
         Suv27.init();
+        Cos.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -228,6 +230,7 @@ public class NexMod extends Mod {
         Maxitoner.create();
         Plasanod.create(); // sau Sta.create() vì cần Sta.cei
         Nucleytor.create();
+        Cos.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
