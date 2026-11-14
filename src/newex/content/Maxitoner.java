@@ -28,6 +28,7 @@ import mindustry.entities.Lightning;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BulletType;
+import mindustry.entities.units.StatusEntry;
 import mindustry.game.Team;
 import mindustry.gen.Building;
 import mindustry.gen.Bullet;
@@ -191,8 +192,8 @@ public final class Maxitoner {
                 uiIcon = StatusEffects.shocked.uiIcon;
                 fullIcon = StatusEffects.shocked.fullIcon;
             }
-            @Override public void update(Unit unit, float time) {
-                super.update(unit, time);
+            @Override public void update(Unit unit, StatusEntry entry) {
+                super.update(unit, entry);
                 Stack data = nitouiMap.get(unit);
                 if (data != null && data.count > 0) {
                     for (int i = 0; i < data.count; i++) nitouiIngatherFx.at(unit.x, unit.y);

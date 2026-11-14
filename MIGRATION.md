@@ -213,7 +213,8 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 63. **Sửa `b.type` của đạn dùng chung (Maxitoner 3C):** `b.type.pierce/pierceCap/homingPower` đổi thẳng lên đối tượng BulletType dùng chung nên sau lần đầu 3C bắn, MỌI viên đạn Maxitoner đều xuyên/đuổi vĩnh viễn (JS và Java như nhau, giữ nguyên). Muốn đúng nên tạo bản `copy()` riêng cho 3C.
 64. **Cách làm nhanh/tiết kiệm token cho file có hộp phúc lợi A/B/C:** gộp 3 khối UI gần giống nhau thành 1 hàm `perkBox(...)` + chép chuỗi bằng `splice2.py`. Mẹo: `sed 's/isEnglish()/isEn()/g'` trên bản JS tạm để marker `@@E:n@@` nhận ra hàm kiểm tra ngôn ngữ; marker `@@R:a-b@@` chép nguyên cả khối `if (isEn()) { if (perkA == 1) txtA = "..." ... }` vì nó đã là Java hợp lệ (chỉ cần tự khai báo `String txtA = "";`).
 
-## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
+65. **Lỗi biên dịch thật từ CI (Maxitoner): `StatusEffect.update` ở v157 là `update(Unit unit, StatusEntry entry)`**, KHÔNG phải `(Unit, float time)` (cũ). JS `update(unit, time)` + `super$update(unit, time)` chạy được vì Rhino không kiểm tra kiểu tham số. → Java dùng `StatusEntry` (`import mindustry.entities.units.StatusEntry`). Quy tắc: khi override hàm của StatusEffect/BulletType/Block, tra lại chữ ký v157 thay vì chép theo tên tham số trong JS; `@Override` báo "does not override" nghĩa là sai chữ ký (hoặc hàm không tồn tại, bài 15/25).
+ (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)
