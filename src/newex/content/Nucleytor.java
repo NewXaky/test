@@ -237,7 +237,7 @@ public final class Nucleytor {
         nucleytorBullet.knockback = 1f; nucleytorBullet.impact = true;
 
         nucleytorMK2Bullet = new NucleytorBullet(10f, 9f, 13f, 20f, 78f, "ffeb3a", "50dbc4", mk2TrailEffect);
-        nucleytorMK2Bullet.maxRange = 643.1f; nucleytorMK2Bullet.circleCheck = true;
+        nucleytorMK2Bullet.maxRange = 643.1f;
         nucleytorMK2Bullet.pierce = true; nucleytorMK2Bullet.pierceCap = 5; nucleytorMK2Bullet.pierceBuilding = true;
         nucleytorMK2Bullet.knockback = 1.4f; nucleytorMK2Bullet.impact = true;
 
@@ -318,10 +318,7 @@ public final class Nucleytor {
             return 490f;
         }
 
-        @Override
-        public float armor() {
-            return super.armor() + (isAmplified ? 20f : 0f);
-        }
+        // armor() JS (super$armor + 20 khi khuếch đại): Building v157 không có armor() nên chưa từng chạy (bài 75) → bỏ.
 
         private String reqText() {
             Building core = team.core();
