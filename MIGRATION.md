@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 87/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 11 file (~22 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 88/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 10 file (~21 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -71,7 +71,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | swordoder.js | 1410 | ⬜ chưa |
 | aether-spiral.js | 1137 | ⬜ chưa |
 | galaxvorram.js | 1058 | ⬜ chưa |
-| indeniter.js | 1028 | ⬜ chưa |
+| indeniter.js | 1027 | ✅ xong → content/Indeniter.java (block `new ItemTurret("indeniter")`, hjson không có `type:`; Indeniter.create() trong NexMod sau DtgSoldern; biên dịch với jar v157.4, 0 lỗi; bài 85–88) |
 | emperical.js | 1012 | ✅ xong → content/Emperical.java (hjson có `type: ItemTurret` nên GIỮ hjson, Java vá ở ContentInitEvent; Emperical.init() trong NexMod sau Hitekalum; biên dịch với jar v157.4, 0 lỗi; bài 82–84) |
 | dtg-soldern.js | 925 | ✅ xong → content/DtgSoldern.java (block `new ItemTurret("dtg-soldern")`, hjson không có `type:` nên giữ nguyên; DtgSoldern.create() trong NexMod sau Tyteryi; đã biên dịch với jar v157.4, 0 lỗi; xem bài 79–80) |
 | tyteryi.js | 922 | ✅ xong → content/Tyteryi.java (block `new ItemTurret("tyteryi")`, giữ hjson không `type:`; Tyteryi.create() trong NexMod sau Emperfum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 76–78) |
@@ -238,6 +238,11 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 83. **Emperical – `Lines.poly` thiếu số cạnh.** `DrawAura` JS có `Lines.poly(x2, y2, radius / 2, Time.time)` (4 tham số: bị hiểu là sides = radius/2, radius = Time.time → đa giác khổng lồ tăng dần); hai dòng trên đó là tam giác `(x, y, 3, radius, góc)`. Java sửa thành `Lines.poly(x2, y2, 3, radius / 2f, Time.time)` và `(..., Time.time + 180f)` (tam giác xoay quanh vòng nhỏ). Muốn y hệt JS cũ cần `Lines.poly(x2, y2, (int)(radius/2), Time.time)` nhưng gần như chắc chắn là lỗi gõ thiếu đối số.
 84. **Emperical – `isShooting` thiếu `()` (lần 8, hai chỗ) + API.** `this.isShooting && this.hasAmmo()` luôn truthy → JS bắn liên tục khi chỉ cần còn đạn, không cần mục tiêu; Java gọi `isShooting()` thật (bài 10/17/79). `impulse(float,float)` nằm ở `Physicsc` (không có ở `Velc`) → kiểm tra `entity instanceof Physicsc`. `backColor` chỉ có ở `BasicBulletType` (bài 33a) → ép kiểu khi truyền cho `SplashFx.ring`. Hai StatusEffect `paralyzed`/`oppressive` tạo bằng `new StatusEffect(...)` trong `init()` (loadContent, nhận tiền tố mod). `EmpericalExplosionCircleEffect` khai báo nhưng không dùng → bỏ. **Lưu ý:** bản `emperical.js` trong zip này CHƯA có cơ chế annihilate/overheat mới; nếu bạn đã thêm ở bản JS khác, gửi lại file để mình cập nhật Java.
 
+85. **Indeniter – `createExplosionEffect(radius)` bỏ qua màu.** JS gọi `createExplosionEffect(150, "#00ffcc")` nhưng hàm chỉ nhận `radius` → mọi vòng nổ (perk 5/6/góc) đều trắng. Java: `SplashFx.ring(x, y, radius)` y hệt (không truyền màu). `global.bemodExplosionFx` không nơi nào gán → nhánh đó bỏ; luôn dùng vòng 150. `trI(key)` ~50 khoá song ngữ được sinh tự động bằng script từ JS (`key === "x"` → `key.equals("x")`), không gõ tay.
+86. **Indeniter – `Vars.world.build(id)` sai (perk 5 buff 4 pháo).** JS lưu `cornerBuffedTurrets[targetBuild.id]` (id THỰC THỂ) rồi tra `Vars.world.build(parseInt(id))` (nhận VỊ TRÍ ô đã đóng gói) → gần như luôn null → mục bị xoá ở lần `UnitDamageEvent` kế tiếp, buff gán Bemod 35% không bao giờ chạy. Java tra bằng `Groups.build.getByID(id)` (đúng ý định). Muốn như JS cũ: đừng đăng ký sự kiện này. `range()` của pháo được buff lấy từ `ItemTurretBuild.range()` (không có `Building.range()`).
+87. **Indeniter – `this.reload` không tồn tại ở Build.** `setTier` gán `this.reload = 60/pMult, 52/pMult, 180/pMult` nhưng Build v157 không có trường `reload` (chỉ block có; Rhino tạo thuộc tính JS rác) → tốc bắn theo tầng THỰC TẾ do hjson (`reload: 20`) quyết định, không phải 60/52/180. Java bỏ dòng gán (giữ hành vi), chỉ giữ `health`/`maxHealth`. Muốn tốc bắn theo tầng thật: đổi `turret.reload` hoặc dùng `reloadCounter`/`baseReloadSpeed()`. Cùng họ bài 62. `TurretBuild.version()` = 1 sẵn có nên `revision >= 1` ở `read()` đọc được byte perk (không cần override `version()`).
+88. **Indeniter – `isShooting` thiếu `()` (lần 9, ba chỗ) + API.** `target != null || this.isShooting` (luôn truthy → cánh luôn bung), `(this.isShooting || this.isBursting) && hasAmmo()` (nạp năng lượng khi chỉ cần có đạn), `perk == 4 && hasAmmo() && this.isShooting` (đạn phụ bắn không cần mục tiêu). Java gọi `isShooting()` thật. `backColor` chỉ ở `BasicBulletType` (bài 33a). Đạn tuỳ biến: lớp `IBullet extends BasicBulletType` ghi đè `hitEntity` rồi gọi `handleBulletHit` của pháo chủ (chỉ khi `other instanceof Unit`). Biến bị lambda sửa (`furthestTarget`, `maxDist`) → mảng 1 phần tử (bài 14). `Seq.sort(Floatf)` thay `candidates.sort((a,b)=>…)`; `timer.get(0, 300f)` dùng Interval có sẵn.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -253,7 +258,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 12. ~~tyteryi.js~~ (xong)
 13. ~~dtg-soldern.js~~ (xong)
 14. ~~emperical.js~~ (xong)
-15. indeniter.js (1028 dòng)
+15. ~~indeniter.js~~ (xong)
 16. galaxvorram.js (1058 dòng)
 17. aether-spiral.js (1137 dòng)
 18. cos.js (1222 dòng, dòng thực tế hiện ~1221)
