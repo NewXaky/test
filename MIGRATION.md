@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 81/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 17 file (~27 600 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 82/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 16 file (~26 800 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -77,7 +77,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | tyteryi.js | 922 | ⬜ chưa |
 | emperfum.js | 873 | ⬜ chưa |
 | nucleytor.js | 860 | ⬜ chưa |
-| plasanod.js | 829 | ⬜ chưa |
+| plasanod.js | 829 | ✅ xong → content/Plasanod.java (ContinuousTurret; Plasanod.create() trong NexMod.loadContent SAU Sta.create(); hjson không có `type:` nên giữ; chưa biên dịch với jar) |
 | maxitoner.js | 813 | ✅ xong → content/Maxitoner.java (Maxitoner.create() trong NexMod.loadContent; hjson KHÔNG có `type:` cấp cao nhất nên giữ nguyên; kiểm tra cú pháp OK, chưa biên dịch với jar) |
 | forstarsilum.js | 741 | ✅ xong → content/Forstarsilum.java (block do hjson tạo, `type: PowerTurret` giữ nguyên; Forstarsilum.init() trong NexMod; chưa biên dịch với jar) |
 | overyr.js | 740 | ✅ xong → content/Overyr.java (dựng từ Nethyr.java; Overyr.init() trong NexMod; giữ `type:` trong hjson; chưa biên dịch với jar) |
@@ -223,7 +223,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 6. ~~overyr.js~~ (xong)
 7. ~~forstarsilum.js~~ (xong)
 8. ~~maxitoner.js~~ (xong)
-9. plasanod.js (829 dòng)
+9. ~~plasanod.js~~ (xong)
 10. nucleytor.js (860 dòng)
 11. emperfum.js (873 dòng)
 12. tyteryi.js (922 dòng)

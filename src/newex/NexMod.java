@@ -64,6 +64,7 @@ import newex.content.Nethyr;
 import newex.content.Overyr;
 import newex.content.Forstarsilum;
 import newex.content.Persefer;
+import newex.content.Plasanod;
 import newex.content.Suv27;
 import newex.content.Rangtaturs;
 import newex.content.Ravendes;
@@ -207,6 +208,7 @@ public class NexMod extends Mod {
         Lyvervon.create();
         Dor.create();
         Maxitoner.create();
+        Plasanod.create(); // sau Sta.create() vì cần Sta.cei
     }
 
     static void applyNexDefaultsIfNeeded() {
