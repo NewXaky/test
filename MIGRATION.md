@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 85/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 13 file (~24 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); Nucleytor.java, Emperfum.java, Tyteryi.java MỚI CHỈ kiểm tra cú pháp bằng `java -m jdk.compiler/com.sun.tools.javac.Main` (không có jar trong sandbox lần chuyển này — bài học 22), CẦN chạy lại lệnh ở mục 9 với server-release.jar trước khi push. reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 86/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 12 file (~23 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -73,7 +73,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | galaxvorram.js | 1058 | ⬜ chưa |
 | indeniter.js | 1028 | ⬜ chưa |
 | emperical.js | 1013 | ⬜ chưa |
-| dtg-soldern.js | 925 | ⬜ chưa |
+| dtg-soldern.js | 925 | ✅ xong → content/DtgSoldern.java (block `new ItemTurret("dtg-soldern")`, hjson không có `type:` nên giữ nguyên; DtgSoldern.create() trong NexMod sau Tyteryi; đã biên dịch với jar v157.4, 0 lỗi; xem bài 79–80) |
 | tyteryi.js | 922 | ✅ xong → content/Tyteryi.java (block `new ItemTurret("tyteryi")`, giữ hjson không `type:`; Tyteryi.create() trong NexMod sau Emperfum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 76–78) |
 | emperfum.js | 873 | ✅ xong → content/Emperfum.java (block `new ItemTurret("emperfum")` nên hjson giữ nguyên không `type:`; Emperfum.create() trong NexMod.loadContent sau Blixalum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 70–73) |
 | nucleytor.js | 860 | ✅ xong → content/Nucleytor.java (3 bullet dùng chung lớp `NucleytorBullet`; cơ chế true-damage qua `activeBullets`; chưa biên dịch với jar) |
@@ -230,6 +230,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 77. **Đạn trúng đích (`hitEntity(b, entity, health)`)**: `entity` là `Hitboxc`; `entity.maxHealth`/`entity.damage` → ép `Healthc` (`maxHealth()`, `damage(float)`), `entity.x/y` → `Posc.getX()/getY()`, `entity.isGalileoJS` → `instanceof LeveledUnit` (bài 15), `entity.type.name` → ép `Unit`. `b.owner.getTier !== undefined` / `addCharge !== undefined` → `b.owner instanceof TyterYiBuild`. `Fx.itemTransfer.at(x, y, 6, Color)` là overload (x, y, rot, Color) nên giữ `6f`.
 78. **Gộp lớp đạn bằng tham số**: 14 object `extend(BasicBulletType,…)` → `FlatSword(…, wave)` (micro/mini/mưa) + `SwordBullet(…, hpFrac, abetaHp)` (6 kiếm chính). Hai vòng for của `jigsawAssembleFx` gộp thành vòng `side`; seed `Mathf.randomSeed(seed, -45f, 45f)` dùng float (bài 20). `Math.floor(x) + "%"` trong JS in số nguyên → Java `Mathf.floor(x) + "%"`. Splice nay chép MỌI dòng bắt đầu bằng `let` (đổi → `String`), tham số thứ 3 là tên file JS.
 
+79. **DTG Soldern – `this.isShooting` thiếu `()` (lần 7, hai chỗ).** (a) Dòng bắn shotgun cận chiến `targetInShotgunRange && this.isShooting && this.hasAmmo()`: JS luôn truthy nên chỉ còn `hasAmmo()`; (b) khiên `this.isShooting && this.shieldHealth > 0`: JS khiên luôn bung (không cần bắn) dù hjson ghi "chỉ dựng khiên khi đang bắn". Java gọi `isShooting()` thật cho cả hai (cùng hướng bài 10/17/35/52/58/61): khiên và shotgun chỉ chạy khi đang bắn. Muốn y hệt JS cũ: bỏ `isShooting() &&` ở hai chỗ. Cân bằng thay đổi rõ ở khiên (trước đây luôn bung và hấp thụ đạn).
+80. **DTG Soldern – chi tiết khác.** `Vars.control.input.selected` KHÔNG có ở `InputHandler` v157 (chỉ có `selectedUnits`, `config`…) nên khối vẽ vòng tròn phụ trong `draw()` JS chưa từng chạy; vòng tròn đã do `drawSelect()` vẽ → Java bỏ khối đó. `block.basePrefix` không tồn tại (bài 13) → `super.draw()` thẳng. `PerfCore.region(modName + ...)` gọi mỗi khung hình → Java tra một lần ở lần vẽ đầu (cờ `regionsReady`) bằng `PerfCore.region("newex-" + tên, tên)` (bài 67); ảnh chưa có (`sub-left/right/main/top`…) thì `found()` sai như JS. `Color.valueOf("#ff1744")` gọi mỗi tick trong `updateTile/draw` → hằng `static final Color`. `this.maxHealth = x` ở `setTier` là hợp lệ vì `Building.maxHealth` là trường thật (`transient float`, kiểm tra bằng javap). `block.reload = 40/60` gán mỗi tick lên block dùng chung (giữ nguyên, bài 49/76); `hjson: reload 20, range 360, health 5500, ammoTypes silicon` nạp sau Java nên thắng giá trị trong code, nhưng `range()` của Build và `reload` mỗi tick quyết định giá trị thật.
+81. **Công cụ / quy trình kiểm tra (quan trọng).** (a) Sandbox có mạng tới github.com + release-assets.githubusercontent.com nên TẢI ĐƯỢC jar: `curl -sL -o server-release.jar https://github.com/Anuken/Mindustry/releases/download/v157.4/server-release.jar` (16 MB). Từ giờ luôn tải jar trước rồi biên dịch cả `src/`, không chỉ kiểm tra cú pháp (bài 22 chỉ dùng khi thật sự không có mạng). (b) Biên dịch: `mkdir -p /tmp/out && java -m jdk.compiler/com.sun.tools.javac.Main -nowarn -encoding UTF-8 -cp server-release.jar -d /tmp/out $(find src -name '*.java') > build.log 2>&1; echo exit=$?; grep -c error: build.log` — phải xem `exit=` và `ls /tmp/out/newex` có file `.class`, đừng chỉ `grep error` (lọc rỗng KHÔNG chứng minh đã biên dịch). (c) Tra chữ ký API v157: `java -m jdk.jdeps/com.sun.tools.javap.Main -p -cp server-release.jar mindustry.gen.Building | grep tênHàm` (không có lệnh `javap` riêng; dùng module jdk.jdeps). Tra trước khi `@Override`/gán trường (bài 15/25/65). (d) Quy trình chuyển file rẻ token: sed tạm `\bisEn\b` → `isEn()` trên bản JS sao chép, rồi `splice2.py` với `@@E:n@@` (biểu thức song ngữ) và `@@R:a-b@@` (khối `if (isEn()) {return ...}`) cho mọi chuỗi UI; chỉ gõ tay phần logic. Đưa riêng phần logic của `updateTile`/`draw` vào file `.part` rồi ghép bằng Python. Hộp nâng cấp: tách `reqSnapshot()` thành phương thức trả `String` để `@@R@@` chép được nguyên văn `return ...`.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -243,7 +247,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 10. ~~nucleytor.js~~ (xong)
 11. ~~emperfum.js~~ (xong)
 12. ~~tyteryi.js~~ (xong)
-13. dtg-soldern.js (925 dòng)
+13. ~~dtg-soldern.js~~ (xong)
 14. emperical.js (1013 dòng)
 15. indeniter.js (1028 dòng)
 16. galaxvorram.js (1058 dòng)

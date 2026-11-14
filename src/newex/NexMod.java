@@ -82,6 +82,7 @@ import newex.content.SyrufpatFactory;
 import newex.content.TurretSystem;
 import newex.content.Tyber;
 import newex.content.Tyteryi;
+import newex.content.DtgSoldern;
 import newex.content.UnitReactor;
 import newex.content.Vendicum;
 import newex.content.UranilumReactor;
@@ -201,6 +202,7 @@ public class NexMod extends Mod {
         Blixalum.create();
         Emperfum.create();
         Tyteryi.create();
+        DtgSoldern.create();
         Reguilater.create();
         Tenytisyr.create();
         Ravendes.create();
