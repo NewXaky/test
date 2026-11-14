@@ -719,7 +719,7 @@ public class Thermion {
     }
     static void setupDroneBody(UnitType t, float hp) {
         UnitType fl = UnitTypes.flare;
-        t.constructor = UnitEntity::new; t.flying = true; t.health = hp; t.speed = fl.speed; t.accel = fl.accel; t.drag = fl.drag;
+        t.constructor = UnitEntity::create; t.flying = true; t.health = hp; t.speed = fl.speed; t.accel = fl.accel; t.drag = fl.drag;
         t.rotateSpeed = fl.rotateSpeed; t.hitSize = fl.hitSize; t.engineOffset = fl.engineOffset; t.engineSize = fl.engineSize;
         t.lowAltitude = fl.lowAltitude; t.circleTarget = false; t.itemCapacity = 0;
     }
@@ -1120,7 +1120,7 @@ public class Thermion {
             for (int i = 0; i < orbCount; i++) {
                 Unit t = enemies.get(i); float[] p = orbPos(i);
                 float ang = (float) (Math.atan2(t.y - p[1], t.x - p[0]) / DEG);
-                float travel = dst(p[0], p[1], t.x, t.y) / bt.speed, lifeScl = Math.max(1.5f, travel * 1.8f / bt.lifetime);
+                float travel = Thermion.dst(p[0], p[1], t.x, t.y) / bt.speed, lifeScl = Math.max(1.5f, travel * 1.8f / bt.lifetime);
                 bt.createNet(team, p[0], p[1], ang, -1f, 1f, lifeScl);
                 fx(FX_SPHERE, p[0], p[1], ang, YELLOW_COLOR);
             }
@@ -1200,7 +1200,7 @@ public class Thermion {
                     Unit other = count > 1 ? bladeTarget[1 - i] : null;
                     float best = 1e30f;
                     for (Unit u : enemies) {
-                        float d = dst(u.x, u.y, bladeX[i], bladeY[i]) + (u == other ? 400 : 0);
+                        float d = Thermion.dst(u.x, u.y, bladeX[i], bladeY[i]) + (u == other ? 400 : 0);
                         if (d < best) { best = d; tg = u; }
                     }
                 }
@@ -1208,7 +1208,7 @@ public class Thermion {
                 float tX, tY; boolean cutting = false;
                 if (tg != null) {
                     float reach = tg.hitSize / 2 + 6;
-                    if (dst(tg.x, tg.y, bladeX[i], bladeY[i]) <= reach + 4) {
+                    if (Thermion.dst(tg.x, tg.y, bladeX[i], bladeY[i]) <= reach + 4) {
                         float ca = Time.time * 14 + i * 180;
                         tX = tg.x + tx(ca, reach * 0.8f); tY = tg.y + ty(ca, reach * 0.8f); cutting = true;
                     } else { tX = tg.x; tY = tg.y; }
@@ -1402,15 +1402,22 @@ public class Thermion {
             Groups.build.each(b -> { if (b == null || !b.isValid() || b.block == thermion || b.within(self.x, self.y, r)) return; doomedB.add(b); });
             fx(FX_AST_FLASH, cx, cy, 0, Color.white);
             fx(FX_AST_QUAKE, cx, cy, 0, Color.orange);
-            fx(FX_AST_IMPACT, cx, cy, dst(cx, cy, 0, 0), Color.orange);
+            fx(FX_AST_IMPACT, cx, cy, Thermion.dst(cx, cy, 0, 0), Color.orange);
             for (Unit u : doomedU) u.kill();
             for (Building b : doomedB) b.kill();
             scorchMap();
             setForm(DEATH);
         }
+        /** FloorRenderer v157 không có clearTiles(): gọi hàm làm mới cache sàn nếu có (qua reflection để không lỗi biên dịch). */
+        static void refreshFloorCache() throws Exception {
+            Object fr = Vars.renderer.blocks.floor;
+            for (String n : new String[]{"clearTiles", "reload", "clear"}) {
+                try { fr.getClass().getMethod(n).invoke(fr); return; } catch (NoSuchMethodException ignored) {}
+            }
+        }
         void scorchMap() {
             final int W = Vars.world.width(), H = Vars.world.height();
-            final Floor[] rocks = {Blocks.hotrock, Blocks.magmarock, Blocks.basalt};
+            final Floor[] rocks = {(Floor) Blocks.hotrock, (Floor) Blocks.magmarock, (Floor) Blocks.basalt};
             final int[] y0 = {0};
             Runnable step = new Runnable() {
                 @Override public void run() {
@@ -1427,7 +1434,7 @@ public class Thermion {
                     }
                     y0[0] = y1;
                     if (y0[0] < H) Time.run(1f, this);
-                    else try { Vars.renderer.blocks.floor.clearTiles(); } catch (Throwable ignored) {}
+                    else try { refreshFloorCache(); } catch (Throwable ignored) {}
                 }
             };
             step.run();
