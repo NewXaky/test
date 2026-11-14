@@ -61,6 +61,7 @@ import newex.content.LoadoutSelection;
 import newex.content.Survival;
 import newex.content.SurvivorSkills;
 import newex.content.Therdum;
+import newex.content.Thermion;
 import newex.content.Pinfyr;
 import newex.content.Reguilater;
 import newex.content.Hitekalum;
@@ -194,6 +195,7 @@ public class NexMod extends Mod {
         AetherSpiral.init();
         Suv27.init();
         Cos.init();
+        Thermion.init(); // gắn bar + buildType cho block hjson (bài 29b)
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
@@ -239,6 +241,7 @@ public class NexMod extends Mod {
         Nucleytor.create();
         Cos.create();
         Swordoder.create();
+        Thermion.create(); // status/đạn/drone của Thermion (bài 109–111)
     }
 
     static void applyNexDefaultsIfNeeded() {
