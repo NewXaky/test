@@ -60,6 +60,7 @@ import newex.content.Pinfyr;
 import newex.content.Reguilater;
 import newex.content.Hitekalum;
 import newex.content.Nethyr;
+import newex.content.Overyr;
 import newex.content.Persefer;
 import newex.content.Suv27;
 import newex.content.Rangtaturs;
@@ -166,6 +167,7 @@ public class NexMod extends Mod {
         Persefer.init();
         Endyr.init();
         Nethyr.init();
+        Overyr.init();
         Hitekalum.init();
         Suv27.init();
 

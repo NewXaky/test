@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 78/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 20 file (~29 900 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 79/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 19 file (~29 160 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -80,7 +80,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | plasanod.js | 829 | ⬜ chưa |
 | maxitoner.js | 813 | ⬜ chưa |
 | forstarsilum.js | 741 | ⬜ chưa |
-| overyr.js | 740 | ⬜ chưa |
+| overyr.js | 740 | ✅ xong → content/Overyr.java (dựng từ Nethyr.java; Overyr.init() trong NexMod; giữ `type:` trong hjson; chưa biên dịch với jar) |
 | dor.js | 726 | ✅ xong → content/Dor.java (Dor.create() trong NexMod; chưa biên dịch với jar, đã qua kiểm tra cú pháp) |
 | lyvervon-system.js | 721 | ✅ xong → content/Lyvervon.java (Lyvervon.create() trong NexMod) |
 | hitekalum.js | 719 | ✅ xong → content/Hitekalum.java (Hitekalum.init() trong NexMod) |
@@ -200,13 +200,17 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 53. **Dor – hjson ghi đè.** `dor.hjson` (không có `type:`, đúng bài 29a) đặt `size 2, reload 20, range 300, health 950` và `ammoTypes: copper` → thắng giá trị trong code (`size 3, reload 40`, đạn chì); `range()` của lớp Build mới quyết định tầm bắn thật. Java dùng `ammoTypes.put(Items.lead, ...)` thay `ammo(...)`. `chargeEffect: Fx.lancerLaserCharge` của laser bỏ (bài 24). `Mathf.range(35)` → `35f` (bài 20). Số lẻ dạng float (`burstTimer`...) đổi sang `int` chỉ ở bộ đếm nguyên (burstTimer, burstShotsFired), timer dùng `Time.delta` giữ `float`.
 54. **Công cụ**: `grep -n` / `cut` trên file tiếng Việt có thể làm tool báo "not valid UTF-8" → in dòng bằng Python (`.encode('ascii','replace')` nếu chỉ cần xem số dòng). Marker `@@E:n@@` của `splice2.py` chạy tốt cho cả `x.add(isEn() ? A : B)`, `.tooltip(...)`, `let t = isEn() ? ...;`, `new BaseDialog(isEn() ? A : B)` → tiết kiệm ~8 KB chuỗi tiếng Việt/Anh mỗi file kiểu này.
 
+55. **Overyr (họ Endyr/Nethyr) – sinh file bằng script thay vì gõ lại.** `gen_overyr.py`: chép Nethyr.java, đổi tên (`Nethyr`→`Overyr`), đổi hằng (tầm 380→760, vùng 30→10 ô) rồi thay khối `Orb/updateTile/fireAtTarget`. Chỉ ~150 dòng mới thay vì 700. Đã đối chiếu mọi chuỗi literal của JS có trong Java (script so sánh tập chuỗi).
+56. **`directBeamLaser.create(this, team, x, y, aimAngle, subBeamDmg, 1.0)` (7 tham số)** = `velocityScl=subBeamDmg, lifetimeScl=1` (bài 3) → laser luôn 150 sát thương gốc, KHÔNG nhân buff trang bị; chỉ mưa laser/đạn rơi (`Damage.damage`, `spawnSkyPhysicalBullet`) dùng `subBeamDmg`. Giữ nguyên.
+57. **Khác Nethyr:** Overyr KHÔNG kẹp điểm chọn vào tầm khi click (Nethyr có), nhưng `handleEquipConfig` vẫn kiểm tra `dst <= range()` nên điểm ngoài tầm bị bỏ. `b.state` chỉ có `"sky_fall"` nên bỏ. `Time.run(delay, runnable)` → `Time.run(float, () -> ...)`, nhớ `final` cho biến bắt trong lambda. `Lines.stroke(float, Color)` tồn tại nên giữ.
+
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)
 4. ~~lyvervon-system.js~~ (xong)
 5. ~~dor.js~~ (xong)
-6. overyr.js (740 dòng)
+6. ~~overyr.js~~ (xong)
 7. forstarsilum.js (741 dòng)
 8. maxitoner.js (813 dòng)
 9. plasanod.js (829 dòng)
