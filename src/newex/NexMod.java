@@ -33,6 +33,7 @@ import newex.content.EmeraliftWall;
 import newex.content.Endyr;
 import newex.content.Holyder;
 import newex.content.Lavunder;
+import newex.content.Emperfum;
 import newex.content.Erysidus;
 import newex.content.ErysidusDrone;
 import newex.content.ExplayderAbility;
@@ -46,6 +47,7 @@ import newex.content.LaserBrey;
 import newex.content.Lazash;
 import newex.content.Lyvervon;
 import newex.content.Maxitoner;
+import newex.content.Nucleytor;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
@@ -196,6 +198,7 @@ public class NexMod extends Mod {
         Heliyron.create();
         Vendicum.create();
         Blixalum.create();
+        Emperfum.create();
         Reguilater.create();
         Tenytisyr.create();
         Ravendes.create();
@@ -209,6 +212,7 @@ public class NexMod extends Mod {
         Dor.create();
         Maxitoner.create();
         Plasanod.create(); // sau Sta.create() vì cần Sta.cei
+        Nucleytor.create();
     }
 
     static void applyNexDefaultsIfNeeded() {

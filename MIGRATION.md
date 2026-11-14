@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 82/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 16 file (~26 800 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 84/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 14 file (~25 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); Nucleytor.java và Emperfum.java (mới) MỚI CHỈ kiểm tra cú pháp bằng `java -m jdk.compiler/com.sun.tools.javac.Main` (không có jar trong sandbox lần chuyển này — bài học 22), CẦN chạy lại lệnh ở mục 9 với server-release.jar trước khi push. reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -75,8 +75,8 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | emperical.js | 1013 | ⬜ chưa |
 | dtg-soldern.js | 925 | ⬜ chưa |
 | tyteryi.js | 922 | ⬜ chưa |
-| emperfum.js | 873 | ⬜ chưa |
-| nucleytor.js | 860 | ⬜ chưa |
+| emperfum.js | 873 | ✅ xong → content/Emperfum.java (block `new ItemTurret("emperfum")` nên hjson giữ nguyên không `type:`; Emperfum.create() trong NexMod.loadContent sau Blixalum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 70–73) |
+| nucleytor.js | 860 | ✅ xong → content/Nucleytor.java (3 bullet dùng chung lớp `NucleytorBullet`; cơ chế true-damage qua `activeBullets`; chưa biên dịch với jar) |
 | plasanod.js | 829 | ✅ xong → content/Plasanod.java (ContinuousTurret; Plasanod.create() trong NexMod.loadContent SAU Sta.create(); hjson không có `type:` nên giữ; chưa biên dịch với jar) |
 | maxitoner.js | 813 | ✅ xong → content/Maxitoner.java (Maxitoner.create() trong NexMod.loadContent; hjson KHÔNG có `type:` cấp cao nhất nên giữ nguyên; kiểm tra cú pháp OK, chưa biên dịch với jar) |
 | forstarsilum.js | 741 | ✅ xong → content/Forstarsilum.java (block do hjson tạo, `type: PowerTurret` giữ nguyên; Forstarsilum.init() trong NexMod; chưa biên dịch với jar) |
@@ -214,6 +214,17 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 64. **Cách làm nhanh/tiết kiệm token cho file có hộp phúc lợi A/B/C:** gộp 3 khối UI gần giống nhau thành 1 hàm `perkBox(...)` + chép chuỗi bằng `splice2.py`. Mẹo: `sed 's/isEnglish()/isEn()/g'` trên bản JS tạm để marker `@@E:n@@` nhận ra hàm kiểm tra ngôn ngữ; marker `@@R:a-b@@` chép nguyên cả khối `if (isEn()) { if (perkA == 1) txtA = "..." ... }` vì nó đã là Java hợp lệ (chỉ cần tự khai báo `String txtA = "";`).
 
 65. **Lỗi biên dịch thật từ CI (Maxitoner): `StatusEffect.update` ở v157 là `update(Unit unit, StatusEntry entry)`**, KHÔNG phải `(Unit, float time)` (cũ). JS `update(unit, time)` + `super$update(unit, time)` chạy được vì Rhino không kiểm tra kiểu tham số. → Java dùng `StatusEntry` (`import mindustry.entities.units.StatusEntry`). Quy tắc: khi override hàm của StatusEffect/BulletType/Block, tra lại chữ ký v157 thay vì chép theo tên tham số trong JS; `@Override` báo "does not override" nghĩa là sai chữ ký (hoặc hàm không tồn tại, bài 15/25).
+
+66. **Trường giả không có thật trong BulletType (Nucleytor): `workspace: true`.** Không file JS nào khác trong mod dùng trường này và nó không khớp API thật của `BulletType` ở v157 — gần như chắc chắn là rác do tác giả gõ nhầm (có thể định viết `pierceBuilding` hay tên khác), Rhino chỉ âm thầm bỏ qua nên chưa từng có tác dụng (cùng dạng lỗi với bài 24/45). → Java bỏ hẳn khi gán trường cho `BasicBulletType`. Quy tắc chung: trước khi gán 1 trường lạ chưa từng thấy ở file khác, `grep` toàn bộ `scripts/*.js` xem có file nào khác dùng không — nếu chỉ 1 file dùng và không khớp tên API quen thuộc, nhiều khả năng là rác.
+67. **Quy ước đặt tên vùng ảnh (atlas region) của mod Java "newex" (áp dụng từ Elorix/Holyder/Forstarsilum/Blaw... nhưng chưa ghi thành bài học riêng):** khi biên dịch thành mod Java, sprite được đóng gói kèm tiền tố tên mod (`"newex-" + tên-file-sprite-không-đuôi`), KHÁC với lúc chạy bằng JS/Rhino (khi đó `PerfCore.region(name)` JS tra thẳng tên file không tiền tố vẫn ra). Vì vậy mọi `PerfCore.region(...)` tra sprite riêng của mod (không phải sprite gốc Mindustry) trong Java PHẢI dùng bản 2 tham số `PerfCore.region("newex-" + tên, tên)` (ưu tiên có tiền tố, dự phòng không tiền tố) để chạy đúng cả khi đóng gói lẫn khi dev chạy rời. Nucleytor cũng áp dụng quy ước này cho `nucleytor-body/wing1/wing2/por1/por2/arr1/arr2/cored1/cored2`.
+68. **Cơ chế "zero sát thương va chạm rồi tự gây true damage từng tick" (Nucleytor) vô hiệu hoá luôn cờ xuyên giáp (`pierce`/`pierceCap`) của chính BulletType.** `handleBullet` đặt `bullet.damage = 0` rồi mỗi tick trong `updateTile()` dùng `Groups.unit.intersect` quét quanh toạ độ đạn, cộng dồn `trueDmg` và gọi `b.remove()` NGAY khi trúng mục tiêu hợp lệ đầu tiên. Do đó dù hjson/JS khai `pierce: true, pierceCap: 3/5` (MK1/MK2), viên đạn trong thực tế chỉ gây sát thương thật đúng 1 lần trước khi tự xoá — cờ pierce chỉ còn ảnh hưởng tới việc engine có cho đạn "xuyên qua" về mặt va chạm gốc (không bị chặn bởi hitbox trước khi tới lượt quét thủ công) và số lần `hitEffect` hiển thị, KHÔNG làm tăng số mục tiêu nhận true damage. Giữ nguyên hành vi cũ khi chuyển sang Java (không "sửa" thành gây sát thương nhiều mục tiêu dù trông giống xuyên giáp). Áp dụng lại được cho `reflecounum.js`/`thermion.js` nếu hai file đó dùng chung pattern `activeBullets`/`handleBullet` kiểu này.
+69. **`Units.nearbyBuildings`/`Groups.unit.intersect` nhận lambda kiểu `Cons<Building>`/`Cons<Unit>` trực tiếp, KHÔNG cần bọc `packCons(...)` như JS** (JS phải bọc vì Rhino không tự chuyển function thành interface Java); Java viết thẳng `Units.nearbyBuildings(x, y, r, b -> { ... })`. Khối `try { ... } catch (err) {}` bọc quanh vòng buff pháo đồng minh trong JS (nucleytor.js) chỉ để nuốt lỗi runtime do thiếu kiểm tra kiểu (ví dụ gọi nhầm trường trên `Building` không có) — khi viết lại bằng Java có kiểm tra kiểu tĩnh (ép `Turret.TurretBuild`) thì không còn cần try/catch (bỏ, tương tự tinh thần bài 32/45).
+
+70. **Emperfum – `hit()`/`despawned()` ghi đè KHÔNG gọi super nên `splashDamage` của MỌI đạn (micro/sub/cluster/main MK2, MK2B) chưa từng gây sát thương nổ** (mô tả UI ghi "500 thô + 750 nổ" là sai so với thực tế). Java giữ nguyên (bài 19). Thêm: `Bullet.remove()` gọi `despawned()` khi `b.hit == false`, mà `hit()` ghi đè không đặt `b.hit = true` → đạn chính MK1/MK2/MK2B khi trúng sẽ nổ chùm 2 lần (hit + despawned), và `hitTile` còn gọi `super.hitTile → hit()` rồi nổ lần 3. Giữ nguyên parity. Muốn sửa: gọi `super.hit(b, x, y)` hoặc đặt cờ `b.hit = true` trước `b.remove()`.
+71. **`emperfumMuzzleEffect.at(x, y, rot, Color)` (bài 2 lần nữa)**: `e.data || mặcĐịnh` luôn ra tím chính vì overload này gán `e.color`. Ngược lại `starDespawnEffect` đọc `e.color || tím` → `e.color` mặc định là trắng (không bao giờ null) nên sao nổ luôn trắng nếu hiệu ứng gọi `.at(x, y)`; Java giữ `e.color != null ? e.color : tím`.
+72. **`this.recoil` trong Build (Emperfum draw)**: `TurretBuild` v157 không có trường `recoil` (chỉ block có) → JS đọc `undefined`, `!= null` sai nên `recoilOffset` luôn 0. Java gán thẳng `0f` kèm chú thích (cùng họ bài 30). `this.reloadCounter` thì có thật; `emperfum.reload` → `((ItemTurret) block).reload` (bài 21).
+73. **Một lớp đạn tham số hoá thay hai bản sao (ground/air, tier)**: JS nhân bản 10 đối tượng `extend(BasicBulletType,{...})` gần y hệt; Java dùng `MicroBullet(boolean air)`, `SubBullet(boolean air)`, `ClusterBullet(boolean air)`, `MainBullet(int tier)` → ~300 dòng thay vì ~320 dòng JS lặp, dễ soát lệch số. Lệnh `Mathf.range(15)`/`Mathf.random(10, 20)` đổi thành `15f`/`10f, 20f` (bài 20). Khối chuỗi UI chép bằng `splice.py` marker `//@@JS a b` (đổi `let` đầu dòng → `String`) nên không gõ lại ~6 KB tiếng Việt/Anh; đối chiếu 125 chuỗi literal JS đều có trong Java.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -224,19 +235,19 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 7. ~~forstarsilum.js~~ (xong)
 8. ~~maxitoner.js~~ (xong)
 9. ~~plasanod.js~~ (xong)
-10. nucleytor.js (860 dòng)
-11. emperfum.js (873 dòng)
+10. ~~nucleytor.js~~ (xong)
+11. ~~emperfum.js~~ (xong)
 12. tyteryi.js (922 dòng)
 13. dtg-soldern.js (925 dòng)
 14. emperical.js (1013 dòng)
 15. indeniter.js (1028 dòng)
 16. galaxvorram.js (1058 dòng)
 17. aether-spiral.js (1137 dòng)
-18. cos.js (1222 dòng)
-19. swordoder.js (1410 dòng)
-20. survivor-skills.js (1493 dòng)
-21. loadout-selection.js (1508 dòng)
-22. reflecounum.js (1542 dòng)
-23. cargo-drone.js (1814 dòng)
-24. thermion.js (1867 dòng)
-25. newmode-pvp.js (7993 dòng)
+18. cos.js (1222 dòng, dòng thực tế hiện ~1221)
+19. swordoder.js (1409 dòng)
+20. survivor-skills.js (1493 dòng, dòng thực tế hiện ~1492)
+21. loadout-selection.js (1508 dòng, dòng thực tế hiện ~1737 — đã tăng, kiểm tra lại trước khi làm)
+22. reflecounum.js (1541 dòng)
+23. cargo-drone.js (1814 dòng, dòng thực tế hiện ~2560 — đã tăng nhiều, kiểm tra lại trước khi làm)
+24. thermion.js (1866 dòng)
+25. newmode-pvp.js (7993 dòng, dòng thực tế hiện ~8833 — đang được chỉnh ở nhánh khác, xem areas/neowex-java-port)
