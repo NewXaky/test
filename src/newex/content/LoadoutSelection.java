@@ -35,6 +35,7 @@ import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.UnitTypes;
 import mindustry.entities.Damage;
+import mindustry.entities.Effect;
 import mindustry.entities.units.AIController;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType.ClientLoadEvent;
