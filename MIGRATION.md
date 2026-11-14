@@ -2,7 +2,7 @@
 
 Tổng: 98 file JS, ~58800 dòng (thêm flarmed.js).
 
-Đã xong: 90/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 9 file (~20 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 91/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 8 file (~19 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -70,7 +70,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | thermion.js | 1867 | ⬜ chưa |
 | reflecounum.js | 1542 | ⬜ chưa |
 | swordoder.js | 1410 | ⬜ chưa |
-| aether-spiral.js | 1137 | ⬜ chưa |
+| aether-spiral.js | 1136 | ✅ xong → content/AetherSpiral.java (chưa biên dịch thật, bài 93/94) |
 | galaxvorram.js | 1057 | ✅ xong → content/Galaxvorram.java (block `new PowerTurret("galaxvorram")`, hjson không có `type:`; Galaxvorram.create() trong NexMod sau Indeniter; biên dịch với jar v157.4, 0 lỗi; bài 89–90) |
 | indeniter.js | 1027 | ✅ xong → content/Indeniter.java (block `new ItemTurret("indeniter")`, hjson không có `type:`; Indeniter.create() trong NexMod sau DtgSoldern; biên dịch với jar v157.4, 0 lỗi; bài 85–88) |
 | emperical.js | 1012 | ✅ xong → content/Emperical.java (hjson có `type: ItemTurret` nên GIỮ hjson, Java vá ở ContentInitEvent; Emperical.init() trong NexMod sau Hitekalum; biên dịch với jar v157.4, 0 lỗi; bài 82–84) |
@@ -250,6 +250,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 91. **Flarmed – kiểu (b) (bài 29b), đạn phun lửa.** `flarmed.hjson` có `type: ItemTurret` nên Java KHÔNG `new` block, chỉ `Events.on(ContentInitEvent)` rồi `ammoTypes.put(coal/pyratite, new FlameBullet(...))` (hjson `ammoTypes: {}` rỗng nên không bị ghi đè). Hai StatusEffect mới `bong`, `viem-hoa` tạo bằng `new StatusEffect(...)` trong `Flarmed.init()` (như Emperical, bài 84). `update` của `viem-hoa` dùng đúng chữ ký v157 `update(Unit, StatusEntry)` (bài 65). Hai JS `makeFlame(dmg, burnTime, range, lifetime)` gộp thành 1 lớp `FlameBullet`; đặt tên trường `reach`/`burn`/`life`/`dmg` để KHÔNG trùng `range`/`damage`/`lifetime` của BulletType. Chủ đạn ép `Turret.TurretBuild` (có `rotation` công khai để khóa hướng); `b.data` lưu `Float`. `inCone` (closure JS) → hàm static nhận đủ tham số vì lambda chỉ dùng biến `final`.
 92. **JS cập nhật sau khi đã chuyển → đồng bộ rẻ token.** Không cần đọc lại cả file: quét mọi chuỗi/hằng số trong JS mới mà Java không có (script nhỏ regex), rồi chỉ đọc các dòng lệch + `grep phase|mobile`. Archueng: JS thêm chế độ MOBILE bấm 4 lần (phase 1 chờ chạm → 2 đặt/đổi hướng, nút "KHÓA" → 3 đã khóa, nút "TUNG" → bấm nữa mới tung). Java thêm `firePhase()`, `touchWorld()` (`Core.input.mouseWorld`), `touchOnUi()` (`Core.scene.hasMouse`), vẽ đường ngắm theo `locked = phase == firePhase()`, nhãn nút 3 trạng thái, và `touchUp` xử lý `phase == 2 && mobile → 3`. PC giữ nguyên 3 lần bấm. Lưu ý: `phase` là `static int`, các chỗ khác KHÔNG được giả định `phase == 2` là "sẵn sàng tung" (dùng `firePhase()`).
 93. **Lần này KHÔNG biên dịch thật (sandbox tắt mạng, không tải được server-release.jar).** Chỉ kiểm cú pháp (bài 22): không có lỗi ngoài "cannot find symbol/does not override". Cần chạy lệnh bài 81 trước khi push; chỗ dễ lỗi nhất: `Draw.color(Color, Color, Color, float)` của JS đã thay bằng hàm `mix3` tự cài (nội suy a→b→c, có thể lệch nhẹ so với overload gốc), `Turret.TurretBuild.rotation` / `Bullet.timer`/`Bullet.data` truy cập công khai, `StatusEffect.damage/permanent/color` gán trường, `Core.scene.hasMouse(float,float)`.
+94. **Aether Spiral (họ Endyr, kiểu b).** (a) Tái dùng `Endyr.getItemBySlotType/getSlotTypeByItem` (cùng package) thay vì chép lại; chỉ viết lại `statDesc` (sallowyr khác: "+1 Đạn/lần bắn") và `buildSlotUI/showItemSelectionDialog` cho `AetherBuild`. Khối chuỗi thống kê ~40 dòng song ngữ được CHÉP bằng script từ JS (đổi `this.getItemCount`→`getItemCount`, `let`→`String`), không gõ tay. (b) **Đạn tạo ở `create()` (loadContent), KHÔNG tạo trong ContentInitEvent:** JS tạo `extend(BasicBulletType,{init(){...}})` lúc nạp script nên `init()` được game gọi; đạn tạo sau `ContentInitEvent` thì `init()` không bao giờ chạy → mất hết giá trị đặt trong `init()`. Đạn đặt giá trị trong `init()` sau `super.init()` đúng như JS. (c) `this.isShooting` thiếu `()` (lần 11): JS luôn truthy nên khi người chơi điều khiển pháo tự bắn không cần bấm; Java gọi `isShooting()` thật. (d) Buff "Tốc độ bắn" chỉ nhân `dt` của đồng hồ sạc, KHÔNG nhân `reload` thật (JS không override `baseReloadSpeed`) → giữ nguyên. `rotateSpeed: 5.0` là trường tự thêm trên đối tượng Build JS → hằng `ROT_SPEED`. (e) `hitEntity` của 3 loại đạn: `super.hitEntity` đã gây sát thương rồi JS còn `applyDamageWithStarlight` thêm một lần nữa (đòn kép, giữ nguyên); `other` là `Hitboxc` → kiểm `instanceof Unit`. Sao Đen Tím gây thêm 50% máu tối đa. (f) `topRegion.found` thiếu `()` (bài 51) → dùng `found()`, tra sprite một lần (bài 67). (g) `Mathf.rand.random(360)`/`range(20)` → float (bài 20); `Mathf.randomSeed(id+i, 360)` → `randomSeed(seed, 0f, 360f)`. (h) Hai sóng xung kích gộp hàm `ellipseLine`. (i) `BlockDestroyEvent` dùng `Groups.build.each` + danh sách thay mảng JS; `list.remove(last)` thay `pop()`.
 
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
@@ -268,7 +269,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 14. ~~emperical.js~~ (xong)
 15. ~~indeniter.js~~ (xong)
 16. ~~galaxvorram.js~~ (xong)
-17. aether-spiral.js (1137 dòng)
+17. ~~aether-spiral.js~~ (xong)
 18. cos.js (1222 dòng, dòng thực tế hiện ~1221)
 19. swordoder.js (1409 dòng)
 20. survivor-skills.js (1493 dòng, dòng thực tế hiện ~1492)

@@ -65,6 +65,7 @@ import newex.content.Hitekalum;
 import newex.content.Nethyr;
 import newex.content.Overyr;
 import newex.content.Forstarsilum;
+import newex.content.AetherSpiral;
 import newex.content.Flarmed;
 import newex.content.Persefer;
 import newex.content.Plasanod;
@@ -183,6 +184,7 @@ public class NexMod extends Mod {
         Hitekalum.init();
         Emperical.init();
         Flarmed.init();
+        AetherSpiral.init();
         Suv27.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
@@ -215,6 +217,7 @@ public class NexMod extends Mod {
         Tenytisyr.create();
         Ravendes.create();
         Persefer.create();
+        AetherSpiral.create();
         Rangtaturs.create();
         Flazerd.create();
         Holyder.create();
