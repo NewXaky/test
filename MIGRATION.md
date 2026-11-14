@@ -2,7 +2,7 @@
 
 Tổng: 98 file JS, ~58800 dòng (thêm flarmed.js).
 
-Đã xong: 92/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 7 file (~17 800 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 93/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 6 file (~16 400 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -69,7 +69,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | zoj.js | 98 | ✅ xong → content/Zoj.java |
 | thermion.js | 1867 | ⬜ chưa |
 | reflecounum.js | 1542 | ⬜ chưa |
-| swordoder.js | 1410 | ⬜ chưa |
+| swordoder.js | 1410 | ✅ xong → content/Swordoder.java (block `new ItemTurret("swordoder")`, hjson không có `type:` nên giữ; Swordoder.create() trong NexMod.loadContent sau Cos.create(); biên dịch THẬT với jar v157.4, 0 lỗi; bài 98–100) |
 | aether-spiral.js | 1136 | ✅ xong → content/AetherSpiral.java (chưa biên dịch thật, bài 93/94) |
 | galaxvorram.js | 1057 | ✅ xong → content/Galaxvorram.java (block `new PowerTurret("galaxvorram")`, hjson không có `type:`; Galaxvorram.create() trong NexMod sau Indeniter; biên dịch với jar v157.4, 0 lỗi; bài 89–90) |
 | indeniter.js | 1027 | ✅ xong → content/Indeniter.java (block `new ItemTurret("indeniter")`, hjson không có `type:`; Indeniter.create() trong NexMod sau DtgSoldern; biên dịch với jar v157.4, 0 lỗi; bài 85–88) |
@@ -256,6 +256,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 96. **Cos – 2 lỗi biên dịch thật.** (a) `Intersector` nằm ở `arc.math.geom.Intersector` (không phải `arc.math`). (b) `StatusEffect.update` ở v157.4 là `update(Unit, StatusEntry)`; bản đầu viết `(Unit, float)` bị lỗi `does not override` (xác nhận lại bài 65) → import `mindustry.entities.units.StatusEntry`.
 97. **Cos – hành vi JS giữ nguyên (parity) / cách chuyển.** (a) `Fx.healBlock.at(b.x * tilesize, ...)` nhân tọa độ thế giới với tilesize lần nữa → hiệu ứng hồi máu block hiện lệch rất xa (chỉ ảnh hưởng hình ảnh; Java giữ nguyên, có ghi chú). (b) `Units.nearby(unit.team, ...)` trong xung sét cũng hồi máu chính Cos (không loại `u != unit`). (c) `Lightning.create(..., length)` nhận `int`: JS truyền float, Java ép `(int)` (cắt phần thập phân, bài 20). (d) Object literal dữ liệu tia (`buildBeamData`) → lớp `BeamData`, mảng phẳng `float[]` với bước nhảy PT/CK/RB/CP/AR/RG giữ nguyên chỉ số như JS để đối chiếu dễ; `ArrayList<Beam>` thay `beams.push/splice`. (e) Biến bị lambda sửa (`count`, `hit`, `found`) → mảng 1 phần tử (bài 14/41); biến dùng trong `Time.run(...)` phải `final`. (f) `Layer.debris` tồn tại ở v157 nên giữ nguyên, không cần `Layer.bullet - 1`. (g) `Units.closestTarget` trả `Teamc` → ép `Posc`/`Healthc` (bài 5/26).
 
+98. **Swordoder – JS khai hàm không có ở v157 (parity).** `collided(b, other)` của đạn KHÔNG tồn tại trong `BulletType` v157 (thử `@Override` báo lỗi) → Rhino bỏ qua: chém vòng cung và `checkExecute` khi va chạm CHƯA TỪNG chạy; chỉ `despawned` (hết tầm = khoảng cách tới mục tiêu) kích hoạt chém, dù mô tả UI ghi "khi đạn chạm". Java chỉ override `despawned`. Ngoài ra `super.updateTile()` của Turret đã tự gọi `shoot(type)` theo `reload` (hjson 120) rồi JS còn gọi `shoot` bằng `timer.get(0,120)` → có thể bắn đôi; giữ nguyên. hjson `recoil: 3` thắng `recoil = 8` trong code (bài 53), `customRecoil` dùng `swordoder.recoil` lúc chạy nên ra 3.
+99. **Swordoder – `isShooting` thiếu `()` (lần 11).** `isControlled && this.isShooting` luôn truthy trong JS → Java gọi `isShooting()` thật (khi người chơi/logic điều khiển mà không bấm bắn thì không bắn). Phần MK2B `range() = 210*4.8 = 1008` trong khi UI ghi 1260 px (sai số JS, giữ nguyên).
+100. **Swordoder – kỹ thuật.** (a) Object literal truyền vào Effect (`{lod,len,hw,geom}`) → lớp `RiftData` với `Float len/hw` (null = `undefined` trong JS). (b) `Cell<?>.get()` trả `Element`, phải ép `(Label)` mới gọi `setWrap/setAlignment` (lỗi biên dịch thật). (c) Chuỗi UI song ngữ ~80 dòng chép tự động bằng marker `//@@R a b` + `gen/splice.py` (chỉ chép phần đối số của `t(`...`)`), nhớ khai biến cùng tên như JS (`colCop`, `reqMK2.copper`, `rangePx`, `rangeTiles`). (d) `Mathf.randomSeed(long, float, float)` luôn dùng literal float (bài 20); seed `e.id * 977` dùng `long`. (e) Mảng dùng chung `riftHl/riftHr` tĩnh (kích thước 27) vẫn an toàn vì vẽ chạy đơn luồng.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -275,7 +279,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 16. ~~galaxvorram.js~~ (xong)
 17. ~~aether-spiral.js~~ (xong)
 18. ~~cos.js~~ (xong)
-19. swordoder.js (1409 dòng)
+19. ~~swordoder.js~~ (xong)
 20. survivor-skills.js (1493 dòng, dòng thực tế hiện ~1492)
 21. loadout-selection.js (1508 dòng, dòng thực tế hiện ~1737 — đã tăng, kiểm tra lại trước khi làm)
 22. reflecounum.js (1541 dòng)

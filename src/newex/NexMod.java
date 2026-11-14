@@ -71,6 +71,7 @@ import newex.content.Persefer;
 import newex.content.Plasanod;
 import newex.content.Suv27;
 import newex.content.Cos;
+import newex.content.Swordoder;
 import newex.content.Rangtaturs;
 import newex.content.Ravendes;
 import newex.content.RedstoneWall;
@@ -231,6 +232,7 @@ public class NexMod extends Mod {
         Plasanod.create(); // sau Sta.create() vì cần Sta.cei
         Nucleytor.create();
         Cos.create();
+        Swordoder.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
