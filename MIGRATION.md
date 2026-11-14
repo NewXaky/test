@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 79/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 19 file (~29 160 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 80/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 18 file (~28 420 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -79,7 +79,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | nucleytor.js | 860 | ⬜ chưa |
 | plasanod.js | 829 | ⬜ chưa |
 | maxitoner.js | 813 | ⬜ chưa |
-| forstarsilum.js | 741 | ⬜ chưa |
+| forstarsilum.js | 741 | ✅ xong → content/Forstarsilum.java (block do hjson tạo, `type: PowerTurret` giữ nguyên; Forstarsilum.init() trong NexMod; chưa biên dịch với jar) |
 | overyr.js | 740 | ✅ xong → content/Overyr.java (dựng từ Nethyr.java; Overyr.init() trong NexMod; giữ `type:` trong hjson; chưa biên dịch với jar) |
 | dor.js | 726 | ✅ xong → content/Dor.java (Dor.create() trong NexMod; chưa biên dịch với jar, đã qua kiểm tra cú pháp) |
 | lyvervon-system.js | 721 | ✅ xong → content/Lyvervon.java (Lyvervon.create() trong NexMod) |
@@ -204,6 +204,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 56. **`directBeamLaser.create(this, team, x, y, aimAngle, subBeamDmg, 1.0)` (7 tham số)** = `velocityScl=subBeamDmg, lifetimeScl=1` (bài 3) → laser luôn 150 sát thương gốc, KHÔNG nhân buff trang bị; chỉ mưa laser/đạn rơi (`Damage.damage`, `spawnSkyPhysicalBullet`) dùng `subBeamDmg`. Giữ nguyên.
 57. **Khác Nethyr:** Overyr KHÔNG kẹp điểm chọn vào tầm khi click (Nethyr có), nhưng `handleEquipConfig` vẫn kiểm tra `dst <= range()` nên điểm ngoài tầm bị bỏ. `b.state` chỉ có `"sky_fall"` nên bỏ. `Time.run(delay, runnable)` → `Time.run(float, () -> ...)`, nhớ `final` cho biến bắt trong lambda. `Lines.stroke(float, Color)` tồn tại nên giữ.
 
+58. **Forstarsilum – `!this.isShooting` thiếu `()` (lần 5): buff KHÔNG BAO GIỜ suy giảm trong JS cũ** (`!hàm` luôn false), dù UI ghi "tự suy giảm khi không bắn". Java gọi `isShooting()` thật nên buff giảm khi ngừng bắn (đúng mô tả). Muốn y hệt JS cũ: bỏ nhánh suy giảm. Cân bằng game thay đổi rõ: MK1 trước đây đạt 100% buff rồi giữ mãi.
+59. **Forstarsilum – chi tiết khác.** `armorPiercing: 0.80` không phải trường BulletType v157 (Rhino bỏ qua) → không gán. `entity.armor` chỉ có ở `Unit`: Java kiểm tra `instanceof Unit`; đạn Ult mỗi lần trúng nhân giáp x0.5 VĨNH VIỄN lên đơn vị (giữ nguyên). `entity.damagePierce/maxHealth/dead` → ép `Healthc`. `ultBullet.create(..., 1.0, 1.0)` là (velocityScl, lifetimeScl) (bài 3). `block.basePrefix` không tồn tại → `super.draw()` (bài 13). `addBar` dùng `(Building e) -> new Bar((Prov<CharSequence>) ..., (Prov<Color>) ..., (Floatp) ...)`; `Math.floor` → `Mathf.floor` (int) để chữ in "12" thay vì "12.0" (khác bài 31 vì JS in số nguyên đúng ở đây). `ParticleEffect`: `extend(ParticleEffect,{...})` → `new ParticleEffect()` rồi gán trường (`lifetime` thuộc Effect).
+60. **Công cụ:** `splice2.py` nay nhận `english ? A : B` (biến cục bộ `english`) và `@@R:a-b@@` rất hợp khi khai báo `static final class Req {titanium,...}` để chép nguyên văn `reqMK2.titanium` trong khối chuỗi.
+
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -211,7 +215,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 4. ~~lyvervon-system.js~~ (xong)
 5. ~~dor.js~~ (xong)
 6. ~~overyr.js~~ (xong)
-7. forstarsilum.js (741 dòng)
+7. ~~forstarsilum.js~~ (xong)
 8. maxitoner.js (813 dòng)
 9. plasanod.js (829 dòng)
 10. nucleytor.js (860 dòng)

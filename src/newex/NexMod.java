@@ -61,6 +61,7 @@ import newex.content.Reguilater;
 import newex.content.Hitekalum;
 import newex.content.Nethyr;
 import newex.content.Overyr;
+import newex.content.Forstarsilum;
 import newex.content.Persefer;
 import newex.content.Suv27;
 import newex.content.Rangtaturs;
@@ -168,6 +169,7 @@ public class NexMod extends Mod {
         Endyr.init();
         Nethyr.init();
         Overyr.init();
+        Forstarsilum.init();
         Hitekalum.init();
         Suv27.init();
 
