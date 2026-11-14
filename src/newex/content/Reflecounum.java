@@ -47,7 +47,6 @@ import mindustry.game.Teams.BlockPlan;
 import mindustry.game.Teams.TeamData;
 import mindustry.gen.Building;
 import mindustry.gen.Bullet;
-import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Icon;
 import mindustry.gen.Teamc;
@@ -501,9 +500,7 @@ public final class Reflecounum {
     }
 
     static void sync(Building b) {
-        if (Vars.net.server()) {
-            try { Call.tileDamage(b, b.health); } catch (Throwable ignored) {}
-        }
+        // JS gọi Call.tileDamage, hàm này không có ở v157 (bài 101): bỏ, máu công trình do game tự đồng bộ.
     }
 
     static void settle() {
@@ -681,7 +678,7 @@ public final class Reflecounum {
                 if (build == null || !build.isValid() || build.team != unit.team) continue;
                 if (build.getPerkTier() != 5 || build.isShieldBroken()) continue;
                 if (!Mathf.within(build.x, build.y, unit.x, unit.y, 250f)) continue;
-                build.damageShield(e.amount * 0.50f);
+                if (e.bullet != null) build.damageShield(e.bullet.damage * 0.50f);
             }
         });
     }
@@ -966,8 +963,7 @@ public final class Reflecounum {
 
                             for (int i = teamData.plans.size - 1; i >= 0; i--) {
                                 BlockPlan plan = teamData.plans.get(i);
-                                // BlockPlan.block là id (short) ở v157, JS coi như đối tượng nên chưa từng chạy đúng (bài 101)
-                                Block pb = plan != null ? Vars.content.block(plan.block) : null;
+                                Block pb = plan != null ? plan.block : null;
                                 if (pb == null) continue;
                                 float wx = plan.x * Vars.tilesize;
                                 float wy = plan.y * Vars.tilesize;
