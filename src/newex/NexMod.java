@@ -83,6 +83,7 @@ import newex.content.TurretSystem;
 import newex.content.Tyber;
 import newex.content.Tyteryi;
 import newex.content.DtgSoldern;
+import newex.content.Emperical;
 import newex.content.UnitReactor;
 import newex.content.Vendicum;
 import newex.content.UranilumReactor;
@@ -177,6 +178,7 @@ public class NexMod extends Mod {
         Overyr.init();
         Forstarsilum.init();
         Hitekalum.init();
+        Emperical.init();
         Suv27.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).

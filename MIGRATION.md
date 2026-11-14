@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 86/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 12 file (~23 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 87/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 11 file (~22 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -72,7 +72,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | aether-spiral.js | 1137 | ⬜ chưa |
 | galaxvorram.js | 1058 | ⬜ chưa |
 | indeniter.js | 1028 | ⬜ chưa |
-| emperical.js | 1013 | ⬜ chưa |
+| emperical.js | 1012 | ✅ xong → content/Emperical.java (hjson có `type: ItemTurret` nên GIỮ hjson, Java vá ở ContentInitEvent; Emperical.init() trong NexMod sau Hitekalum; biên dịch với jar v157.4, 0 lỗi; bài 82–84) |
 | dtg-soldern.js | 925 | ✅ xong → content/DtgSoldern.java (block `new ItemTurret("dtg-soldern")`, hjson không có `type:` nên giữ nguyên; DtgSoldern.create() trong NexMod sau Tyteryi; đã biên dịch với jar v157.4, 0 lỗi; xem bài 79–80) |
 | tyteryi.js | 922 | ✅ xong → content/Tyteryi.java (block `new ItemTurret("tyteryi")`, giữ hjson không `type:`; Tyteryi.create() trong NexMod sau Emperfum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 76–78) |
 | emperfum.js | 873 | ✅ xong → content/Emperfum.java (block `new ItemTurret("emperfum")` nên hjson giữ nguyên không `type:`; Emperfum.create() trong NexMod.loadContent sau Blixalum; mới kiểm tra cú pháp, chưa biên dịch với jar; xem bài 70–73) |
@@ -234,6 +234,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 80. **DTG Soldern – chi tiết khác.** `Vars.control.input.selected` KHÔNG có ở `InputHandler` v157 (chỉ có `selectedUnits`, `config`…) nên khối vẽ vòng tròn phụ trong `draw()` JS chưa từng chạy; vòng tròn đã do `drawSelect()` vẽ → Java bỏ khối đó. `block.basePrefix` không tồn tại (bài 13) → `super.draw()` thẳng. `PerfCore.region(modName + ...)` gọi mỗi khung hình → Java tra một lần ở lần vẽ đầu (cờ `regionsReady`) bằng `PerfCore.region("newex-" + tên, tên)` (bài 67); ảnh chưa có (`sub-left/right/main/top`…) thì `found()` sai như JS. `Color.valueOf("#ff1744")` gọi mỗi tick trong `updateTile/draw` → hằng `static final Color`. `this.maxHealth = x` ở `setTier` là hợp lệ vì `Building.maxHealth` là trường thật (`transient float`, kiểm tra bằng javap). `block.reload = 40/60` gán mỗi tick lên block dùng chung (giữ nguyên, bài 49/76); `hjson: reload 20, range 360, health 5500, ammoTypes silicon` nạp sau Java nên thắng giá trị trong code, nhưng `range()` của Build và `reload` mỗi tick quyết định giá trị thật.
 81. **Công cụ / quy trình kiểm tra (quan trọng).** (a) Sandbox có mạng tới github.com + release-assets.githubusercontent.com nên TẢI ĐƯỢC jar: `curl -sL -o server-release.jar https://github.com/Anuken/Mindustry/releases/download/v157.4/server-release.jar` (16 MB). Từ giờ luôn tải jar trước rồi biên dịch cả `src/`, không chỉ kiểm tra cú pháp (bài 22 chỉ dùng khi thật sự không có mạng). (b) Biên dịch: `mkdir -p /tmp/out && java -m jdk.compiler/com.sun.tools.javac.Main -nowarn -encoding UTF-8 -cp server-release.jar -d /tmp/out $(find src -name '*.java') > build.log 2>&1; echo exit=$?; grep -c error: build.log` — phải xem `exit=` và `ls /tmp/out/newex` có file `.class`, đừng chỉ `grep error` (lọc rỗng KHÔNG chứng minh đã biên dịch). (c) Tra chữ ký API v157: `java -m jdk.jdeps/com.sun.tools.javap.Main -p -cp server-release.jar mindustry.gen.Building | grep tênHàm` (không có lệnh `javap` riêng; dùng module jdk.jdeps). Tra trước khi `@Override`/gán trường (bài 15/25/65). (d) Quy trình chuyển file rẻ token: sed tạm `\bisEn\b` → `isEn()` trên bản JS sao chép, rồi `splice2.py` với `@@E:n@@` (biểu thức song ngữ) và `@@R:a-b@@` (khối `if (isEn()) {return ...}`) cho mọi chuỗi UI; chỉ gõ tay phần logic. Đưa riêng phần logic của `updateTile`/`draw` vào file `.part` rồi ghép bằng Python. Hộp nâng cấp: tách `reqSnapshot()` thành phương thức trả `String` để `@@R@@` chép được nguyên văn `return ...`.
 
+82. **Emperical – `hitTile` JS sai chữ ký.** v157 chỉ có `hitTile(Bullet, Building, float x, float y, float health, boolean direct)`. JS khai `hitTile(b, tile, health)` và gọi `this.super$hitTile(b, tile, health)` (3 tham số) → không khớp overload nào. Java override đúng bản 6 tham số, gọi `super.hitTile(...)` rồi `handleCustomHit` với Building trúng (đạn Laser/Lightning giữ nguyên JS: KHÔNG gọi super). Hệ quả: sát thương %MaxHP / nổ lan MK2B nay thật sự chạy khi trúng công trình. `hitEntity(Bullet, Hitboxc, float)` 3 tham số đúng nên giữ.
+83. **Emperical – `Lines.poly` thiếu số cạnh.** `DrawAura` JS có `Lines.poly(x2, y2, radius / 2, Time.time)` (4 tham số: bị hiểu là sides = radius/2, radius = Time.time → đa giác khổng lồ tăng dần); hai dòng trên đó là tam giác `(x, y, 3, radius, góc)`. Java sửa thành `Lines.poly(x2, y2, 3, radius / 2f, Time.time)` và `(..., Time.time + 180f)` (tam giác xoay quanh vòng nhỏ). Muốn y hệt JS cũ cần `Lines.poly(x2, y2, (int)(radius/2), Time.time)` nhưng gần như chắc chắn là lỗi gõ thiếu đối số.
+84. **Emperical – `isShooting` thiếu `()` (lần 8, hai chỗ) + API.** `this.isShooting && this.hasAmmo()` luôn truthy → JS bắn liên tục khi chỉ cần còn đạn, không cần mục tiêu; Java gọi `isShooting()` thật (bài 10/17/79). `impulse(float,float)` nằm ở `Physicsc` (không có ở `Velc`) → kiểm tra `entity instanceof Physicsc`. `backColor` chỉ có ở `BasicBulletType` (bài 33a) → ép kiểu khi truyền cho `SplashFx.ring`. Hai StatusEffect `paralyzed`/`oppressive` tạo bằng `new StatusEffect(...)` trong `init()` (loadContent, nhận tiền tố mod). `EmpericalExplosionCircleEffect` khai báo nhưng không dùng → bỏ. **Lưu ý:** bản `emperical.js` trong zip này CHƯA có cơ chế annihilate/overheat mới; nếu bạn đã thêm ở bản JS khác, gửi lại file để mình cập nhật Java.
+
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
@@ -248,7 +252,7 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 11. ~~emperfum.js~~ (xong)
 12. ~~tyteryi.js~~ (xong)
 13. ~~dtg-soldern.js~~ (xong)
-14. emperical.js (1013 dòng)
+14. ~~emperical.js~~ (xong)
 15. indeniter.js (1028 dòng)
 16. galaxvorram.js (1058 dòng)
 17. aether-spiral.js (1137 dòng)
