@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 77/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 21 file (~30 600 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 78/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 20 file (~29 900 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -81,7 +81,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | maxitoner.js | 813 | ⬜ chưa |
 | forstarsilum.js | 741 | ⬜ chưa |
 | overyr.js | 740 | ⬜ chưa |
-| dor.js | 726 | ⬜ chưa |
+| dor.js | 726 | ✅ xong → content/Dor.java (Dor.create() trong NexMod; chưa biên dịch với jar, đã qua kiểm tra cú pháp) |
 | lyvervon-system.js | 721 | ✅ xong → content/Lyvervon.java (Lyvervon.create() trong NexMod) |
 | hitekalum.js | 719 | ✅ xong → content/Hitekalum.java (Hitekalum.init() trong NexMod) |
 | nethyr.js | 713 | ✅ xong → content/Nethyr.java (dựng từ Endyr.java; Nethyr.init() trong NexMod) |
@@ -196,12 +196,16 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 50. **Chuỗi `if` lồng 4 tầng + closure (`applySubCharge`) → vòng `for` + `Cons<Unit>`**, biến chốt đầu lượt (`currentSubBonus`) khai báo `final`; nhánh "extra" chỉ chạy khi đủ 4 mắt xích (`chain == 4`). `Units.closestTarget` trả `Teamc` (đơn vị hoặc công trình): dùng `getX()/getY()` và `Healthc.damage` thay cho `.x/.damage` của JS; `ObjectMap` khoá `id` → `IntFloatMap`.
 51. **`baseRegion.found` thiếu `()` (JS) → Java dùng `found()` thật** (sprite `lyvervon-base` có sẵn nên kết quả không đổi). `Math.random()` giữ nguyên (không đổi sang `Mathf.random`). Tool: `splice2.py` nay có marker `@@R:a-b@@` (chép nguyên văn dòng a..b khi đã là Java hợp lệ – rất hợp với khối chuỗi `+` dài) và nhận cả `en ? A : B`.
 
+52. **Dor – `this.isShooting` thiếu `()` lần 4 (updateTile, 2 nhánh).** JS luôn truthy nên khi cấp MK2B/MK2B1/MK3B đang xả loạt thì `reloadCounter += reload` mỗi tick kể cả khi KHÔNG bắn; nhánh Cuồng Bạo cũng tăng reload không cần bắn. Java gọi `isShooting()` thật (cùng hướng bài 10/17/35). Muốn y hệt JS cũ: bỏ `isShooting() &&`.
+53. **Dor – hjson ghi đè.** `dor.hjson` (không có `type:`, đúng bài 29a) đặt `size 2, reload 20, range 300, health 950` và `ammoTypes: copper` → thắng giá trị trong code (`size 3, reload 40`, đạn chì); `range()` của lớp Build mới quyết định tầm bắn thật. Java dùng `ammoTypes.put(Items.lead, ...)` thay `ammo(...)`. `chargeEffect: Fx.lancerLaserCharge` của laser bỏ (bài 24). `Mathf.range(35)` → `35f` (bài 20). Số lẻ dạng float (`burstTimer`...) đổi sang `int` chỉ ở bộ đếm nguyên (burstTimer, burstShotsFired), timer dùng `Time.delta` giữ `float`.
+54. **Công cụ**: `grep -n` / `cut` trên file tiếng Việt có thể làm tool báo "not valid UTF-8" → in dòng bằng Python (`.encode('ascii','replace')` nếu chỉ cần xem số dòng). Marker `@@E:n@@` của `splice2.py` chạy tốt cho cả `x.add(isEn() ? A : B)`, `.tooltip(...)`, `let t = isEn() ? ...;`, `new BaseDialog(isEn() ? A : B)` → tiết kiệm ~8 KB chuỗi tiếng Việt/Anh mỗi file kiểu này.
+
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)
 4. ~~lyvervon-system.js~~ (xong)
-5. dor.js (726 dòng)
+5. ~~dor.js~~ (xong)
 6. overyr.js (740 dòng)
 7. forstarsilum.js (741 dòng)
 8. maxitoner.js (813 dòng)

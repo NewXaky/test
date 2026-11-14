@@ -27,6 +27,7 @@ import newex.content.Comduik;
 import newex.content.CopesBlock;
 import newex.content.Crynex;
 import newex.content.DrexkouDrills;
+import newex.content.Dor;
 import newex.content.ElementSystem;
 import newex.content.EmeraliftWall;
 import newex.content.Endyr;
@@ -199,6 +200,7 @@ public class NexMod extends Mod {
         Lavunder.create();
         Lazash.create();
         Lyvervon.create();
+        Dor.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
