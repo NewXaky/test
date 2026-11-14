@@ -57,6 +57,7 @@ import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.Sonicor;
 import newex.content.ObsOre;
+import newex.content.LoadoutSelection;
 import newex.content.Survival;
 import newex.content.SurvivorSkills;
 import newex.content.Therdum;
@@ -171,6 +172,7 @@ public class NexMod extends Mod {
         Sonicor.init();
         Elorix.init();
         Buffetles.init();
+        LoadoutSelection.init(); // main.js: require("loadout-selection") đứng trước newmode-survival
         Survival.init();
         SurvivorSkills.init();
         LeolyrSummoner.init();
