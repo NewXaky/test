@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 74/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 24 file (~32 700 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 75/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 23 file (~32 000 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -84,7 +84,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | dor.js | 726 | ⬜ chưa |
 | lyvervon-system.js | 721 | ⬜ chưa |
 | hitekalum.js | 719 | ⬜ chưa |
-| nethyr.js | 713 | ⬜ chưa |
+| nethyr.js | 713 | ✅ xong → content/Nethyr.java (dựng từ Endyr.java; Nethyr.init() trong NexMod) |
 | lazash.js | 678 | ✅ xong → content/Lazash.java (đã biên dịch với server-release.jar v157.4, không lỗi) |
 | lavunder.js | 666 | ✅ xong → content/Lavunder.java (hjson không có `type:`; chưa biên dịch với jar) |
 | holyder-system.js | 650 | ✅ xong → content/Holyder.java (hjson không có `type:` nên giữ nguyên; chưa biên dịch với jar) |
@@ -182,10 +182,14 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 36. **Dữ liệu hiệu ứng object literal `{len, widthMult}` / `{x, y}`** → lớp nhỏ `SlashData` / `Vec2`, đọc bằng `e.data instanceof ...`. Số truyền làm data (`vChargeFx.at(x, y, rot, range())`) phải ép `(Object) Float.valueOf(..)` để không rơi vào overload `Color`; đọc lại bằng `((Number) e.data).floatValue()`. `e.data.len` trong JS kiểm tra truthy → Java `len != 0f`.
 37. **`config(Integer.class, (LazashBuild t, Integer v) -> ...)`** thay `packCons2`; `typeof b.setSlaveCommand === "function"` → `b instanceof LazashBuild`. Lớp Build lồng trong lớp con của PowerTurret thì `buildType = LazashBuild::new` là đủ (không cần `outer.super()`).
 38. **Công cụ**: `splice.py` nay hỗ trợ marker `@@T:n@@` (lấy nguyên biểu thức `t("vi","en")` bắt đầu từ dòng n của JS, cân ngoặc, an toàn UTF-8). JDK 21 trong sandbox KHÔNG hỗ trợ `--release 8`: bỏ cờ này khi kiểm tra cục bộ, CI (Java 17 + Gradle) vẫn giữ `sourceCompatibility 1.8`. Dùng `java -m jdk.compiler/com.sun.tools.javac.Main` vì không có lệnh `javac`.
+39. **Nethyr – file cùng họ thì tái dùng Java đã chạy được.** Nethyr và Endyr dùng chung hệ 4 ô trang bị/UI/handleEquipConfig; dựng Nethyr từ Endyr.java rồi chỉ thay phần khác (đạn xoay `Orb`, `updateTile`, `draw`) rẻ token hơn viết lại. Khác biệt cần nhớ: Nethyr kẹp điểm chọn vào trong tầm (`range()`), `burstQueue = 1` (Endyr là 3, có `burstIntervalTimer`), sát thương nhân ngẫu nhiên 0.5–2.0 và kết liễu so cả `hpRatioBeforeHit`.
+40. **Object literal làm trạng thái (`orbitingBullets.push({...})`)** → lớp `Orb` + `ArrayList`; `state: "orbit"/"launch"` → `boolean launch`. Vòng lặp ngược + `splice(i,1)` → `orbs.remove(i)` (thêm đạn mới vào cuối trong vòng lặp vẫn an toàn vì duyệt ngược).
+41. **Biến bị gán trong callback JS (`targetEnemyFound = true`, `chosenTarget = u`)** → Java lambda không sửa được biến cục bộ: dùng mảng 1 phần tử `boolean[]`/`Unit[]`.
+42. **`global.NexReflect.isProtected`** của Nethyr dùng chung `Endyr.reflectProtected` (gán một lần khi chuyển reflecounum).
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
-2. nethyr.js (713 dòng)
+2. ~~nethyr.js~~ (xong)
 3. hitekalum.js (719 dòng)
 4. lyvervon-system.js (721 dòng)
 5. dor.js (726 dòng)
