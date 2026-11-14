@@ -1,8 +1,8 @@
 # Tiến độ chuyển NeoWex từ JS sang Java
 
-Tổng: 97 file JS, 58648 dòng.
+Tổng: 98 file JS, ~58800 dòng (thêm flarmed.js).
 
-Đã xong: 89/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 9 file (~20 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
+Đã xong: 90/99 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 9 file (~20 000 dòng). Các file cũ đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi); **Cập nhật: toàn bộ `src/` (gồm cả Nucleytor, Emperfum, Tyteryi và DtgSoldern mới) đã biên dịch thật với server-release.jar v157.4, 0 lỗi** (sandbox tải được jar từ GitHub Releases, xem bài 81). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (dòng thực tế đã tăng lên ~8833, xem ghi chú ở mục lộ trình) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -64,6 +64,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 
 | File JS | Dòng | Trạng thái |
 |---|---:|---|
+| flarmed.js | 157 | ✅ xong → content/Flarmed.java (chưa biên dịch thật, xem bài 93) |
 | laytery.js | 281 | ✅ xong → content/Laytery.java |
 | zoj.js | 98 | ✅ xong → content/Zoj.java |
 | thermion.js | 1867 | ⬜ chưa |
@@ -135,7 +136,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | shop.js | 465 | ✅ xong → content/Shop.java (module, gọi từ loadout-selection) |
 | newmode-survival.js | 388 | ✅ xong → content/Survival.java |
 | newmode.js | 301 | ✅ xong → content/NewMode.java |
-| archueng-pvp.js | 378 | ✅ xong → content/ArchuengPvp.java |
+| archueng-pvp.js | 406 | ✅ xong → content/ArchuengPvp.java (đã đồng bộ JS mới 14/11: mobile 4 lần bấm, xem bài 92) |
 
 ## Bài học – code lỗi cần né (cập nhật mỗi lần gặp lỗi mới)
 
@@ -245,6 +246,10 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 
 89. **Galaxvorram – các lỗi JS (Java đã sửa/ghi chú).** (a) `galaxvorram.powerCapacity = 10000`, `targetBuildings = true`, `acceptItem = func(...)` KHÔNG phải trường/phương thức của Block/Turret v157 → chỉ là thuộc tính JS, không tác dụng (Java: hằng `POWER_CAP = 10000f`; `acceptItem` thật nằm ở Build và đã được ghi đè). `b.block.powerCapacity || 4000` luôn ra 4000 → hằng `OTHER_POWER_CAP`. (b) `pinfyrLaser.create(..., 1.0, 1.0)` truyền damage = 1.0 (tham số thứ 6 của `create` là DAMAGE, không phải hệ số) → tia Pinfyr chỉ gây 1 sát thương dù khai 2002; Java truyền `-1f` (= dùng damage của loại đạn: 2002). Muốn như cũ: truyền `1f`. (c) `armorPiercing: true` không phải trường BulletType (chỉ có `pierceArmor`) → bỏ. (d) `vTargetWarningFx.at(x, y, 0, ammo.c1)` chọn overload `at(..., Color)` (đặt `e.color`, không phải `e.data`) nên hiệu ứng luôn dùng tím mặc định; Java ép `(Object)` để màu theo loại đạn (mảng `colors` truyền cho các hiệu ứng khác vốn đã đi qua `data`). (e) `pinfyrList.each((b, i) => …)`: `Seq.each` chỉ truyền 1 đối số nên `i` undefined → hộp thông tin ghi "Pinfyr Block #NaN"; Java dùng chỉ số vòng lặp thật. (f) `createPinfyrDynamicLaser` tạo một loại đạn mới mỗi phát → Java dùng chung 1 `LaserBulletType` và đặt `length` trước mỗi `create`. (g) `StatusEffect.update` ở v157 có chữ ký `(Unit, StatusEntry)`; `turnToTarget(float)` là `protected`; `Damage.damage(team,x,y,r,dmg,air,ground)` có bản 7 tham số.
 90. **Galaxvorram – `isShooting` thiếu `()` (lần 10).** `canShoot = this.isShooting` (điều khiển trực tiếp) và `syncChainCommand(..., this.isShooting, ...)`: JS luôn truthy → khi người chơi/logic điều khiển pháo là bắn ngay khi đã ngắm đúng và đủ điện+đạn, và lệnh bắn lan sang pháo kề; Java dùng `isShooting()` thật (chỉ bắn khi đang bấm bắn). `itemObs` (item `newex-obs`) nạp sau `create()` nên tra lười bằng `obs()`; `AMMO_DATA` được sinh tự động từ JS bằng script (chỉ `reqItem` của loại 5 để null, dùng `obs()` lúc chạy như JS). `range()` gọi quét công trình mỗi lần (giữ nguyên như JS, bán kính nhỏ).
+
+91. **Flarmed – kiểu (b) (bài 29b), đạn phun lửa.** `flarmed.hjson` có `type: ItemTurret` nên Java KHÔNG `new` block, chỉ `Events.on(ContentInitEvent)` rồi `ammoTypes.put(coal/pyratite, new FlameBullet(...))` (hjson `ammoTypes: {}` rỗng nên không bị ghi đè). Hai StatusEffect mới `bong`, `viem-hoa` tạo bằng `new StatusEffect(...)` trong `Flarmed.init()` (như Emperical, bài 84). `update` của `viem-hoa` dùng đúng chữ ký v157 `update(Unit, StatusEntry)` (bài 65). Hai JS `makeFlame(dmg, burnTime, range, lifetime)` gộp thành 1 lớp `FlameBullet`; đặt tên trường `reach`/`burn`/`life`/`dmg` để KHÔNG trùng `range`/`damage`/`lifetime` của BulletType. Chủ đạn ép `Turret.TurretBuild` (có `rotation` công khai để khóa hướng); `b.data` lưu `Float`. `inCone` (closure JS) → hàm static nhận đủ tham số vì lambda chỉ dùng biến `final`.
+92. **JS cập nhật sau khi đã chuyển → đồng bộ rẻ token.** Không cần đọc lại cả file: quét mọi chuỗi/hằng số trong JS mới mà Java không có (script nhỏ regex), rồi chỉ đọc các dòng lệch + `grep phase|mobile`. Archueng: JS thêm chế độ MOBILE bấm 4 lần (phase 1 chờ chạm → 2 đặt/đổi hướng, nút "KHÓA" → 3 đã khóa, nút "TUNG" → bấm nữa mới tung). Java thêm `firePhase()`, `touchWorld()` (`Core.input.mouseWorld`), `touchOnUi()` (`Core.scene.hasMouse`), vẽ đường ngắm theo `locked = phase == firePhase()`, nhãn nút 3 trạng thái, và `touchUp` xử lý `phase == 2 && mobile → 3`. PC giữ nguyên 3 lần bấm. Lưu ý: `phase` là `static int`, các chỗ khác KHÔNG được giả định `phase == 2` là "sẵn sàng tung" (dùng `firePhase()`).
+93. **Lần này KHÔNG biên dịch thật (sandbox tắt mạng, không tải được server-release.jar).** Chỉ kiểm cú pháp (bài 22): không có lỗi ngoài "cannot find symbol/does not override". Cần chạy lệnh bài 81 trước khi push; chỗ dễ lỗi nhất: `Draw.color(Color, Color, Color, float)` của JS đã thay bằng hàm `mix3` tự cài (nội suy a→b→c, có thể lệch nhẹ so với overload gốc), `Turret.TurretBuild.rotation` / `Bullet.timer`/`Bullet.data` truy cập công khai, `StatusEffect.damage/permanent/color` gán trường, `Core.scene.hasMouse(float,float)`.
 
  (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)

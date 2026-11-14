@@ -65,6 +65,7 @@ import newex.content.Hitekalum;
 import newex.content.Nethyr;
 import newex.content.Overyr;
 import newex.content.Forstarsilum;
+import newex.content.Flarmed;
 import newex.content.Persefer;
 import newex.content.Plasanod;
 import newex.content.Suv27;
@@ -181,6 +182,7 @@ public class NexMod extends Mod {
         Forstarsilum.init();
         Hitekalum.init();
         Emperical.init();
+        Flarmed.init();
         Suv27.init();
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).

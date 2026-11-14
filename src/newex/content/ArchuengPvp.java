@@ -71,9 +71,33 @@ public final class ArchuengPvp {
     static final HashMap<Integer, Spin> spins = new HashMap<>();
     static float cdEnd = 0;
     static final HashMap<Integer, Float> cdEndSrv = new HashMap<>();
-    /** 0 = rảnh, 1 = chờ bấm lần 2 chọn hướng, 2 = đã chọn hướng chờ bấm lần 3 để tung. */
+    /**
+     * PC (bấm 3 lần): 0 = rảnh, 1 = chờ bấm lần 2 chọn hướng, 2 = đã chọn hướng, chờ bấm lần 3 để tung.
+     * MOBILE (bấm 4 lần): 0 = rảnh, 1 = chờ chạm màn hình chọn hướng, 2 = đã đặt hướng (chạm tiếp để đổi, nút hiện "KHÓA"),
+     * 3 = đã khóa hướng (nút hiện "TUNG"), bấm nút lần nữa mới tung.
+     */
     static int phase = 0;
     static float aimAng = 0;
+
+    /** Phase "sẵn sàng tung": mobile = 3 (sau khi khóa), PC = 2. */
+    static int firePhase() { return Vars.mobile ? 3 : 2; }
+
+    /** Điểm thế giới vừa chạm (mobile lấy từ vị trí chạm, PC lấy từ chuột). */
+    static float[] touchWorld() {
+        try {
+            if (Vars.mobile) {
+                arc.math.geom.Vec2 w = Core.input.mouseWorld(Core.input.mouseX(), Core.input.mouseY());
+                return new float[] {w.x, w.y};
+            }
+        } catch (Throwable err) {}
+        return new float[] {Vars.player.mouseX, Vars.player.mouseY};
+    }
+
+    /** Lần chạm rơi vào UI (joystick, nút, dialog...) thì không tính là chạm chọn hướng. */
+    static boolean touchOnUi() {
+        try { return Vars.mobile && Core.scene != null && Core.scene.hasMouse(Core.input.mouseX(), Core.input.mouseY()); }
+        catch (Throwable err) { return false; }
+    }
     static boolean uiTapConsumed = false, wasTouchedPrev = false;
     static Table btn = null, cancelBtn = null;
 
@@ -237,9 +261,18 @@ public final class ArchuengPvp {
             Unit pu = Vars.player.unit();
             if (phase != 0 && (!isArch(pu) || pu.dead)) phase = 0;
             boolean touched = Core.input.isTouched();
-            if (touched && !wasTouchedPrev && !uiTapConsumed && phase == 1 && isArch(pu) && !pu.dead) {
-                aimAng = Angles.angle(pu.x, pu.y, Vars.player.mouseX, Vars.player.mouseY);
-                phase = 2;
+            if (touched && !wasTouchedPrev && !uiTapConsumed && isArch(pu) && !pu.dead) {
+                if (Vars.mobile) {
+                    // mobile: lần chạm thứ 2 đặt hướng; chạm thêm (khi chưa khóa) để đổi hướng
+                    if ((phase == 1 || phase == 2) && !touchOnUi()) {
+                        float[] tp = touchWorld();
+                        aimAng = Angles.angle(pu.x, pu.y, tp[0], tp[1]);
+                        phase = 2;
+                    }
+                } else if (phase == 1) {
+                    aimAng = Angles.angle(pu.x, pu.y, Vars.player.mouseX, Vars.player.mouseY);
+                    phase = 2;
+                }
             }
             if (!touched) uiTapConsumed = false;
             wasTouchedPrev = touched;
@@ -266,14 +299,15 @@ public final class ArchuengPvp {
         TextureRegion wreg = Core.atlas.find("newex-archueng-weapon"), slash = Core.atlas.find("newex-archueng-slash");
         if (!wreg.found()) wreg = Core.atlas.find("archueng-weapon");
 
-        // đường ngắm
-        if (Vars.player != null && (phase == 1 || phase == 2)) {
+        // đường ngắm. Mobile: phase 1 chưa có hướng nên không vẽ; phase 2 = đang chỉnh (xanh); phase 3 = đã khóa (cam)
+        if (Vars.player != null && phase != 0 && !(Vars.mobile && phase == 1)) {
             Unit pu = Vars.player.unit();
             if (isArch(pu) && !pu.dead) {
-                float ang = phase == 2 ? aimAng : Angles.angle(pu.x, pu.y, Vars.player.mouseX, Vars.player.mouseY);
+                boolean locked = phase == firePhase();
+                float ang = phase >= 2 ? aimAng : Angles.angle(pu.x, pu.y, Vars.player.mouseX, Vars.player.mouseY);
                 float ex = pu.x + Angles.trnsx(ang, 160), ey = pu.y + Angles.trnsy(ang, 160);
                 Draw.z(Layer.flyingUnit + 2);
-                Drawf.dashLine(phase == 2 ? FIRE : COL2, pu.x, pu.y, ex, ey);
+                Drawf.dashLine(locked ? FIRE : COL2, pu.x, pu.y, ex, ey);
                 Draw.reset();
             }
         }
@@ -407,7 +441,8 @@ public final class ArchuengPvp {
             float left = cdEnd - Time.time;
             if (left > 0) { lbl.setText(Strings.fixed(Mathf.ceil(left / 6f) / 10f, 1) + "s"); lbl.setColor(Color.gray); }
             else if (phase == 1) { lbl.setText("CHỌN HƯỚNG"); lbl.setColor(COL2); }
-            else if (phase == 2) { lbl.setText("TUNG"); lbl.setColor(FIRE); }
+            else if (phase == 2 && Vars.mobile) { lbl.setText("KHÓA"); lbl.setColor(GOLD); }
+            else if (phase == firePhase()) { lbl.setText("TUNG"); lbl.setColor(FIRE); }
             else { lbl.setText("SKILL"); lbl.setColor(COL2); }
         });
         t.visible(() -> isActive() && Vars.ui.hudfrag.shown && Vars.player != null && isArch(Vars.player.unit()) && !Vars.player.unit().dead);
@@ -435,7 +470,10 @@ public final class ArchuengPvp {
                         if (Time.time >= cdEnd && isArch(u) && !u.dead) phase = 1;
                     } else if (phase == 1) {
                         phase = 0;
-                    } else if (phase == 2) {
+                    } else if (phase == 2 && Vars.mobile) {
+                        phase = 3; // mobile, lần bấm 3: khóa hướng (nút đổi thành "TUNG"), chưa tung
+                    } else if (phase == firePhase()) {
+                        // PC lần 3 / mobile lần 4: tung theo hướng đã chốt, giờ mới tính hồi chiêu
                         cdEnd = Time.time + CD_T;
                         NexNet.send(REQ, String.valueOf(aimAng));
                         phase = 0;
