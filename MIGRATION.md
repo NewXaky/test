@@ -2,7 +2,7 @@
 
 Tổng: 97 file JS, 58648 dòng.
 
-Đã xong: 76/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 22 file (~31 300 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
+Đã xong: 77/98 file trong bảng (kèm main.js phần hành tinh trong NexMod). Còn lại 21 file (~30 600 dòng). Mọi file Java đã được biên dịch thử bằng javac --release 8 với server-release.jar của Mindustry v157.4 (không lỗi). reflecounum.js, thermion.js đang xử lý riêng; newmode-pvp.js (8645 dòng) làm từng phần.
 
 Các file hjson/json, sprite, map, âm thanh **không phải JS nên giữ nguyên**.
 
@@ -82,7 +82,7 @@ Quy ước: hệ thống nền ở `newex/`, block-pháo-đơn vị ở `newex/c
 | forstarsilum.js | 741 | ⬜ chưa |
 | overyr.js | 740 | ⬜ chưa |
 | dor.js | 726 | ⬜ chưa |
-| lyvervon-system.js | 721 | ⬜ chưa |
+| lyvervon-system.js | 721 | ✅ xong → content/Lyvervon.java (Lyvervon.create() trong NexMod) |
 | hitekalum.js | 719 | ✅ xong → content/Hitekalum.java (Hitekalum.init() trong NexMod) |
 | nethyr.js | 713 | ✅ xong → content/Nethyr.java (dựng từ Endyr.java; Nethyr.init() trong NexMod) |
 | lazash.js | 678 | ✅ xong → content/Lazash.java (đã biên dịch với server-release.jar v157.4, không lỗi) |
@@ -191,12 +191,16 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 45. **`typeof other.damage === "function"` trên Bullet là setter `damage(float)`** (Rhino coi field+method cùng tên là function) → JS thực chất đặt sát thương đạn = 90% máu pháo, KHÔNG phải gây sát thương lên kẻ địch như mô tả "phản 15% sát thương". Java giữ `other.damage(maxHealth * 0.9f)`. Ngoài ra `Fx.spark` không tồn tại ở v157 (JS ném TypeError mỗi lần trúng đạn khi có phúc lợi 1B) → Java dùng `Fx.sparkShoot`. Bài chung: hàm/hiệu ứng JS gọi trên thuộc tính `undefined` chỉ lỗi lúc chạy; Java báo ngay lúc biên dịch – đọc kỹ các lỗi `cannot find symbol` vì chúng lộ ra bug cũ.
 46. **`this.healthMultiplier = mult` không có tác dụng:** `Building` v157 không có trường này (chỉ `Unit`), JS chỉ tạo thuộc tính rác trên wrapper → "+200% máu" của phúc lợi 1B/3C/4C chưa bao giờ hoạt động. Java bỏ gán (parity). Muốn làm thật: override `maxHealth()`/nhân `health` khi nhận sát thương.
 47. **`target` của Turret là `Posc` (có thể là công trình), không phải Unit:** JS gọi `hasEffect/apply` lên công trình sẽ lỗi; Java kiểm tra `instanceof Unit`, công trình chỉ nhận sát thương thường (`Healthc.damage`). `target.dead` → `isDead(Posc)`; `target.x` → `getX()`. Tool: `splice2.py` thêm marker `@@E:n@@` (nguyên biểu thức `isEn() ? vi : en`, n là số dòng hoặc `~đoạn-chữ`) và `@@S:n@@` (một chuỗi) – dùng cho các file viết `isEn() ? ... :` thay vì `t(vi,en)`. `Func<Integer,String>` (không phải `Intf`) cho lambda int→String.
+48. **Lyvervon – hjson ghi đè giá trị Java và trường `final`:** hjson nạp sau Java nên `size: 2`, `health`, `range`, `consumes: power: 2` thắng giá trị JS (`size = 4`, 100/60…); chuỗi UI ghi "4x4" nên sai so với thực tế (size 2). `block.consPower.usage = ...` trong `setTier` là no-op vì `usage` là `final` (Rhino lặng lẽ bỏ qua; Java không cho biên dịch) → điện tiêu thụ MK2/MK2B chưa từng đổi như mô tả. `powerCapacity` cũng không tồn tại ở v157 (cả Lazash). Java bỏ các dòng đó, giữ parity.
+49. **`setTier` đổi `block.range/reload` của block dùng chung:** đổi tầng một pháo làm đổi tầm bắn mọi pháo Lyvervon (JS và Java như nhau). Muốn đúng nên override `range()` theo từng Build như Hitekalum.
+50. **Chuỗi `if` lồng 4 tầng + closure (`applySubCharge`) → vòng `for` + `Cons<Unit>`**, biến chốt đầu lượt (`currentSubBonus`) khai báo `final`; nhánh "extra" chỉ chạy khi đủ 4 mắt xích (`chain == 4`). `Units.closestTarget` trả `Teamc` (đơn vị hoặc công trình): dùng `getX()/getY()` và `Healthc.damage` thay cho `.x/.damage` của JS; `ObjectMap` khoá `id` → `IntFloatMap`.
+51. **`baseRegion.found` thiếu `()` (JS) → Java dùng `found()` thật** (sprite `lyvervon-base` có sẵn nên kết quả không đổi). `Math.random()` giữ nguyên (không đổi sang `Mathf.random`). Tool: `splice2.py` nay có marker `@@R:a-b@@` (chép nguyên văn dòng a..b khi đã là Java hợp lệ – rất hợp với khối chuỗi `+` dài) và nhận cả `en ? A : B`.
 
 ## Thứ tự làm tiếp (dễ/nhanh → khó/lâu)
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)
-4. lyvervon-system.js (721 dòng)
+4. ~~lyvervon-system.js~~ (xong)
 5. dor.js (726 dòng)
 6. overyr.js (740 dòng)
 7. forstarsilum.js (741 dòng)

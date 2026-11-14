@@ -43,6 +43,7 @@ import newex.content.GeneratMachine;
 import newex.content.Heliyron;
 import newex.content.LaserBrey;
 import newex.content.Lazash;
+import newex.content.Lyvervon;
 import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
@@ -197,6 +198,7 @@ public class NexMod extends Mod {
         Holyder.create();
         Lavunder.create();
         Lazash.create();
+        Lyvervon.create();
     }
 
     static void applyNexDefaultsIfNeeded() {
