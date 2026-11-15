@@ -7098,6 +7098,22 @@ public class NewModePvp {
     @SuppressWarnings("unchecked")
     static ArrayList<Object>[] newUpLists() { return new ArrayList[]{new ArrayList<Object>(), new ArrayList<Object>(), new ArrayList<Object>(), new ArrayList<Object>()}; }
 
+    /** Do chạm: ghi vào log phần tử UI nào đang nhận chạm (để tìm thứ chặn nút). */
+    static void initTouchProbe() {
+        if (Vars.headless) return;
+        Events.run(Trigger.update, () -> {
+            if (!Core.input.justTouched()) return;
+            try {
+                Vec2 p = Core.scene.screenToStageCoordinates(new Vec2(Core.input.mouseX(), Core.input.mouseY()));
+                Element hit = Core.scene.hit(p.x, p.y, true);
+                StringBuilder sb = new StringBuilder();
+                for (Element e = hit; e != null; e = e.parent)
+                    sb.append(e.getClass().getSimpleName()).append('(').append(e.name == null ? "" : e.name).append(") < ");
+                Log.info("[NexPvp] touch -> " + (hit == null ? "world (khong co UI)" : sb.toString()));
+            } catch (Throwable err) { Log.err("[NexPvp] probe: " + err); }
+        });
+    }
+
     /** Goi mot lan tu NexMod (cung cho voi initExpUi()). */
     public static void initClientUi() {
         if (Vars.headless) return;
@@ -7107,6 +7123,7 @@ public class NewModePvp {
         initHudPanel();
         initCameraKeys();
         initJoystick();
+        initTouchProbe();
     }
 
     /** Cau noi thay cho global.NexPvp (NewMode.pvp) - tuong tu Survival.HOOK. */
