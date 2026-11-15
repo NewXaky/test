@@ -4732,25 +4732,32 @@ public class NewModePvp {
     static final HashMap<String, Long> reqLast = new HashMap<>();
     static boolean reqRegistered = false;
     static void onReq(String kind, int cdMs, Req r) { reqHandlers.put(kind, r); reqCd.put(kind, cdMs); }
+    /** Chạy một yêu cầu (cooldown + try/catch + log lần đầu). Dùng chung cho packet từ client và cho gọi cục bộ (một mình / host). */
+    static void runReq(String kind, Player player, String payload) {
+        try {
+            if (player == null) { logOnce("reqnull:" + kind, "request " + kind + ": player null", false); return; }
+            Req r = reqHandlers.get(kind);
+            if (r == null) { logOnce("reqnone:" + kind, "request " + kind + ": chua co handler", false); return; }
+            long now = Time.millis(); String key = kind + ":" + player.id;
+            Long last = reqLast.get(key);
+            Integer cd = reqCd.get(kind);
+            if (last != null && cd != null && now - last < cd) return;
+            reqLast.put(key, now);
+            logOnce("reqrun:" + kind, "request " + kind + " dang chay (payload=" + payload + ")", true);
+            r.run(player, payload == null ? "" : payload);
+        } catch (Throwable err) { logOnce("req:" + kind, "request " + kind + " failed: " + err, false); }
+    }
     static void registerReq() {
         if (reqRegistered) return;
         try {
             if (Vars.netServer == null) return;
             for (Map.Entry<String, Req> e : reqHandlers.entrySet()) {
-                final String kind = e.getKey(); final Req r = e.getValue();
-                Vars.netServer.addPacketHandler(kind, (player, payload) -> {
-                    try {
-                        if (player == null) return;
-                        long now = Time.millis(); String key = kind + ":" + player.id;
-                        Long last = reqLast.get(key);
-                        if (last != null && now - last < reqCd.get(kind)) return;
-                        reqLast.put(key, now);
-                        r.run(player, payload == null ? "" : payload);
-                    } catch (Throwable err) { logOnce("req:" + kind, "request " + kind + " failed: " + err, false); }
-                });
+                final String kind = e.getKey();
+                Vars.netServer.addPacketHandler(kind, (player, payload) -> runReq(kind, player, payload));
             }
             reqRegistered = true;
-        } catch (Throwable err) {}
+            Log.info("[NexPvp] da dang ky " + reqHandlers.size() + " handler yeu cau");
+        } catch (Throwable err) { logOnce("regreq", "register requests failed: " + err, false); }
     }
 
     static final java.util.HashSet<Integer> expGot = new java.util.HashSet<>(), expGotTeam = new java.util.HashSet<>();
@@ -5273,6 +5280,9 @@ public class NewModePvp {
     static void send(String kind, String payload) {
         if (kind.equals(REQ_CMD)) cmdMark = null;
         noteTouch(kind, payload);
+        logOnce("send:" + kind, "send " + kind + " payload=" + payload + " client=" + Vars.net.client(), true);
+        // Một mình / host (không phải client từ xa): chạy handler ngay tại chỗ, không phụ thuộc đường đi của packet.
+        if (!Vars.net.client()) { runReq(kind, Vars.player, payload); return; }
         try { Call.serverPacketReliable(kind, payload); } catch (Throwable err) { logOnce("sendreq", "send " + kind + " failed: " + err, false); }
     }
 
@@ -7098,22 +7108,6 @@ public class NewModePvp {
     @SuppressWarnings("unchecked")
     static ArrayList<Object>[] newUpLists() { return new ArrayList[]{new ArrayList<Object>(), new ArrayList<Object>(), new ArrayList<Object>(), new ArrayList<Object>()}; }
 
-    /** Do chạm: ghi vào log phần tử UI nào đang nhận chạm (để tìm thứ chặn nút). */
-    static void initTouchProbe() {
-        if (Vars.headless) return;
-        Events.run(Trigger.update, () -> {
-            if (!Core.input.justTouched()) return;
-            try {
-                Vec2 p = Core.scene.screenToStageCoordinates(new Vec2(Core.input.mouseX(), Core.input.mouseY()));
-                Element hit = Core.scene.hit(p.x, p.y, true);
-                StringBuilder sb = new StringBuilder();
-                for (Element e = hit; e != null; e = e.parent)
-                    sb.append(e.getClass().getSimpleName()).append('(').append(e.name == null ? "" : e.name).append(") < ");
-                Log.info("[NexPvp] touch -> " + (hit == null ? "world (khong co UI)" : sb.toString()));
-            } catch (Throwable err) { Log.err("[NexPvp] probe: " + err); }
-        });
-    }
-
     /** Goi mot lan tu NexMod (cung cho voi initExpUi()). */
     public static void initClientUi() {
         if (Vars.headless) return;
@@ -7123,7 +7117,6 @@ public class NewModePvp {
         initHudPanel();
         initCameraKeys();
         initJoystick();
-        initTouchProbe();
     }
 
     /** Cau noi thay cho global.NexPvp (NewMode.pvp) - tuong tu Survival.HOOK. */
