@@ -80,6 +80,11 @@ public final class Blaw {
         blueMk2b = mk(15.86f, 550f, 5f, 12f, "0031FFFF", 0f, 0f, mindustry.content.StatusEffects.freezing, 300f, true, 2);
         redMk2b = mk(15.86f, 550f, 5f, 12f, "FF5A00FF", 40f, 16f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
 
+        // JS: đạn MK2B (shotgun) lifetime 19.51, không phải 70 như các đạn khác; đạn Băng MK1 dùng sprite diamond-shard.
+        blueMk2b.lifetime = 19.51f;
+        redMk2b.lifetime = 19.51f;
+        blueMk1.sprite = "newex-diamond-shard";
+
         // Block do Java tạo bằng new ItemTurret("blaw") nên blaw.hjson KHÔNG có `type:` (bài 29a). JS gốc: extend(ItemTurret, "blaw").
         base = new ItemTurret("blaw");
         base.squareSprite = false;

@@ -284,6 +284,9 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 
 119. **Blaw – chuyển xong nhưng KHÔNG chạy: lớp không được đăng ký trong NexMod + sai kiểu block.** (a) `Blaw.init()` không ai gọi nên `buildType` (MK2/MK2B) không bao giờ được gán. (b) JS gốc dùng kiểu (a) `extend(ItemTurret, "blaw")` (hjson không có `type:`), nhưng bản Java đầu tiên viết theo kiểu (b) (tìm block theo tên trong `ContentInitEvent`) → không có ai tạo block. → Đổi thành `Blaw.create()` tạo `new ItemTurret("blaw")` + gọi trong NexMod cạnh `Dor.create()`; `ContentInitEvent` chỉ còn đặt âm thanh/đạn titan sau hjson (bài 18, 29). **Quy trình né lỗi:** sau khi chuyển mỗi file, kiểm hai việc: (1) `grep Ten.create/init NexMod.java`; (2) hjson có `type:` hay không so với JS (`extend(...)` = kiểu a, `Vars.content.getByName` = kiểu b). Script rà soát: liệt kê lớp có `public static void create()/init()` mà không ai gọi. Lần rà này còn phát hiện `Leolyr.init()` cũng chưa được gọi (đã thêm).
 
+
+120. **Blaw – đạn chép thiếu thuộc tính riêng.** Hàm dựng `mk(...)` gán `lifetime = 70` cho MỌI đạn, nhưng JS đặt đạn shotgun MK2B `lifetime: 19.51` (và đạn Băng MK1 có `sprite: "newex-diamond-shard"`). Khi gom nhiều đối tượng JS giống nhau vào một hàm dựng, phải so lại TỪNG trường của từng đối tượng, đừng giả định giá trị chung. Hành vi "mỗi lần bắn 1 viên, luân phiên nòng Băng/Hỏa" (MK1/MK2) là đúng thiết kế của JS; chỉ MK2B bắn chùm 10 viên/lần.
+
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)
