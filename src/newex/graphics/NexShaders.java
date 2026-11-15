@@ -55,24 +55,49 @@ public class NexShaders{
                 }
             };
         }catch(Throwable t){
+            powerArea = null;
             Log.err("Failed to load power area shader.", t);
         }
-
-        powerDynamicArea = new OutlineShader(){
-            public float thick(){
-                return 2f * Interp.slope.apply(Time.time / 240f % 1f);
-            }
-        };
-        convex = new ConvexLensShader();
-        convexRect = new RectLensShader();
-        hexagonalShield = new HexagonalTextureShieldShader();
+        try{
+            powerDynamicArea = new OutlineShader(){
+                public float thick(){
+                    return 2f * Interp.slope.apply(Time.time / 240f % 1f);
+                }
+            };
+        }catch(Throwable t){
+            powerDynamicArea = null;
+            Log.err("Failed to load dynamic power area shader.", t);
+        }
+        try{
+            convex = new ConvexLensShader();
+        }catch(Throwable t){
+            convex = null;
+            Log.err("Failed to load convex lens shader.", t);
+        }
+        try{
+            convexRect = new RectLensShader();
+        }catch(Throwable t){
+            convexRect = null;
+            Log.err("Failed to load rect lens shader.", t);
+        }
+        try{
+            hexagonalShield = new HexagonalTextureShieldShader();
+        }catch(Throwable t){
+            hexagonalShield = null;
+            Log.err("Failed to load hexagonal shield shader.", t);
+        }
         try {
             cMoonVoidShield = new CMoonVoidShieldShader();
         } catch (Throwable t) {
             cMoonVoidShield = null;
             Log.err("Failed to load c-moon void shield shader.", t);
         }
-        ringShader = new RingShader();
+        try{
+            ringShader = new RingShader();
+        }catch(Throwable t){
+            ringShader = null;
+            Log.err("Failed to load ring shader.", t);
+        }
         try {
             psychicTide = new PsychicTideShader();
         } catch (Throwable t) {

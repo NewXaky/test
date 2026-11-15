@@ -23,14 +23,10 @@ public final class NexGraphics {
         started = true;
 
         Events.on(EventType.FileTreeInitEvent.class, e -> Core.app.post(() -> {
-            try {
-                NexGfxFx.load();
-                NexShaders.init();
-                NexVoidShieldRenderer.init();
-                NexRenderer.init();
-            } catch (Throwable t) {
-                Log.err("NexGraphics: khởi tạo đồ họa thất bại.", t);
-            }
+            try { NexGfxFx.load(); } catch (Throwable t) { Log.err("NexGraphics: NexGfxFx.load thất bại.", t); }
+            try { NexShaders.init(); } catch (Throwable t) { Log.err("NexGraphics: NexShaders.init thất bại.", t); }
+            try { NexVoidShieldRenderer.init(); } catch (Throwable t) { Log.err("NexGraphics: NexVoidShieldRenderer.init thất bại.", t); }
+            try { NexRenderer.init(); } catch (Throwable t) { Log.err("NexGraphics: NexRenderer.init thất bại.", t); }
         }));
     }
 }
