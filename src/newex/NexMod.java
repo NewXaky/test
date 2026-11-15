@@ -75,6 +75,7 @@ import newex.content.Flarmed;
 import newex.content.Persefer;
 import newex.content.Plasanod;
 import newex.content.Suv27;
+import newex.content.Tank15;
 import newex.content.Cos;
 import newex.content.Swordoder;
 import newex.content.Rangtaturs;
@@ -250,6 +251,7 @@ public class NexMod extends Mod {
         Cos.create();
         Swordoder.create();
         Thermion.create(); // status/đạn/drone của Thermion (bài 109–111)
+        Tank15.create(); // unit Tank-15
     }
 
     static void applyNexDefaultsIfNeeded() {

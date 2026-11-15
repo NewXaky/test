@@ -42,13 +42,7 @@ import newex.graphics.Drawn;
 import newex.graphics.NexSettings;
 
 /**
- * Unit Tank-15 - xe tăng xung kích hạng nặng (gốc: wh-tankC1 "Chastiser" của WarHammer).
- *
- * <p><b>Nguồn gốc:</b> unit, sprite, đạn và cơ chế kỹ năng được port từ mod <b>WarHammer</b>
- * (tác giả Laomoze, repo WarHammer, unit {@code wh-tankC1}); sprite và âm thanh đã được vẽ lại, đổi tên thành {@code tank-15}. Các lớp {@link AccelerateReload},
- * {@link BarrelPart}, {@link CritBulletType} là bản port từ WarHammer (đã bỏ phần phụ thuộc
- * vào WHStats/WHUtils/PlasmaFire). Hiệu ứng (shootLine, square, instHit, generalExplosion) viết lại
- * theo bản gốc nhưng dùng hàm Arc thuần.
+ * Unit Tank-15 - xe tăng xung kích hạng nặng.
  *
  * <p>Cơ chế:
  * <ul>
@@ -83,7 +77,7 @@ public final class Tank15 {
 
             localizedName = "Tank-15";
             description = "Xe tăng xung kích hạng nặng trang bị pháo xoay 4 nòng và 2 súng rail laser.";
-            details = "Dùng khung gầm xe tăng Leman Russ. Pháo xoay Chastiser cần một lúc bắn liên tục mới đạt tốc độ bắn tối đa (x5), đạn xuyên 3 mục tiêu và có 10% chí mạng.\n[gray]Dựa trên unit wh-tankC1 của mod WarHammer (tác giả Laomoze); sprite và âm thanh đã được vẽ lại cho NeoWex.[]";
+            details = "Pháo xoay cần một lúc bắn liên tục mới đạt tốc độ bắn tối đa (x5), đạn xuyên 3 mục tiêu và có 10% chí mạng.";
 
             squareShape = true;
             omniMovement = false;
@@ -245,9 +239,9 @@ public final class Tank15 {
         }};
     }
 
-    // ================================================================== hiệu ứng (port từ WHFx)
+    // ================================================================== hiệu ứng
 
-    /** Tia lửa bắn ra từ nòng (WHFx.shootLine). */
+    /** Tia lửa bắn ra từ nòng. */
     static Effect shootLine(final float range, final float angleRange) {
         return new Effect(37f, e -> {
             rand.setSeed(e.id);
@@ -264,7 +258,7 @@ public final class Tank15 {
         });
     }
 
-    /** Các hạt vuông bay ra (WHFx.square). */
+    /** Các hạt vuông bay ra. */
     static Effect square(float lifetime, final Color color, final int num, final float range, final float size) {
         return new Effect(lifetime, e -> {
             Draw.color(color);
@@ -278,7 +272,7 @@ public final class Tank15 {
         });
     }
 
-    /** Tia sáng + vòng tròn khi trúng đích (WHFx.instHit). */
+    /** Tia sáng + vòng tròn khi trúng đích. */
     static Effect instHit(final Color color, final boolean square, final int num, final float size) {
         return new Effect(20, size * 1.5f, e -> {
             rand.setSeed(e.id);
@@ -312,7 +306,7 @@ public final class Tank15 {
         });
     }
 
-    /** Vụ nổ chung: khói + tia lửa + vòng sóng (WHFx.generalExplosion, bỏ hiệu ứng thị sai 2.5D). */
+    /** Vụ nổ chung: khói + tia lửa + vòng sóng (bỏ hiệu ứng thị sai 2.5D). */
     static Effect generalExplosion(final float lifetime, final Color color, final float size, final int amount, final boolean smooth) {
         return new MultiEffect(new Effect(lifetime * 2.5f, e -> {
             int detailAmount = detailCount(amount, 4);
@@ -354,7 +348,7 @@ public final class Tank15 {
         return NexSettings.effectEnabled() ? full : Math.max(min, full / 2);
     }
 
-    /** randLenVectors có độ dài tối thiểu (WHUtils.randLenVectors): vị trí = minLength + random(length). */
+    /** randLenVectors có độ dài tối thiểu: vị trí = minLength + random(length). */
     private static void randLenVectors(long seed, int amount, float length, float minLength, float angle, float range, arc.func.Floatc2 cons) {
         rand.setSeed(seed);
         for (int i = 0; i < amount; i++) {
@@ -365,7 +359,7 @@ public final class Tank15 {
 
     // ================================================================== kỹ năng: tăng tốc bắn
 
-    /** Bắn liên tục thì hệ số nạp đạn tăng dần; ngừng bắn đủ lâu mới giảm lại (AccelerateReload của WarHammer). */
+    /** Bắn liên tục thì hệ số nạp đạn tăng dần; ngừng bắn đủ lâu mới giảm lại. */
     public static class AccelerateReload extends Ability {
         /** Hệ số nạp đạn tối đa. */
         public float maxMultiplier = 2f;
@@ -430,7 +424,7 @@ public final class Tank15 {
 
     // ================================================================== bộ phận vẽ: cụm nòng xoay
 
-    /** Cụm nòng xoay vòng quanh trục khi bắn (BarrelPart của WarHammer). */
+    /** Cụm nòng xoay vòng quanh trục khi bắn. */
     public static class BarrelPart extends RegionPart {
         public Color heatColor = Pal.turretHeat.cpy();
         public float intervalWidth = 12 / 4f;
@@ -519,7 +513,7 @@ public final class Tank15 {
 
     // ================================================================== đạn chí mạng
 
-    /** Đạn có tỉ lệ chí mạng: nhân sát thương trực tiếp và sát thương nổ lan (CritBulletType của WarHammer, bản rút gọn). */
+    /** Đạn có tỉ lệ chí mạng: nhân sát thương trực tiếp và sát thương nổ lan (bản rút gọn). */
     public static class CritBulletType extends BasicBulletType {
         public float critChance = 0.1f, critMultiplier = 2f;
         public Effect critEffect = Fx.none;
