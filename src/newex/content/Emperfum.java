@@ -32,6 +32,7 @@ import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 import mindustry.world.consumers.ConsumeCoolant;
+import newex.NexBlackHole;
 import newex.NexNet;
 import newex.PerfCore;
 
@@ -67,6 +68,8 @@ public final class Emperfum {
     static SubBullet subGround, subAir;
     static ClusterBullet clusterGround, clusterAir;
     static MainBullet mainMK1, mainMK2, mainMK2B;
+    /** Lỗ đen sinh ra tại điểm nổ của đạn chính (MK1 / MK2 / MK2B). */
+    static NexBlackHole.BlackHoleBulletType holeMK1, holeMK2, holeMK2B;
 
     private static TextureRegion findTexture(String name) {
         String[] candidates = {"newex-" + name, name, "newex-blocks-turrets-" + name, "newex-sprites-" + name};
@@ -304,6 +307,12 @@ public final class Emperfum {
         }
         private void burst(Bullet b) {
             spawnSubBulletsRandom(b, tier == 2 ? clusterAir : clusterGround, 12, 5f, 9.5f, 15f, 28f);
+            // burst() có thể bị gọi 2-3 lần cho cùng 1 viên (xem MIGRATION bài 70) -> dùng fdata để chỉ sinh 1 lỗ đen.
+            if (b.fdata < 1f) {
+                b.fdata = 1f;
+                BulletType hole = tier == 0 ? holeMK1 : (tier == 1 ? holeMK2 : holeMK2B);
+                if (hole != null) hole.create(ownerOf(b), b.team, b.x, b.y, 0f);
+            }
         }
         @Override public void draw(Bullet b) {
             super.draw(b);
@@ -362,6 +371,11 @@ public final class Emperfum {
         subAir = new SubBullet(true);
         clusterGround = new ClusterBullet(false);
         clusterAir = new ClusterBullet(true);
+        holeMK1 = new NexBlackHole.BlackHoleBulletType(16f, 70f);
+        holeMK2 = new NexBlackHole.BlackHoleBulletType(20f, 90f);
+        holeMK2B = new NexBlackHole.BlackHoleBulletType(24f, 110f);
+        holeMK1.damage = 100f; holeMK2.damage = 150f; holeMK2B.damage = 200f;
+        holeMK1.lifetime = holeMK2.lifetime = holeMK2B.lifetime = 150f;
         mainMK1 = new MainBullet(0);
         mainMK2 = new MainBullet(1);
         mainMK2B = new MainBullet(2);

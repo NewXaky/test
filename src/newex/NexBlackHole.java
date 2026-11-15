@@ -1,38 +1,20 @@
 package newex;
 
-import arc.Core;
-import arc.Events;
-import arc.graphics.Blending;
-import arc.graphics.Color;
-import arc.graphics.Gl;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.Fill;
-import arc.graphics.gl.FrameBuffer;
-import arc.graphics.gl.Shader;
 import arc.math.Interp;
 import arc.math.Mathf;
-import arc.util.Log;
 import arc.util.Time;
 import arc.util.Tmp;
-import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.entities.Units;
 import mindustry.entities.bullet.BulletType;
-import mindustry.game.EventType.ClientLoadEvent;
-import mindustry.game.EventType.Trigger;
 import mindustry.gen.Bullet;
 import mindustry.graphics.Layer;
-import mindustry.graphics.Shaders;
+import newex.graphics.NexGraphics;
+import newex.graphics.NexRenderer;
 
 /**
- * Cơ chế lỗ đen (theo WarHammer MainRenderer.endDistortion).
- *
- * Mỗi khung hình:
- *  1) Layer.floor - 8: bắt đầu chụp toàn cảnh vào FrameBuffer.
- *  2) Layer.effect + 0.03 (CORE_Z): dừng chụp, vặn méo ảnh quanh từng lỗ đen bằng shaders/blackhole.frag,
- *     vẽ ảnh đã méo lên màn hình, rồi vẽ LÕI ĐEN ĐẶC lên trên cùng (đè lên đạn, hiệu ứng, glow trắng).
- *
- * Số lỗ đen tối đa là 512. Shader được dựng lại với MAX_COUNT lớn dần (4 -> 8 -> ... -> 512) khi cần, giống WarHammer.
+ * Cổng vào đơn giản cho lỗ đen. Toàn bộ pipeline (chụp khung hình, shaders/blackhole.frag, lõi đen đè lên glow trắng)
+ * nay nằm trong newex.graphics.NexRenderer (bản port của WarHammer MainRenderer), dùng chung buffer với thấu kính lồi.
  *
  * Dùng: NexBlackHole.add(x, y, bánKínhLõi, bánKínhNgoài, alpha, độMạnh) MỖI khung hình trong draw() của đạn/block.
  */
@@ -45,75 +27,15 @@ public final class NexBlackHole {
     public static final float CORE_Z = Layer.effect + 0.03f;
     /** Lõi đen vẽ rộng hơn bán kính lõi của shader bao nhiêu lần (WarHammer dùng 1.5). */
     public static float coreScale = 1.5f;
-    /** Nhân độ mạnh vặn méo; đặt 0 để tắt méo nhưng vẫn giữ lõi đen. */
-    public static float distortionScale = 1f;
 
-    private static final Blending premultiplied = new Blending(Gl.one, Gl.oneMinusSrcAlpha, Gl.one, Gl.oneMinusSrcAlpha);
-
-    private static final float[] hx = new float[MAX], hy = new float[MAX], hin = new float[MAX],
-        hout = new float[MAX], halpha = new float[MAX], hstr = new float[MAX];
-    private static final float[] posUniform = new float[MAX * 4], strUniform = new float[MAX * 4];
-    private static int count = 0;
-
-    private static FrameBuffer buffer, buffer2;
-    private static HoleShader shader;
-    private static int shaderMax = 4;
-    private static boolean shaderFailed, loaded, capturing;
-
+    /** Khởi tạo toàn bộ đồ họa (NexMod gọi hàm này sẵn). */
     public static void init() {
-        if (Vars.headless) return;
-        Events.on(ClientLoadEvent.class, e -> load());
-        Events.run(Trigger.draw, NexBlackHole::queue);
-    }
-
-    private static void load() {
-        try {
-            buffer = new FrameBuffer();
-            buffer2 = new FrameBuffer();
-            shader = createShader(shaderMax);
-            loaded = shader != null;
-        } catch (Throwable t) {
-            loaded = false;
-            Log.err("NexBlackHole: không nạp được shader lỗ đen (cần shaders/blackhole.frag).", t);
-        }
-    }
-
-    /** Dựng shader với MAX_COUNT = max (chèn #define trước mã fragment, giống WHShaders.createHoleShader). */
-    private static HoleShader createShader(int max) {
-        try {
-            Shader.prependFragmentCode = "#define MAX_COUNT " + max + "\n";
-            return new HoleShader();
-        } catch (Throwable t) {
-            shaderFailed = true;
-            Log.err("NexBlackHole: dựng shader lỗ đen thất bại.", t);
-            return null;
-        } finally {
-            Shader.prependFragmentCode = "";
-        }
-    }
-
-    /** Đảm bảo shader chứa được n lỗ đen; nếu thiếu thì dựng lại với MAX_COUNT lớn hơn. Trả về số lỗ dùng được. */
-    private static int ensureShader(int n) {
-        if (n > shaderMax && !shaderFailed) {
-            int next = shaderMax;
-            while (next < n && next < MAX) next *= 2;
-            HoleShader fresh = createShader(next);
-            if (fresh != null) {
-                HoleShader old = shader;
-                shader = fresh;
-                shaderMax = next;
-                if (old != null) old.dispose();
-            }
-        }
-        return Math.min(n, shaderMax);
+        NexGraphics.init();
     }
 
     /** Thêm 1 lỗ đen cho khung hình hiện tại (gọi mỗi frame trong draw). */
     public static void add(float x, float y, float inRadius, float outRadius, float alpha, float strength) {
-        if (Vars.headless || !loaded || count >= MAX || inRadius > outRadius || outRadius <= 0f) return;
-        hx[count] = x; hy[count] = y; hin[count] = inRadius; hout[count] = outRadius;
-        halpha[count] = alpha; hstr[count] = Math.max(strength, 0.0001f) * distortionScale;
-        count++;
+        NexRenderer.addBlackHole(x, y, inRadius, outRadius, alpha, strength);
     }
 
     public static void add(float x, float y, float inRadius, float outRadius, float alpha) {
@@ -122,94 +44,6 @@ public final class NexBlackHole {
 
     public static void add(float x, float y, float inRadius, float outRadius) {
         add(x, y, inRadius, outRadius, 1f, 1f);
-    }
-
-    // ------------------------------------------------------------------ vẽ
-
-    private static void queue() {
-        if (!loaded || Core.settings.getBool("pixelate")) {
-            count = 0;   // pixelate: không hỗ trợ chụp ảnh, bỏ lỗ đen
-            return;
-        }
-        Draw.draw(Layer.floor - 8f, NexBlackHole::begin);
-        Draw.draw(CORE_Z, NexBlackHole::end);
-    }
-
-    private static void begin() {
-        capturing = false;
-        if (count == 0) return;
-        buffer.resize(Core.graphics.getWidth(), Core.graphics.getHeight());
-        if (!buffer.isBound()) {
-            buffer.begin(Color.clear);
-            capturing = true;
-        }
-    }
-
-    private static void end() {
-        if (!capturing) { count = 0; return; }
-        capturing = false;
-        if (!buffer.isBound()) { count = 0; return; }
-        buffer.end();
-
-        int n = ensureShader(count);
-
-        buffer2.resize(Core.graphics.getWidth(), Core.graphics.getHeight());
-        buffer2.begin(Color.clear);
-        if (shader != null) {
-            shader.fill(n);
-            blit(buffer, shader);        // ảnh đã vặn méo -> buffer2
-        } else {
-            blit(buffer, Shaders.screenspace);
-        }
-        buffer2.end();
-        blit(buffer2, Shaders.screenspace);   // buffer2 -> màn hình
-
-        // LÕI ĐEN: vẽ sau cùng, ở CORE_Z, đè lên mọi thứ bên dưới (kể cả glow trắng).
-        for (int i = 0; i < count; i++) {
-            Draw.color(Tmp.c2.set(Color.black).a(halpha[i]));
-            Fill.circle(hx[i], hy[i], hin[i] * coreScale);
-        }
-        Draw.color();
-        count = 0;
-    }
-
-    /** FrameBuffer đã lưu màu nhân sẵn alpha nên phải blit bằng (one, 1 - srcAlpha), nếu không glow bị tối đi. */
-    private static void blit(FrameBuffer source, Shader s) {
-        Draw.flush();
-        premultiplied.apply();
-        try {
-            source.blit(s);
-        } finally {
-            Blending.normal.apply();
-        }
-    }
-
-    private static final class HoleShader extends Shader {
-        int n;
-
-        HoleShader() {
-            super(Core.files.internal("shaders/screenspace.vert"), Vars.tree.get("shaders/blackhole.frag"));
-        }
-
-        void fill(int num) {
-            n = num;
-            for (int i = 0; i < n; i++) {
-                posUniform[i * 4] = hx[i];
-                posUniform[i * 4 + 1] = hy[i];
-                posUniform[i * 4 + 2] = hin[i];
-                posUniform[i * 4 + 3] = hout[i];
-                strUniform[i * 4] = hstr[i];
-            }
-        }
-
-        @Override
-        public void apply() {
-            setUniformf("u_campos", Core.camera.position.x - Core.camera.width / 2f, Core.camera.position.y - Core.camera.height / 2f);
-            setUniformf("u_resolution", Core.camera.width, Core.camera.height);
-            setUniformi("u_blackholecount", n);
-            setUniform4fv("u_blackholes", posUniform, 0, n * 4);
-            setUniform4fv("u_blackholeStrengths", strUniform, 0, n * 4);
-        }
     }
 
     // ------------------------------------------------------------------ đạn lỗ đen dùng sẵn
