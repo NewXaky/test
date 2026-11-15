@@ -29,7 +29,6 @@ import mindustry.entities.part.DrawPart.PartParams;
 import mindustry.entities.part.DrawPart.PartProgress;
 import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.Bullet;
-import mindustry.gen.Sounds;
 import mindustry.gen.TankUnit;
 import mindustry.gen.Unit;
 import mindustry.graphics.Drawf;
@@ -46,9 +45,8 @@ import newex.graphics.NexSettings;
  *
  * <p>Cơ chế:
  * <ul>
- *   <li>Pháo xoay 4 nòng: bắn nhanh dần khi bắn liên tục (AccelerateReload tới x5 sau 5 giây),
- *       đạn xuyên 3 mục tiêu, 10% chí mạng x2 sát thương (kể cả nổ lan).</li>
- *   <li>2 súng rail laser gắn hai bên: bắn cặp tia xuyên 300 đơn vị.</li>
+ *   <li>1 súng rail laser ở giữa (gộp từ 2 súng rail laser hai bên hông cũ, giữ nguyên tia bắn):
+ *       bắn cặp tia xuyên 300 đơn vị, nạp đạn nhanh dần khi bắn liên tục (AccelerateReload tới x5 sau 5 giây).</li>
  * </ul>
  */
 public final class Tank15 {
@@ -61,23 +59,20 @@ public final class Tank15 {
 
     // ------------------------------------------------------------------ màu
     private static Color outline() { return Color.valueOf("26362f"); }
-    private static Color heatColor() { return Color.valueOf("9ee8ff"); }
-    /** Màu đạn/tia: xanh lam-lục (khớp bảng màu sprite mới). */
-    private static Color shootColor() { return Color.valueOf("4fd2f0"); }
+    /** Màu đạn/tia: xanh xám (lấy đúng tông màu giáp thân unit). */
+    private static Color shootColor() { return Color.valueOf("96b098"); }
 
     /** Gọi từ NexMod.loadContent(). */
     public static void create() {
         final Color ORANGE = shootColor();
-        final Color ORANGE_LIGHT = ORANGE.cpy().lerp(Color.white.cpy(), 0.7f);
-        final Color HEAT = heatColor();
         final Color OUTLINE = outline();
 
         tank15 = new UnitType("tank-15") {{
             constructor = TankUnit::create;
 
             localizedName = "Tank-15";
-            description = "Xe tăng xung kích hạng nặng trang bị pháo xoay 4 nòng và 2 súng rail laser.";
-            details = "Pháo xoay cần một lúc bắn liên tục mới đạt tốc độ bắn tối đa (x5), đạn xuyên 3 mục tiêu và có 10% chí mạng.";
+            description = "Xe tăng xung kích hạng nặng trang bị súng rail laser xuyên giáp ở giữa thân.";
+            details = "Bắn liên tục giúp tốc độ nạp đạn tăng dần tới x5; mỗi loạt bắn ra cặp tia laser xuyên qua mục tiêu trên đường đạn.";
 
             squareShape = true;
             omniMovement = false;
@@ -102,75 +97,11 @@ public final class Tank15 {
 
             abilities.add(new AccelerateReload(300, 60, 5, 150));
 
-            // ---- pháo xoay chính 4 nòng
-            weapons.add(new Weapon("newex-tank-15-weapon1") {{
-                layerOffset = 0.04f;
+            // ---- súng rail laser ở giữa (gộp từ 2 súng rail laser 2 bên hông cũ, giữ nguyên tia bắn)
+            weapons.add(new Weapon("newex-tank-15-laser-weapon") {{
                 y = -19 / 4f;
                 x = 0;
-                reload = 30;
                 mirror = false;
-                ejectEffect = Fx.casing3Double;
-                recoil = 2f;
-                shootSound = Sounds.shootDisperse;
-                inaccuracy = 4f;
-                velocityRnd = 0.15f;
-                xRand = 0.3f;
-                recoils = 4;
-                heatColor = HEAT;
-
-                rotate = true;
-                rotateSpeed = 2f;
-
-                shoot = new ShootAlternate() {{
-                    barrels = 4;
-                    spread = 8 / 4f;
-                }};
-
-                shootY = 120 / 4f;
-                shootX = 0;
-
-                float x2 = 0 / 4f, y1 = 80 / 4f;
-
-                parts.add(new BarrelPart("-barrel") {{
-                    x = x2;
-                    y = y1 + recoil / 4f;
-                    intervalWidth = 16 / 4f;
-                    reloadProgress = heatProgress = progress = PartProgress.recoil;
-                }});
-
-                bullet = new CritBulletType(16f, 140, "newex-tank-15-pierce") {{
-                    lifetime = 300 / speed;
-                    keepVelocity = false;
-                    splashDamageRadius = 40;
-                    pierceCap = 3;
-                    width = 10;
-                    height = width * 3;
-                    trailWidth = width / 3;
-                    trailLength = 5;
-                    shrinkX = shrinkY = 0;
-                    frontColor = ORANGE_LIGHT;
-                    trailColor = hitColor = backColor = lightColor = lightningColor = ORANGE;
-                    mixColorFrom = mixColorTo = hitColor;
-                    shootEffect = new MultiEffect(
-                        shootLine(10, 20),
-                        Fx.shootBig
-                    );
-                    smokeEffect = Fx.hitLaserColor;
-                    trailChance = 0.5f;
-                    trailEffect = square(30, hitColor, 2, 30, 4);
-                    hitEffect = square(35, hitColor, 10, splashDamageRadius, 6);
-                    despawnEffect = new MultiEffect(
-                        instHit(hitColor, true, 2, splashDamageRadius),
-                        generalExplosion(12, hitColor, 40, 8, false)
-                    );
-                    hitSound = Sounds.none;
-                }};
-            }});
-
-            // ---- 2 súng rail laser hai bên
-            weapons.add(new Weapon("newex-tank-15-laser-weapon") {{
-                y = 22 / 4f;
-                x = 73 / 4f;
                 reload = 80;
                 ejectEffect = Fx.none;
                 recoil = 2f;
