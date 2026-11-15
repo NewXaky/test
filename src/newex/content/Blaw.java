@@ -6,51 +6,69 @@ import arc.audio.Sound;
 import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.Angles;
+import arc.math.Interp;
 import arc.math.Mathf;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
-import arc.math.Interp;
 import arc.util.Time;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.content.Items;
-import mindustry.ctype.ContentType;
+import mindustry.content.StatusEffects;
 import mindustry.entities.Effect;
 import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BulletType;
 import mindustry.game.EventType.ContentInitEvent;
 import mindustry.gen.Call;
-import mindustry.type.Category;
+import mindustry.gen.Healthc;
 import mindustry.gen.Icon;
 import mindustry.graphics.Layer;
+import mindustry.type.Category;
+import mindustry.type.StatusEffect;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
-import mindustry.world.Block;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 import newex.NexNet;
 import newex.PerfCore;
 
 /**
- * Chuyển từ blaw.js. Pháo Blaw: 2 nòng (trái/phải) bắn luân phiên đạn Băng (đóng băng, xuyên) / Hỏa (nổ lan),
- * khuếch đại sát thương theo HP mục tiêu + bạo kích 80%/220%, nâng cấp MK2 (tầm xa hơn, sát thương nổ lan tăng,
- * +20% tốc nạp) hoặc MK2B (máu +150%, tầm ngắn, bắn chùm 20 viên theo đợt 2x10 kiểu súng hoa cải, có hồi chiêu
- * sau mỗi 2 đợt).
+ * Chuyển từ blaw.js (bản tối ưu, giữ nguyên cơ chế gốc). Pháo Blaw 2 nòng: nòng TRÁI bắn đạn Băng (đóng băng, xuyên),
+ * nòng PHẢI bắn đạn Hỏa (nổ lan). Khuếch đại sát thương theo HP mục tiêu + bạo kích 80% x2.2.
+ * Nâng cấp MK2 (tầm xa, nổ lan mạnh, +20% tốc nạp) hoặc MK2B (máu +150%, tầm ngắn, bắn chùm shotgun theo đợt,
+ * hồi chiêu 3 giây sau mỗi 2 đợt).
+ *
+ * SỬA SO VỚI BẢN CŨ:
+ *  - size: blaw.hjson (nạp SAU Java) đặt size 2 và sprite blaw/blaw-ap/blaw-at đều 64x64 = 2x2 ô. Bản cũ đặt size 3 rồi vẽ nền
+ *    "reinforced-block-3" (96x96) đè lên pháo 2x2 nên nhìn như bị sai kích thước. Giờ size = 2 và nền lấy theo size THẬT trong load().
+ *  - 1 viên: bản cũ mỗi lần bắn chỉ ra 1 viên từ 1 nòng (luân phiên). Giờ mặc định cả 2 nòng bắn cùng lúc (DUAL_BARREL).
+ *  - read(): bản cũ gọi setTier() nên mỗi lần load save máu bị hồi đầy. Giờ chỉ khôi phục cấp.
  */
 public final class Blaw {
     private Blaw() {}
 
-    private static final int[] REQ_MK2 = {4000, 4000, 0};   // copper, lead, titanium
+    /** true: mỗi lượt bắn ra 2 viên (Băng trái + Hỏa phải). false: luân phiên 1 viên/lượt như JS gốc. */
+    private static final boolean DUAL_BARREL = true;
+    /** MK2B: số viên/nòng/đợt. Luân phiên = 10; bắn đôi = 5 (đủ 10 viên/đợt, 2 đợt = 20 viên đúng mô tả). */
+    private static final int SHOTGUN_PELLETS = DUAL_BARREL ? 5 : 10;
+
+    private static final int[] REQ_MK2 = {4000, 4000, 0};   // đồng, chì, titan
     private static final int[] REQ_MK2B = {4000, 4000, 2000};
+
+    private static final float HP_MK1 = 950f, HP_MK2B = 1425f;
+    private static final float RANGE_MK1 = 442f, RANGE_MK2 = 663f, RANGE_MK2B = 309.4f;
+    private static final float BARREL_OFFSET = 6f, RECOIL_LEN = 4f;
 
     private static Effect hitFx;
     private static BasicBulletType blueMk1, redMk1, blueMk2, redMk2, blueMk2b, redMk2b;
     private static Sound shootSoundCannon;
-    private static arc.graphics.g2d.TextureRegion leftBarrelRegion, rightBarrelRegion, customBaseRegion;
-    private static ItemTurret base;
+    private static BlawBlock base;
 
     private static boolean en() {
         return Core.settings.getString("locale", "").startsWith("en");
@@ -60,37 +78,51 @@ public final class Blaw {
         return en() ? enText : viText;
     }
 
+    /** Block riêng để nạp sprite theo size THẬT (sau khi hjson đã ghi đè), giống JS: load() + customBaseRegion. */
+    public static class BlawBlock extends ItemTurret {
+        TextureRegion leftBarrel, rightBarrel, customBase;
+
+        public BlawBlock(String name) { super(name); }
+
+        @Override
+        public void load() {
+            super.load();
+            leftBarrel = PerfCore.region("newex-blaw-at", "blaw-at");
+            rightBarrel = PerfCore.region("newex-blaw-ap", "blaw-ap");
+            customBase = PerfCore.region("newex-reinforced-block-" + size, "reinforced-block-" + size);
+        }
+    }
+
     public static void create() {
         hitFx = new Effect(40f, e -> {
             Draw.color(e.color);
-            float r = 35f * Interp.pow2Out.apply(e.fin());
+            float p = Interp.pow2Out.apply(e.fin());
             Draw.alpha(0.35f * e.fout());
-            Fill.circle(e.x, e.y, r);
-            arc.graphics.g2d.Lines.stroke(2.5f * e.fout());
-            arc.graphics.g2d.Lines.circle(e.x, e.y, 40f * Interp.pow2Out.apply(e.fin()));
-            arc.graphics.g2d.Lines.stroke(1.5f * e.fout());
-            arc.graphics.g2d.Lines.circle(e.x, e.y, 20f * Interp.pow2Out.apply(e.fin()));
+            Fill.circle(e.x, e.y, 35f * p);
+            Lines.stroke(2.5f * e.fout());
+            Lines.circle(e.x, e.y, 40f * p);
+            Lines.stroke(1.5f * e.fout());
+            Lines.circle(e.x, e.y, 20f * p);
             Draw.reset();
         });
 
-        blueMk1 = mk(3.25f, 25f, 9f, 22f, "0031FFFF", 0f, 0f, mindustry.content.StatusEffects.freezing, 600f, true, 3);
-        redMk1 = mk(3.25f, 25f, 9f, 22f, "FF0000FF", 40f, 24f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
-        blueMk2 = mk(3.64f, 50f, 10f, 24f, "0031FFFF", 0f, 0f, mindustry.content.StatusEffects.freezing, 600f, true, 3);
-        redMk2 = mk(3.64f, 50f, 10f, 24f, "FF0000FF", 120f, 32f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
-        blueMk2b = mk(15.86f, 550f, 5f, 12f, "0031FFFF", 0f, 0f, mindustry.content.StatusEffects.freezing, 300f, true, 2);
-        redMk2b = mk(15.86f, 550f, 5f, 12f, "FF5A00FF", 40f, 16f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
-
-        // JS: đạn MK2B (shotgun) lifetime 19.51, không phải 70 như các đạn khác; đạn Băng MK1 dùng sprite diamond-shard.
-        blueMk2b.lifetime = 19.51f;
-        redMk2b.lifetime = 19.51f;
+        StatusEffect freeze = StatusEffects.freezing, blast = StatusEffects.blasted;
+        //            speed  dmg  w   h  màu       nổ  bán kính  status  thời gian  xuyên  cap  lifetime
+        blueMk1 = mk(3.25f, 25f, 9f, 22f, "0031FFFF", 0f, 0f, freeze, 600f, true, 3, 70f);
+        redMk1 = mk(3.25f, 25f, 9f, 22f, "FF0000FF", 40f, 24f, blast, 80f, false, 0, 70f);
+        blueMk2 = mk(3.64f, 50f, 10f, 24f, "0031FFFF", 0f, 0f, freeze, 600f, true, 3, 70f);
+        redMk2 = mk(3.64f, 50f, 10f, 24f, "FF0000FF", 120f, 32f, blast, 80f, false, 0, 70f);
+        blueMk2b = mk(15.86f, 550f, 5f, 12f, "0031FFFF", 0f, 0f, freeze, 300f, true, 2, 19.51f);
+        redMk2b = mk(15.86f, 550f, 5f, 12f, "FF5A00FF", 40f, 16f, blast, 80f, false, 0, 19.51f);
         blueMk1.sprite = "newex-diamond-shard";
 
-        // Block do Java tạo bằng new ItemTurret("blaw") nên blaw.hjson KHÔNG có `type:` (bài 29a). JS gốc: extend(ItemTurret, "blaw").
-        base = new ItemTurret("blaw");
+        // Block do Java tạo nên blaw.hjson KHÔNG có `type:`. hjson nạp SAU và ghi đè các giá trị dưới đây
+        // (size 2 / reload 20 / health 950 ...), nên đặt cùng giá trị để Java và hjson không mâu thuẫn.
+        base = new BlawBlock("blaw");
         base.squareSprite = false;
         base.health = 950;
-        base.size = 3;
-        base.reload = 30f;
+        base.size = 2;
+        base.reload = 20f;
         base.configurable = true;
         base.category = Category.turret;
         base.config(Integer.class, (BlawBuild tile, Integer value) -> {
@@ -101,14 +133,15 @@ public final class Blaw {
         Events.on(ContentInitEvent.class, e -> setup());
     }
 
-    private static BasicBulletType mk(float speed, float damage, float width, float height, String frontHex,
-                                       float splashDmg, float splashRad, mindustry.type.StatusEffect status, float statusDur,
-                                       boolean pierce, int pierceCap) {
+    private static BasicBulletType mk(float speed, float damage, float width, float height, String hex,
+                                       float splashDmg, float splashRad, StatusEffect status, float statusDur,
+                                       boolean pierce, int pierceCap, float lifetime) {
         BasicBulletType b = new BasicBulletType();
+        Color c = Color.valueOf(hex);
         b.buildingDamageMultiplier = 0.01f;
-        b.speed = speed; b.damage = damage; b.width = width; b.height = height; b.lifetime = 70f;
-        b.frontColor = Color.valueOf(frontHex); b.backColor = Color.white;
-        b.hitEffect = hitFx; b.despawnEffect = hitFx; b.hitColor = Color.valueOf(frontHex);
+        b.speed = speed; b.damage = damage; b.width = width; b.height = height; b.lifetime = lifetime;
+        b.frontColor = c; b.backColor = Color.white; b.hitColor = c;
+        b.hitEffect = hitFx; b.despawnEffect = hitFx;
         if (splashDmg > 0f) { b.splashDamage = splashDmg; b.splashDamageRadius = splashRad; }
         b.status = status; b.statusDuration = statusDur;
         b.pierce = pierce; b.pierceCap = pierceCap;
@@ -117,18 +150,14 @@ public final class Blaw {
 
     private static void setup() {
         shootSoundCannon = Vars.tree.loadSound("cannon-shot-1");
-        leftBarrelRegion = PerfCore.region("newex-blaw-at", "blaw-at");
-        rightBarrelRegion = PerfCore.region("newex-blaw-ap", "blaw-ap");
-        customBaseRegion = PerfCore.region("newex-reinforced-block-3", "reinforced-block-3");
-
         if (base == null) return;
         base.shootSound = shootSoundCannon;
         base.ammoTypes.put(Items.titanium, blueMk1);   // đặt lại sau hjson (bài 18)
     }
 
     public static class BlawBuild extends ItemTurret.ItemTurretBuild {
-        int tierState = 0;
-        boolean barrelSide = false;
+        int tierState = 0;          // 0 = MK1, 1 = MK2, 2 = MK2B
+        boolean barrelSide = false; // chỉ dùng khi DUAL_BARREL = false
         float shotgunTimer = 0f;
         int shotCount = 0;
         float recoilLeft = 0f, recoilRight = 0f;
@@ -139,142 +168,145 @@ public final class Blaw {
 
         int getTier() { return tierState; }
 
+        /** Nâng cấp: đổi cấp và hồi đầy máu theo cấp mới (giống JS). */
         void setTier(int val) {
             tierState = val;
-            health = (val == 2) ? 1425f : 950f;
-            maxHealth = health;
+            health = maxHealth();
             shotCount = 0;
         }
 
         @Override
+        public float maxHealth() {
+            return tierState == 2 ? HP_MK2B : HP_MK1;
+        }
+
+        @Override
         public float range() {
-            int tier = getTier();
-            return tier == 1 ? 663f : (tier == 2 ? 309.4f : 442f);
+            return tierState == 1 ? RANGE_MK2 : (tierState == 2 ? RANGE_MK2B : RANGE_MK1);
         }
 
         @Override
         public void updateTile() {
             super.updateTile();
-            int tier = getTier();
 
-            if (tier == 2 && shotgunTimer > 0f) shotgunTimer -= Time.delta;
-
+            if (tierState == 2 && shotgunTimer > 0f) shotgunTimer -= Time.delta;
             if (recoilLeft > 0f) recoilLeft = Math.max(0f, recoilLeft - Time.delta * 0.1f);
             if (recoilRight > 0f) recoilRight = Math.max(0f, recoilRight - Time.delta * 0.1f);
 
             if (isShooting() && hasAmmo()) {
-                float randomBoost = Mathf.random(0f, 2f);
-                reloadCounter += Time.delta * randomBoost * efficiency;
-                if (tier == 1) reloadCounter += Time.delta * 0.2f * efficiency;
+                // xung nhịp ngẫu nhiên 0%..200%, MK2 cộng cố định +20%
+                float boost = Mathf.random(0f, 2f) + (tierState == 1 ? 0.2f : 0f);
+                reloadCounter += Time.delta * boost * efficiency;
+            }
+        }
+
+        /** Hệ số khuếch đại sát thương theo HP mục tiêu (chưa tính bạo kích). */
+        private float hpAmplify(int tier) {
+            if (!(target instanceof Healthc)) return 1f;
+            float hp = ((Healthc) target).health();
+            float amp = 1f;
+            if (hp > 100f) amp += Mathf.floor((hp - 100f) / 100f) * (tier == 2 ? 0.05f : (tier == 1 ? 0.02f : 0.01f));
+            if (tier == 1 && hp > 1000f) amp += Mathf.floor((hp - 1000f) / 1000f) * 0.01f;
+            return amp;
+        }
+
+        /** Bắn từ 1 nòng: left = nòng Băng (trái), !left = nòng Hỏa (phải). */
+        private void fireBarrel(boolean left, int tier, float amp) {
+            float crit = Mathf.chance(0.80) ? 2.20f : 1f;
+            float ang = rotation + (left ? 90f : -90f);
+            float sx = x + Angles.trnsx(ang, BARREL_OFFSET), sy = y + Angles.trnsy(ang, BARREL_OFFSET);
+
+            if (left) recoilLeft = 1f; else recoilRight = 1f;
+
+            if (tier == 2) {
+                BasicBulletType b = left ? blueMk2b : redMk2b;
+                float dmg = 550f * amp * crit;
+                for (int i = 0; i < SHOTGUN_PELLETS; i++) {
+                    Call.createBullet(b, team, sx, sy, rotation + Mathf.range(15f), dmg, Mathf.random(1.5f, 3.5f), 1f);
+                }
+            } else {
+                BasicBulletType b = tier == 1 ? (left ? blueMk2 : redMk2) : (left ? blueMk1 : redMk1);
+                // JS truyền b.speed vào velocityScl (bài học 4) -> giữ nguyên tốc độ thực tế
+                Call.createBullet(b, team, sx, sy, rotation, b.damage * amp * crit, b.speed, 1f);
             }
         }
 
         @Override
         public void shoot(BulletType type) {
-            int tier = getTier();
+            int tier = tierState;
             if (tier == 2 && shotgunTimer > 0f) return;
 
-            float damageMultiplier = 1f;
-            float targetHp = target instanceof mindustry.gen.Healthc ? ((mindustry.gen.Healthc) target).health() : 0f;
-            if (target != null && targetHp > 100f) {
-                float factor = tier == 2 ? 0.05f : (tier == 1 ? 0.02f : 0.01f);
-                damageMultiplier += Mathf.floor((targetHp - 100f) / 100f) * factor;
-            }
-            if (tier == 1 && target != null && targetHp > 1000f) {
-                damageMultiplier += Mathf.floor((targetHp - 1000f) / 1000f) * 0.01f;
-            }
+            float amp = hpAmplify(tier);
 
-            if (Mathf.chance(0.80)) damageMultiplier *= 2.20f;
-
-            barrelSide = !barrelSide;
-            if (barrelSide) recoilLeft = 1f; else recoilRight = 1f;
-
-            float angleRad = (rotation + (barrelSide ? 90f : -90f)) * Mathf.degRad;
-            float spawnX = x + Mathf.cos(angleRad) * 6f;
-            float spawnY = y + Mathf.sin(angleRad) * 6f;
-
-            if (tier == 2) {
-                float dmg = 550f * damageMultiplier;
-                BasicBulletType sel = barrelSide ? blueMk2b : redMk2b;
-                if (shootSoundCannon != null) shootSoundCannon.at(x, y, Mathf.random(0.9f, 1.1f));
-
-                for (int i = 0; i < 10; i++) {
-                    float spd = Mathf.random(1.5f, 3.5f);
-                    float spread = Mathf.range(15f);
-                    Call.createBullet(sel, team, spawnX, spawnY, rotation + spread, dmg, spd, 1f);
-                }
-
-                shotCount++;
-                if (shotCount >= 2) { shotgunTimer = 180f; shotCount = 0; }
+            if (DUAL_BARREL) {
+                fireBarrel(true, tier, amp);
+                fireBarrel(false, tier, amp);
             } else {
-                BasicBulletType sel = tier == 1
-                    ? (barrelSide ? blueMk2 : redMk2)
-                    : (barrelSide ? blueMk1 : redMk1);
-                float dmg = sel.damage * damageMultiplier;
-                Call.createBullet(sel, team, spawnX, spawnY, rotation, dmg, sel.speed, 1f);
-                if (shootSoundCannon != null) shootSoundCannon.at(x, y, Mathf.random(0.9f, 1.1f));
+                barrelSide = !barrelSide;
+                fireBarrel(barrelSide, tier, amp);
             }
 
+            if (shootSoundCannon != null) shootSoundCannon.at(x, y, Mathf.random(0.9f, 1.1f));
+
+            if (tier == 2 && ++shotCount >= 2) {
+                shotgunTimer = 180f;
+                shotCount = 0;
+            }
             useAmmo();
         }
 
         @Override
         public void draw() {
-            if (customBaseRegion != null && customBaseRegion.found()) {
-                Draw.rect(customBaseRegion, x, y);
-            } else {
-                Draw.rect(Core.atlas.find("block-" + base.size), x, y);
-            }
+            BlawBlock b = (BlawBlock) block;
+            float rot = rotation, ang = rot * Mathf.degRad;
+            float cos = Mathf.cos(ang), sin = Mathf.sin(ang);
 
-            float angleRad = rotation * Mathf.degRad;
-            float cos = Mathf.cos(angleRad), sin = Mathf.sin(angleRad);
-            float recoilLen = 4f;
+            if (b.customBase != null && b.customBase.found()) Draw.rect(b.customBase, x, y);
+            else Draw.rect(Core.atlas.find("block-" + b.size), x, y);
 
-            float rxLeft = x - cos * (recoilLeft * recoilLen), ryLeft = y - sin * (recoilLeft * recoilLen);
-            float rxRight = x - cos * (recoilRight * recoilLen), ryRight = y - sin * (recoilRight * recoilLen);
+            float pz = Draw.z();
+            Draw.z(Layer.turret);
 
-            if (leftBarrelRegion != null && leftBarrelRegion.found()) Draw.rect(leftBarrelRegion, rxLeft, ryLeft, rotation - 90f);
-            if (rightBarrelRegion != null && rightBarrelRegion.found()) Draw.rect(rightBarrelRegion, rxRight, ryRight, rotation - 90f);
-            if (base.region != null && base.region.found()) Draw.rect(base.region, x, y, rotation - 90f);
+            float lx = x - cos * recoilLeft * RECOIL_LEN, ly = y - sin * recoilLeft * RECOIL_LEN;
+            float rx = x - cos * recoilRight * RECOIL_LEN, ry = y - sin * recoilRight * RECOIL_LEN;
 
-            float sideRad = (rotation + 90f) * Mathf.degRad;
-            float sideCos = Mathf.cos(sideRad) * 6f, sideSin = Mathf.sin(sideRad) * 6f;
+            if (b.leftBarrel != null && b.leftBarrel.found()) Draw.rect(b.leftBarrel, lx, ly, rot - 90f);
+            if (b.rightBarrel != null && b.rightBarrel.found()) Draw.rect(b.rightBarrel, rx, ry, rot - 90f);
+            if (b.region != null && b.region.found()) Draw.rect(b.region, x, y, rot - 90f);
 
-            float bxLeft = (x - cos * (recoilLeft * recoilLen)) + sideCos - cos * 3f;
-            float byLeft = (y - sin * (recoilLeft * recoilLen)) + sideSin - sin * 3f;
-            float bxRight = (x - cos * (recoilRight * recoilLen)) - sideCos - cos * 3f;
-            float byRight = (y - sin * (recoilRight * recoilLen)) - sideSin - sin * 3f;
-
+            // đốm sáng đầu nòng (Băng trái, Hỏa phải)
+            float sideAng = (rot + 90f) * Mathf.degRad;
+            float sx = Mathf.cos(sideAng) * BARREL_OFFSET, sy = Mathf.sin(sideAng) * BARREL_OFFSET;
             Draw.z(Layer.effect + 1f);
-            float zoomLeft = 1.5f * (1f + recoilLeft * 1.5f);
-            Draw.color(PerfCore.color("0031FFFF"), 0.35f);
-            Fill.circle(bxLeft, byLeft, zoomLeft * 2f);
-            Draw.color(Color.white);
-            Fill.circle(bxLeft, byLeft, zoomLeft);
-
-            float zoomRight = 1.5f * (1f + recoilRight * 1.5f);
-            Draw.color(PerfCore.color("FF3B00FF"), 0.35f);
-            Fill.circle(bxRight, byRight, zoomRight * 2f);
-            Draw.color(Color.white);
-            Fill.circle(bxRight, byRight, zoomRight);
+            glow(lx + sx - cos * 3f, ly + sy - sin * 3f, recoilLeft, "0031FFFF");
+            glow(rx - sx - cos * 3f, ry - sy - sin * 3f, recoilRight, "FF3B00FF");
             Draw.reset();
+            Draw.z(pz);
+        }
+
+        private void glow(float gx, float gy, float recoil, String hex) {
+            float r = 1.5f * (1f + recoil * 1.5f);
+            Draw.color(PerfCore.color(hex), 0.35f);
+            Fill.circle(gx, gy, r * 2f);
+            Draw.color(Color.white);
+            Fill.circle(gx, gy, r);
         }
 
         @Override
         public Object config() {
-            return getTier();
+            return tierState;
         }
 
         @Override
         public void write(Writes write) {
             super.write(write);
-            write.b(getTier());
+            write.b(tierState);
         }
 
         @Override
         public void read(Reads read, byte revision) {
             super.read(read, revision);
-            setTier(read.b());
+            tierState = read.b();   // KHÔNG gọi setTier(): giữ máu đã lưu
         }
 
         // ------------------------------------------------------------- giao diện nâng cấp
@@ -377,12 +409,12 @@ public final class Blaw {
                 return t("[gold]⚡ BASE SPECS (MK1) ⚡[]\n[lightgray]Structure Health:[] [green]950 HP[]\n"
                     + "[lightgray]Effective Range:[] [orange]442 pixels[]\n[lightgray]Base Damage:[] [white]25 DMG / bullet[]\n"
                     + "[lightgray]Crit Chance:[] [yellow]80%[]\n[lightgray]Crit Damage:[] [orange]220% (120% bonus)[]\n\n"
-                    + "[cyan]⚡ SPECIAL SKILL MECHANICS:[]\n• Dual Frostfire Barrels: Alternates firing left barrel (Freezing + Pierce 3) and right barrel (80 Splash DMG).\n"
+                    + "[cyan]⚡ SPECIAL SKILL MECHANICS:[]\n• Dual Frostfire Barrels: Both barrels fire together: left (Freezing + Pierce 3) and right (40 Splash DMG).\n"
                     + "• Damage Amplification: Adds +1% DMG for every 100 target HP when HP > 100.\n• Random firing speed pulse from 0% to 200%.",
                   "[gold]⚡ THÔNG SỐ CƠ BẢN (MK1) ⚡[]\n[lightgray]Máu cấu trúc:[] [green]950 HP[]\n"
                     + "[lightgray]Tầm bắn hiệu dụng:[] [orange]442 pixel[]\n[lightgray]Sát thương gốc:[] [white]25 DMG / viên[]\n"
                     + "[lightgray]Tỉ lệ bạo kích:[] [yellow]80%[]\n[lightgray]Sát thương bạo kích:[] [orange]220% (120% bonus)[]\n\n"
-                    + "[cyan]⚡ CƠ CHẾ KỸ NĂNG ĐẶC BIỆT:[]\n• Băng Hỏa Song Nòng: Luân phiên bắn nòng trái (Đóng băng + Xuyên 3 mục tiêu) và nòng phải (Nổ lan 80 DMG).\n"
+                    + "[cyan]⚡ CƠ CHẾ KỸ NĂNG ĐẶC BIỆT:[]\n• Băng Hỏa Song Nòng: Hai nòng bắn cùng lúc: nòng trái (Đóng băng + Xuyên 3 mục tiêu) và nòng phải (Nổ lan 40 DMG).\n"
                     + "• Khuếch đại sát thương: Tăng +1% DMG cho mỗi 100 HP của mục tiêu khi HP > 100.\n• Xung nhịp tốc độ bắn ngẫu nhiên từ 0% đến 200%.");
             } else if (tier == 1) {
                 return t("[cyan]⚡ UPGRADE SPECS MK2 ⚡[]\n[lightgray]Structure Health:[] [green]950 HP[]\n"
