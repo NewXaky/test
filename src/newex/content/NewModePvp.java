@@ -20,6 +20,7 @@ import mindustry.gen.Player;
 import mindustry.gen.Unit;
 import mindustry.type.UnitType;
 import mindustry.world.Block;
+import mindustry.entities.units.StatusEntry;
 
 import arc.math.Angles;
 import arc.math.Mathf;
@@ -69,7 +70,6 @@ import mindustry.entities.Damage;
 import mindustry.gen.Entityc;
 import mindustry.ai.types.GroundAI;
 import mindustry.ai.types.CommandAI;
-import mindustry.ai.types.NoAI;
 import arc.util.Tmp;
 import arc.func.Boolc;
 import arc.scene.ui.ScrollPane;
@@ -245,6 +245,8 @@ public class NewModePvp {
     static final int BONUS_WAVE_TIMES = 5;
     static final int BONUS_WAVE_MAX_NEW = 150;
     static final int EQUIPPED = -1;
+    static final int IN_BAG = -2; // phao trong tui do
+    static final String BUILD_FLOOR = "core-zone"; // chi xay phao tren nen dat loi ("" = moi nen)
     static final int EQUIP_SLOT_CAP = 12;
     static final String REQ_BARR = "newex-pvp-barr";
     static final String REQ_WALL = "newex-pvp-wall";
@@ -623,6 +625,10 @@ public class NewModePvp {
             else if (pl.con != null) Call.infoToast(pl.con, text, 3f);
         } catch (Throwable err) {}
     }
+    /** JS: new Packages.mindustry.ai.types.NoAI() - lop NoAI khong con o v157.4 -> bo dieu khien khong lam gi (script tu lai bang botTick/soldierAI). */
+    static final class NoAI extends mindustry.entities.units.AIController { @Override public void updateUnit() {} }
+
+    static void addExp(Player pl, float amount) { addExp(pl, amount, false); }
     static void addExp(Player pl, float amount, boolean quiet) {
         St st = bind(pl);
         if (st.lv >= maxLevel()) return;
@@ -1146,8 +1152,8 @@ public class NewModePvp {
     static void ensureLoaded(BulletType bt) {
         if (bt == null) return;
         try {
-            if (loadedBt.get(bt.id) == null) {
-                loadedBt.put(bt.id, true);
+            if (loadedBt.get((int) bt.id) == null) {
+                loadedBt.put((int) bt.id, true);
                 // JS: backRegion/frontRegion chi co o BasicBulletType; loai khac -> undefined == null -> luon load()
                 boolean need = !(bt instanceof BasicBulletType) || ((BasicBulletType) bt).backRegion == null || ((BasicBulletType) bt).frontRegion == null;
                 if (need) bt.load();
@@ -1259,7 +1265,7 @@ public class NewModePvp {
     static Aim hostAim(Unit h, Player pl) { return aimState(h, pl); }
     static final HashMap<Integer, ArrayList<float[]>> weaponCache = new HashMap<>();
     static ArrayList<float[]> weaponMounts(UnitType type) {
-        ArrayList<float[]> c = weaponCache.get(type.id);
+        ArrayList<float[]> c = weaponCache.get((int) type.id);
         if (c == null) {
             c = new ArrayList<>();
             try {
@@ -1270,7 +1276,7 @@ public class NewModePvp {
                     c.add(new float[]{w.x, w.y});
                 }
             } catch (Throwable err) {}
-            weaponCache.put(type.id, c);
+            weaponCache.put((int) type.id, c);
         }
         return c;
     }
@@ -1678,8 +1684,8 @@ public class NewModePvp {
             stt.tt = fldF(blk, "retargetTime", 5f);
             Pd ctx = pdCtx;
             ctx.mx = mp.x; ctx.my = mp.y; ctx.team = team; ctx.range = range; ctx.best = null; ctx.bd = 1e18f;
-            try { Groups.bullet.intersect(mp.x - range - 16, mp.y - range - 16, (range + 16) * 2, (range + 16) * 2, b -> pdCheck(b)); }
-            catch (Throwable err8) { try { Groups.bullet.each(b -> pdCheck(b)); } catch (Throwable e2) {} }
+            try { Groups.bullet.intersect(mp.x - range - 16, mp.y - range - 16, (range + 16) * 2, (range + 16) * 2, (Cons<Bullet>) b -> pdCheck(b)); }
+            catch (Throwable err8) { try { Groups.bullet.each((Cons<Bullet>) b -> pdCheck(b)); } catch (Throwable e2) {} }
             stt.ptgt = ctx.best; t = ctx.best;
         }
         if (t == null) { equipAng.put(key, stt.ang); return; }
@@ -1732,7 +1738,7 @@ public class NewModePvp {
     static Unit ownerOf(Player pl, Unit u) { return u; }
     static final HashMap<Integer, Float> baseAtkCache = new HashMap<>();
     static float baseAttack(UnitType type) {
-        Float cached = baseAtkCache.get(type.id);
+        Float cached = baseAtkCache.get((int) type.id);
         if (cached != null) return cached;
         float best = 0;
         try {
@@ -1744,7 +1750,7 @@ public class NewModePvp {
             }
         } catch (Throwable err) {}
         float res = best > 0 ? best : 20f;
-        baseAtkCache.put(type.id, res);
+        baseAtkCache.put((int) type.id, res);
         return res;
     }
     static float attackPower(Player pl, Unit u) {
@@ -2654,8 +2660,8 @@ public class NewModePvp {
         f.r = vanhauR(u);
         VhCtx c = new VhCtx(); c.f = f; c.team = u.team; c.x = u.x; c.y = u.y; c.r2 = f.r * f.r;
         vhCtx = c;
-        try { Groups.bullet.intersect(u.x - f.r, u.y - f.r, f.r * 2, f.r * 2, b -> vhEach(b)); }
-        catch (Throwable err) { Groups.bullet.each(b -> vhEach(b)); }
+        try { Groups.bullet.intersect(u.x - f.r, u.y - f.r, f.r * 2, f.r * 2, (Cons<Bullet>) b -> vhEach(b)); }
+        catch (Throwable err) { Groups.bullet.each((Cons<Bullet>) b -> vhEach(b)); }
         if (f.hp <= 0) {
             f.hp = 0;
             vanhauSend(id, u, f);
@@ -2849,7 +2855,7 @@ public class NewModePvp {
     public static StatusEffect buffStatus, equipStatus, spawnGuardStatus, spawnRageStatus;
     public static void loadStatuses() {
         buffStatus = new StatusEffect("pvp-buff") {
-            @Override public void update(Unit unit, float time) { super.update(unit, time); applyStats(unit); }
+            @Override public void update(Unit unit, StatusEntry entry) { super.update(unit, entry); applyStats(unit); }
         };
         buffStatus.permanent = true; buffStatus.show = false;
         equipStatus = new StatusEffect("pvp-equip");
@@ -2873,10 +2879,10 @@ public class NewModePvp {
         return c != null && c.hasEq;
     }
     static BulletType pierceType(BulletType t) {
-        if (pierceCache.containsKey(t.id)) return pierceCache.get(t.id);
+        if (pierceCache.containsKey((int) t.id)) return pierceCache.get((int) t.id);
         BulletType c;
         try { c = t.copy(); c.pierceArmor = true; ensureLoaded(c); } catch (Throwable err) { c = null; }
-        pierceCache.put(t.id, c);
+        pierceCache.put((int) t.id, c);
         return c;
     }
     static void eachBullet(Bullet b) {
@@ -3136,7 +3142,7 @@ public class NewModePvp {
     /** Map ngoai: bam "bien ve" lan 1 -> drone vanilla (xay dung), lan 2 -> unit PvP, lap lai. */
     static void extSwap(Player pl, St st, Unit u) {
         CoreBlock.CoreBuild cr = pl.team().core();
-        boolean isCoreUnit = cr != null && u.type == cr.block.unitType;
+        boolean isCoreUnit = cr != null && u.type == ((CoreBlock) cr.block).unitType;
         boolean isTier = isTierUnit(u);
         Boolean m0 = extPvp.get(pl.id);
         boolean mode = m0 == null ? true : m0;
@@ -3191,7 +3197,7 @@ public class NewModePvp {
         if (pv != null && pv != u) {
             try {
                 CoreBlock.CoreBuild cr0 = pl.team().core();
-                boolean toCore = cr0 != null && u.type == cr0.block.unitType;
+                boolean toCore = cr0 != null && u.type == ((CoreBlock) cr0.block).unitType;
                 if (toCore && pv.isValid() && !pv.dead && pv.team == pl.team() && !canReturnCore(pv, cr0)) {
                     try { Call.unitDespawn(u); } catch (Throwable err) { u.remove(); }
                     pl.unit(pv);
@@ -3204,7 +3210,7 @@ public class NewModePvp {
         boolean isTier = false;
         for (int lv = 1; lv <= TIER_MAX; lv++) if (u.type == tierType(lv)) { isTier = true; break; }
         boolean isCoreUnit = false;
-        try { CoreBlock.CoreBuild cr = pl.team().core(); isCoreUnit = cr != null && u.type == cr.block.unitType; } catch (Throwable err) {}
+        try { CoreBlock.CoreBuild cr = pl.team().core(); isCoreUnit = cr != null && u.type == ((CoreBlock) cr.block).unitType; } catch (Throwable err) {}
         if (!isTier && !isCoreUnit) {
             swapPending.remove(pl.id);
             if (pv != null && pv != u && pv.isValid() && !pv.dead && pv.team == pl.team()) {
@@ -3806,7 +3812,7 @@ public class NewModePvp {
             Building b = Vars.world.build(pos);
             if (d == null || b == null || b.block != d.block) continue;
             boolean act = true;
-            try { act = b.isShooting() || (b instanceof Turret.TurretBuild && ((Turret.TurretBuild) b).target != null); } catch (Throwable err) {}
+            if (b instanceof Turret.TurretBuild) { Turret.TurretBuild tb = (Turret.TurretBuild) b; try { act = tb.isShooting() || tb.target != null; } catch (Throwable err) {} } // JS: b.isShooting() tren khoi khong phai phao nem loi -> act giu true
             BotIdle r = BC.botIdle.get(pos);
             if (r == null || !r.id.equals(d.id) || act) { BotIdle n = new BotIdle(); n.id = d.id; n.t = now; BC.botIdle.put(pos, n); continue; }
             if (now - r.t < Math.max(2400f, BOT_IDLE_SELL - 600 * (BC.botSm - 1))) continue;
@@ -6859,9 +6865,18 @@ public class NewModePvp {
     // ---- camera + phim tat + cheat ----
     static int camBot = 0;
     static int camMode = 0; // 0: theo unit, 1: goc nhin tu do, 2: camera bot
+    static java.lang.reflect.Field panField = null; static boolean panTried = false;
+    /** InputHandler v157 khong co truong panning (chi lop con nhu DesktopInput) -> dat qua phan xa tren lop that. */
+    static void setPanning(boolean v) {
+        try {
+            Object in = Vars.control.input;
+            if (!panTried) { panTried = true; for (Class<?> c = in.getClass(); c != null && panField == null; c = c.getSuperclass()) { try { panField = c.getDeclaredField("panning"); panField.setAccessible(true); } catch (NoSuchFieldException ignored) {} } }
+            if (panField != null && panField.getDeclaringClass().isInstance(in)) panField.setBoolean(in, v);
+        } catch (Throwable err) {}
+    }
     static void camNote() {
         try { Vars.ui.showInfoToast(camMode == 2 ? tr("Camera bot: BẬT", "Bot camera: ON") : camMode == 1 ? tr("Góc nhìn tự do: BẬT", "Free view: ON") : tr("Camera: theo unit", "Camera: follow unit"), 2f); } catch (Throwable err) {}
-        try { if (camMode == 0) Vars.control.input.panning = false; } catch (Throwable err) {}
+        try { if (camMode == 0) setPanning(false); } catch (Throwable err) {}
     }
     static void initCameraKeys() {
         if (Vars.headless) return;
@@ -6871,7 +6886,7 @@ public class NewModePvp {
                     CoreCine c = coreCine;
                     float dt = Math.min(6f, Core.graphics.getDeltaTime() * 60f);
                     c.t += dt;
-                    Vars.control.input.panning = true;
+                    setPanning(true);
                     Vec2 cp = Core.camera.position;
                     float k = 1f - (float) Math.exp(-dt / 18f);
                     cp.set(cp.x + (c.x - cp.x) * k, cp.y + (c.y - cp.y) * k);
@@ -6885,14 +6900,14 @@ public class NewModePvp {
                             try { Effect.shake(2 + pw * 6, 10, c.x, c.y); } catch (Throwable err) {}
                         }
                     }
-                    if (c.t >= c.dur + 90) { coreCine = null; if (camMode == 0) Vars.control.input.panning = false; }
+                    if (c.t >= c.dur + 90) { coreCine = null; if (camMode == 0) setPanning(false); }
                 } catch (Throwable err) { coreCine = null; }
                 return;
             }
             if (camMode == 0) return;
             if (!isActive()) { camMode = 0; return; }
             try {
-                Vars.control.input.panning = true;
+                setPanning(true);
                 Vec2 cp = Core.camera.position;
                 if (camMode == 2) {
                     Unit bu = bots.size() > 0 ? bots.get(Math.min(camBot, bots.size() - 1)).botPl.unit() : null;
@@ -7050,7 +7065,7 @@ public class NewModePvp {
                 }
                 if (joyLagT > 0) joyLagT -= dtl;
                 if (cu != null) {
-                    try { Vars.control.input.panning = false; } catch (Throwable err) {}
+                    try { setPanning(false); } catch (Throwable err) {}
                     try {
                         Vec2 cp = Core.camera.position;
                         float dtc = Math.min(0.1f, Core.graphics.getDeltaTime());

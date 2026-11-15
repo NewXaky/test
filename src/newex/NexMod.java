@@ -2,6 +2,7 @@ package newex;
 
 import arc.Core;
 import arc.Events;
+import arc.util.Log;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.Rand;
@@ -60,8 +61,6 @@ import newex.content.ObsOre;
 import newex.content.LoadoutSelection;
 import newex.content.Survival;
 import newex.content.SurvivorSkills;
-import newex.content.Leolyr;
-import newex.content.Elorix;
 import newex.content.NewModePvp;
 import newex.content.Therdum;
 import newex.content.Thermion;
@@ -182,8 +181,8 @@ public class NexMod extends Mod {
         SurvivorSkills.init();
         NewModePvp.init(); // main.js: require("newmode-pvp") sau survivor-skills, trước archueng-pvp
         LeolyrSummoner.init();
-        Leolyr.init();
-        Elorix.init();
+        optionalInit("newex.content.Leolyr"); // chua co trong repo CI -> goi qua phan xa, co file la tu chay
+        optionalInit("newex.content.Elorix");
         Tankani.init();
         Tankani4k.init();
         DroneLauncher.init();
@@ -209,6 +208,13 @@ public class NexMod extends Mod {
 
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
+    }
+
+    /** Gọi Lớp.init() nếu lớp có mặt trong bản build (bỏ qua nếu thiếu, có log). */
+    private static void optionalInit(String cls) {
+        try { Class.forName(cls).getMethod("init").invoke(null); }
+        catch (ClassNotFoundException e) { Log.warn("[NexMod] missing class " + cls + " (skipped)"); }
+        catch (Throwable e) { Log.err("[NexMod] " + cls + ".init failed: " + e); }
     }
 
     /** Game gọi hàm này khi nạp nội dung: tạo các block/đạn được định nghĩa bằng code (hjson sẽ bổ sung thuộc tính sau). */
