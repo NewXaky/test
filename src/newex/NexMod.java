@@ -60,6 +60,9 @@ import newex.content.ObsOre;
 import newex.content.LoadoutSelection;
 import newex.content.Survival;
 import newex.content.SurvivorSkills;
+import newex.content.Leolyr;
+import newex.content.Elorix;
+import newex.content.NewModePvp;
 import newex.content.Therdum;
 import newex.content.Thermion;
 import newex.content.Pinfyr;
@@ -177,7 +180,10 @@ public class NexMod extends Mod {
         LoadoutSelection.init(); // main.js: require("loadout-selection") đứng trước newmode-survival
         Survival.init();
         SurvivorSkills.init();
+        NewModePvp.init(); // main.js: require("newmode-pvp") sau survivor-skills, trước archueng-pvp
         LeolyrSummoner.init();
+        Leolyr.init();
+        Elorix.init();
         Tankani.init();
         Tankani4k.init();
         DroneLauncher.init();
@@ -217,6 +223,7 @@ public class NexMod extends Mod {
         Laytery.create();
         Cin.create();
         Therdum.create();
+        NewModePvp.loadStatuses(); // 4 StatusEffect pvp-* phải tạo trong loadContent (bài 119)
         ArchuengPvp.create();
         Xylaon.create();
         Heliyron.create();

@@ -2628,7 +2628,7 @@ public class NewModePvp {
         try { b.absorb(); } catch (Throwable err) {}
         if (!Vars.headless) { try { Fx.absorb.at(b.x, b.y); } catch (Throwable err) {} }
     }
-    static void initPilot() {
+    public static void initPilot() {
         Log.info("[NexPvp] neo fx v9 loaded");
         Events.run(Trigger.update, () -> neoScan());
         if (!Vars.headless) Events.run(Trigger.draw, () -> neoDrawLive());
@@ -7092,6 +7092,29 @@ public class NewModePvp {
         initHudPanel();
         initCameraKeys();
         initJoystick();
+    }
+
+    /** Cau noi thay cho global.NexPvp (NewMode.pvp) - tuong tu Survival.HOOK. */
+    static final NewMode.ModeHook HOOK = new NewMode.ModeHook() {
+        @Override public int rewardPoints() { return REWARD_POINTS; }
+        @Override public void onBegin() { NewModePvp.onBegin(); }
+        @Override public void onResume() { NewModePvp.onResume(); }
+        @Override public void persistStore() { NewModePvp.apiPersistStore(); }
+    };
+
+    /** Goi MOT lan tu NexMod.init() (thu tu main.js: sau SurvivorSkills, truoc ArchuengPvp). */
+    public static void init() {
+        NewMode.pvp = HOOK;
+        ArchuengPvp.pvpActive = NewModePvp::apiIsActive;
+        LoadoutSelection.pvpSettingsHook = NewModePvp::addSettings;
+        initBase();
+        initDrawShield();
+        initPilot();
+        initUpdate();
+        initNet();
+        initUnitListUi();
+        initExpUi();
+        initClientUi();
     }
 
 }

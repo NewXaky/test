@@ -123,6 +123,8 @@ public final class Therdum {
             if (tile != null && value >= 10 && value < 20) tile.perkA = value - 10;
         });
         block.buildType = () -> new TherdumBuild(block);
+        NewModePvp.therdumFx = muzzleFx;      // JS global.NexTherdum {fx, bullet}
+        NewModePvp.therdumBullet = bullet;
     }
 
     public static class TherdumBuild extends ItemTurret.ItemTurretBuild {
