@@ -2,7 +2,11 @@
 
 #define HALFPI 1.5707963267948966
 #define MAX_UV_SHIFT 0.10
+
+// NexBlackHole sẽ chèn "#define MAX_COUNT n" trước khi biên dịch; nếu không có thì dùng 16.
+#ifndef MAX_COUNT
 #define MAX_COUNT 16
+#endif
 
 uniform sampler2D u_texture;
 
@@ -10,12 +14,12 @@ uniform vec2 u_campos;
 uniform vec2 u_resolution;
 
 uniform int u_blackholecount;
-uniform vec4 u_blackholes[MAX_COUNT];        // x, y, bán kính lõi, bán kính ngoài (toạ độ thế giới)
+uniform vec4 u_blackholes[MAX_COUNT];         // x, y, bán kính lõi, bán kính ngoài (toạ độ thế giới)
 uniform vec4 u_blackholeStrengths[MAX_COUNT]; // x = độ mạnh
 
 varying vec2 v_texCoords;
 
-// Dựa theo shader lỗ đen của MEEPofFaith / WarHammer
+// Dựa theo shader lỗ đen của MEEPofFaith / WarHammer (TearingSpace.frag)
 float interp(float a){
     float f = a - 1.0;
     float t = a;

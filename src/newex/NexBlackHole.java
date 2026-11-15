@@ -25,27 +25,28 @@ import mindustry.graphics.Layer;
 import mindustry.graphics.Shaders;
 
 /**
- * Cơ chế lỗ đen (lấy ý tưởng từ WarHammer, MainRenderer.endDistortion).
+ * Cơ chế lỗ đen (theo WarHammer MainRenderer.endDistortion).
  *
- * Cách hoạt động mỗi khung hình:
+ * Mỗi khung hình:
  *  1) Layer.floor - 8: bắt đầu chụp toàn cảnh vào FrameBuffer.
  *  2) Layer.effect + 0.03 (CORE_Z): dừng chụp, vặn méo ảnh quanh từng lỗ đen bằng shaders/blackhole.frag,
- *     vẽ ảnh đã méo lên màn hình, rồi vẽ LÕI ĐEN ĐẶC lên trên cùng.
+ *     vẽ ảnh đã méo lên màn hình, rồi vẽ LÕI ĐEN ĐẶC lên trên cùng (đè lên đạn, hiệu ứng, glow trắng).
  *
- * Vì lõi đen được vẽ SAU và ở layer CAO HƠN mọi thứ vẽ bên dưới (đạn, hiệu ứng, glow trắng...), nó đè lên chúng và
- * biến vùng đó thành đen tuyền. Muốn glow vẫn hiện trên lõi, vẽ glow ở layer > CORE_Z.
+ * Số lỗ đen tối đa là 512. Shader được dựng lại với MAX_COUNT lớn dần (4 -> 8 -> ... -> 512) khi cần, giống WarHammer.
  *
  * Dùng: NexBlackHole.add(x, y, bánKínhLõi, bánKínhNgoài, alpha, độMạnh) MỖI khung hình trong draw() của đạn/block.
  */
 public final class NexBlackHole {
     private NexBlackHole() {}
 
-    /** Số lỗ đen tối đa cùng lúc (khớp MAX_COUNT trong blackhole.frag). */
-    public static final int MAX = 16;
-    /** Layer vẽ lõi đen: mọi thứ có layer thấp hơn sẽ bị lõi này che. */
+    /** Số lỗ đen tối đa cùng lúc. */
+    public static final int MAX = 512;
+    /** Layer vẽ lõi đen: mọi thứ có layer thấp hơn sẽ bị lõi này che. Muốn glow hiện trên lõi, vẽ glow ở layer > CORE_Z. */
     public static final float CORE_Z = Layer.effect + 0.03f;
     /** Lõi đen vẽ rộng hơn bán kính lõi của shader bao nhiêu lần (WarHammer dùng 1.5). */
     public static float coreScale = 1.5f;
+    /** Nhân độ mạnh vặn méo; đặt 0 để tắt méo nhưng vẫn giữ lõi đen. */
+    public static float distortionScale = 1f;
 
     private static final Blending premultiplied = new Blending(Gl.one, Gl.oneMinusSrcAlpha, Gl.one, Gl.oneMinusSrcAlpha);
 
@@ -56,7 +57,8 @@ public final class NexBlackHole {
 
     private static FrameBuffer buffer, buffer2;
     private static HoleShader shader;
-    private static boolean capturing;
+    private static int shaderMax = 4;
+    private static boolean shaderFailed, loaded, capturing;
 
     public static void init() {
         if (Vars.headless) return;
@@ -68,18 +70,49 @@ public final class NexBlackHole {
         try {
             buffer = new FrameBuffer();
             buffer2 = new FrameBuffer();
-            shader = new HoleShader();
+            shader = createShader(shaderMax);
+            loaded = shader != null;
         } catch (Throwable t) {
-            shader = null;
+            loaded = false;
             Log.err("NexBlackHole: không nạp được shader lỗ đen (cần shaders/blackhole.frag).", t);
         }
     }
 
+    /** Dựng shader với MAX_COUNT = max (chèn #define trước mã fragment, giống WHShaders.createHoleShader). */
+    private static HoleShader createShader(int max) {
+        try {
+            Shader.prependFragmentCode = "#define MAX_COUNT " + max + "\n";
+            return new HoleShader();
+        } catch (Throwable t) {
+            shaderFailed = true;
+            Log.err("NexBlackHole: dựng shader lỗ đen thất bại.", t);
+            return null;
+        } finally {
+            Shader.prependFragmentCode = "";
+        }
+    }
+
+    /** Đảm bảo shader chứa được n lỗ đen; nếu thiếu thì dựng lại với MAX_COUNT lớn hơn. Trả về số lỗ dùng được. */
+    private static int ensureShader(int n) {
+        if (n > shaderMax && !shaderFailed) {
+            int next = shaderMax;
+            while (next < n && next < MAX) next *= 2;
+            HoleShader fresh = createShader(next);
+            if (fresh != null) {
+                HoleShader old = shader;
+                shader = fresh;
+                shaderMax = next;
+                if (old != null) old.dispose();
+            }
+        }
+        return Math.min(n, shaderMax);
+    }
+
     /** Thêm 1 lỗ đen cho khung hình hiện tại (gọi mỗi frame trong draw). */
     public static void add(float x, float y, float inRadius, float outRadius, float alpha, float strength) {
-        if (Vars.headless || shader == null || count >= MAX || inRadius > outRadius || outRadius <= 0f) return;
+        if (Vars.headless || !loaded || count >= MAX || inRadius > outRadius || outRadius <= 0f) return;
         hx[count] = x; hy[count] = y; hin[count] = inRadius; hout[count] = outRadius;
-        halpha[count] = alpha; hstr[count] = Math.max(strength, 0.0001f);
+        halpha[count] = alpha; hstr[count] = Math.max(strength, 0.0001f) * distortionScale;
         count++;
     }
 
@@ -87,10 +120,14 @@ public final class NexBlackHole {
         add(x, y, inRadius, outRadius, alpha, 1f);
     }
 
+    public static void add(float x, float y, float inRadius, float outRadius) {
+        add(x, y, inRadius, outRadius, 1f, 1f);
+    }
+
     // ------------------------------------------------------------------ vẽ
 
     private static void queue() {
-        if (shader == null || Core.settings.getBool("pixelate")) {
+        if (!loaded || Core.settings.getBool("pixelate")) {
             count = 0;   // pixelate: không hỗ trợ chụp ảnh, bỏ lỗ đen
             return;
         }
@@ -111,12 +148,19 @@ public final class NexBlackHole {
     private static void end() {
         if (!capturing) { count = 0; return; }
         capturing = false;
+        if (!buffer.isBound()) { count = 0; return; }
         buffer.end();
+
+        int n = ensureShader(count);
 
         buffer2.resize(Core.graphics.getWidth(), Core.graphics.getHeight());
         buffer2.begin(Color.clear);
-        shader.fill();
-        blit(buffer, shader);        // ảnh đã vặn méo -> buffer2
+        if (shader != null) {
+            shader.fill(n);
+            blit(buffer, shader);        // ảnh đã vặn méo -> buffer2
+        } else {
+            blit(buffer, Shaders.screenspace);
+        }
         buffer2.end();
         blit(buffer2, Shaders.screenspace);   // buffer2 -> màn hình
 
@@ -147,8 +191,8 @@ public final class NexBlackHole {
             super(Core.files.internal("shaders/screenspace.vert"), Vars.tree.get("shaders/blackhole.frag"));
         }
 
-        void fill() {
-            n = count;
+        void fill(int num) {
+            n = num;
             for (int i = 0; i < n; i++) {
                 posUniform[i * 4] = hx[i];
                 posUniform[i * 4 + 1] = hy[i];
