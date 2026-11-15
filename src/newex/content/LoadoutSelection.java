@@ -94,7 +94,7 @@ public final class LoadoutSelection {
         "holyder", "plasanod", "tankani4k", "therdum", "lazash",
         "forstarsilum", "hitekalum", "reguilater", "lavunder", "blaw",
         "dtg-soldern", "indeniter", "rangtaturs", "tyber", "endyr",
-        "sonicor", "leolyr-spawner"
+        "sonicor", "spawner"
     };
 
     static Seq<Block> turretList = new Seq<>();

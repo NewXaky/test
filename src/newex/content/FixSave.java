@@ -19,8 +19,6 @@ import mindustry.type.UnitType;
  */
 public final class FixSave {
     private static final String[] TARGET_UNIT_NAMES = {
-        "newex-leolyr",
-        "newex-elorix",
         "newex-suv-27",
         "newex-reykor"
     };

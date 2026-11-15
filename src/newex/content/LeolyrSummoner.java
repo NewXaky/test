@@ -31,7 +31,7 @@ import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
 import newex.NexNet;
 
-/** Chuyển từ leolyr-summoner.js. Kén triệu hồi Elorix / Leolyr / VUS-27 (đặt sẵn trong content hjson). */
+/** Kén triệu hồi Tank-15 (đặt sẵn trong content hjson). */
 public final class LeolyrSummoner {
     private LeolyrSummoner() {}
 
@@ -126,8 +126,8 @@ public final class LeolyrSummoner {
         });
 
         Events.on(ClientLoadEvent.class, e -> {
-            Block b = Vars.content.getByName(ContentType.block, "newex-leolyr-spawner");
-            if (b == null) b = Vars.content.getByName(ContentType.block, "leolyr-spawner");
+            Block b = Vars.content.getByName(ContentType.block, "newex-spawner");
+            if (b == null) b = Vars.content.getByName(ContentType.block, "spawner");
             if (b == null) return;
 
             b.configurable = true;
@@ -142,7 +142,7 @@ public final class LeolyrSummoner {
     public static class SummonerBuild extends Building {
         boolean summoning = false;
         float summonTimer = 0f;
-        String selectedUnit = "newex-elorix";
+        String selectedUnit = "newex-tank-15";
 
         @Override
         public boolean acceptItem(Building source, Item item) {
@@ -151,9 +151,7 @@ public final class LeolyrSummoner {
 
         /** {copper, silicon} */
         int[] getRequirements() {
-            if (selectedUnit.contains("elorix")) return new int[]{4000, 500};
-            if (selectedUnit.contains("vus") || selectedUnit.contains("suv")) return new int[]{3500, 600};
-            return new int[]{2000, 300};
+            return new int[]{4000, 500};
         }
 
         private void startSummon() {
@@ -203,24 +201,10 @@ public final class LeolyrSummoner {
             card.margin(10f);
 
             unitEntry(card, dialog,
-                t("[orange]⚡ SELECT SUMMON: ELORIX UNIT[]", "[orange]⚡ CHỌN TRIỆU HỒI: ELORIX UNIT[]"), "newex-elorix",
-                t("[orange]Target set: Elorix[]", "[orange]Đã cài đặt mục tiêu: Elorix[]"),
-                t("[gold]📊 ELORIX ANALYSIS DATA:[]\n• [accent]Summon Cost:[] [white]4000 Copper[] + [white]500 Silicon[]\n• [accent]Leveling:[] Automatically absorbs Copper & Titanium from inventory to upgrade (Max Lv10).\n• [pink]Shotgun Firepower:[] Fires multi-elemental spread shots for high area damage.\n• [sky]Dash & Shield:[] Double tap to dash through obstacles, gaining [Thin Armor] for 5s.",
-                  "[gold]📊 DỮ LIỆU PHÂN TÍCH THỰC THỂ ELORIX:[]\n• [accent]Chi phí triệu hồi:[] [white]4000 Copper[] + [white]500 Silicon[]\n• [accent]Tăng tiến cấp độ:[] Tự động hút Copper & Titanium từ kho cá nhân để nâng cấp (Max Lv10).\n• [pink]Hỏa lực Shotgun:[] Bắn chùm đạn đa nguyên tố xả diện rộng cực mạnh.\n• [sky]Lướt & Tạo Giáp:[] Nhấp đúp để lướt dẹp chướng ngại vật, nhận hiệu ứng giáp [Thin Armor] phòng thủ 5s."));
-            card.add().height(16f).row();
-
-            unitEntry(card, dialog,
-                t("[cyan]🤖 SELECT SUMMON: LEOLYR UNIT[]", "[cyan]🤖 CHỌN TRIỆU HỒI: LEOLYR UNIT[]"), "newex-leolyr",
-                t("[cyan]Target set: Leolyr[]", "[cyan]Đã cài đặt mục tiêu: Leolyr[]"),
-                t("[gold]📊 LEOLYR ANALYSIS DATA:[]\n• [accent]Summon Cost:[] [white]2000 Copper[] + [white]300 Silicon[]\n• [accent]Evolution System:[] Absorbs Copper and Silicon from inventory (Max Lv10).\n• [pink]Dual Weapon:[] Alternating fire, increasing attack speed with level.\n• [sky]Dash & Shield Core:[] Dashing deploys a static shield core lasting 10 seconds.",
-                  "[gold]📊 DỮ LIỆU PHÂN TÍCH THỰC THỂ LEOLYR:[]\n• [accent]Chi phí triệu hồi:[] [white]2000 Copper[] + [white]300 Silicon[]\n• [accent]Hệ thống Tiến hóa:[] Hấp thụ Đồng và Silicon trực tiếp từ kho đồ (Tối đa Cấp 10).\n• [pink]Vũ khí kép:[] Bắn luân phiên, tăng tiến tốc độ xả đạn theo level.\n• [sky]Lướt & Tạo Lõi Khiên:[] Lướt tạo lõi khiên tĩnh tồn tại 10 giây."));
-            card.add().height(16f).row();
-
-            unitEntry(card, dialog,
-                t("[purple]👾 SELECT SUMMON: VUS-27 UNIT[]", "[purple]👾 CHỌN TRIỆU HỒI: VUS-27 UNIT[]"), "newex-vus-27",
-                t("[purple]Target set: VUS-27[]", "[purple]Đã cài đặt mục tiêu: VUS-27[]"),
-                t("[gold]📊 VUS-27 ANALYSIS DATA:[]\n• [accent]Summon Cost:[] [white]3500 Copper[] + [white]600 Silicon[]\n• [accent]Transformation:[] Double Tap to switch between VUS-27 and SUV-27.\n• [pink]VUS-27 Firepower:[] Laser Cannon (160 Dmg, 240 range) & Overdrive buffing fire rate by 1500%.\n• [sky]SUV-27 Mechanics:[] Accelerates over time (+200% Speed), stopping fires a 20-degree shotgun spread.",
-                  "[gold]📊 DỮ LIỆU PHÂN TÍCH THỰC THỂ VUS-27:[]\n• [accent]Chi phí triệu hồi:[] [white]3500 Copper[] + [white]600 Silicon[]\n• [accent]Khả năng Biến hình:[] Nhấp đúp (Double Tap) để chuyển đổi qua lại giữa VUS-27 và SUV-27.\n• [pink]Hỏa lực VUS-27:[] Pháo Laser (160 Dmg, 240 dài) & Overdrive buff 1500% tốc bắn.\n• [sky]Cơ chế SUV-27:[] Càng bay càng nhanh (+200% Tốc độ), dừng đột ngột xả Shotgun 20 độ."));
+                t("[orange]⚡ SELECT SUMMON: TANK-15[]", "[orange]⚡ CHỌN TRIỆU HỒI: TANK-15[]"), "newex-tank-15",
+                t("[orange]Target set: Tank-15[]", "[orange]Đã cài đặt mục tiêu: Tank-15[]"),
+                t("[gold]📊 TANK-15 ANALYSIS DATA:[]\n• [accent]Summon Cost:[] [white]4000 Copper[] + [white]500 Silicon[]\n• [pink]Rail Laser:[] Fires piercing laser pairs; reload speeds up to x5 while firing.",
+                  "[gold]📊 DỮ LIỆU PHÂN TÍCH TANK-15:[]\n• [accent]Chi phí triệu hồi:[] [white]4000 Copper[] + [white]500 Silicon[]\n• [pink]Súng Rail Laser:[] Bắn cặp tia laser xuyên giáp, tốc độ nạp tăng tới x5 khi bắn liên tục."));
 
             ScrollPane scroll = new ScrollPane(card);
             scroll.setScrollingDisabled(true, false);

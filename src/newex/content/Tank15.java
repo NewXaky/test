@@ -29,6 +29,7 @@ import mindustry.entities.part.DrawPart.PartParams;
 import mindustry.entities.part.DrawPart.PartProgress;
 import mindustry.entities.pattern.ShootAlternate;
 import mindustry.gen.Bullet;
+import mindustry.gen.Sounds;
 import mindustry.gen.TankUnit;
 import mindustry.gen.Unit;
 import mindustry.graphics.Drawf;
@@ -45,8 +46,8 @@ import newex.graphics.NexSettings;
  *
  * <p>Cơ chế:
  * <ul>
- *   <li>1 súng rail laser ở giữa (gộp từ 2 súng rail laser hai bên hông cũ, giữ nguyên tia bắn):
- *       bắn cặp tia xuyên 300 đơn vị, nạp đạn nhanh dần khi bắn liên tục (AccelerateReload tới x5 sau 5 giây).</li>
+ *   <li>Pháo xoay 4 nòng ở giữa bắn cặp tia rail laser xuyên 300 đơn vị, nạp nhanh dần khi bắn liên tục
+ *       (AccelerateReload tới x5 sau 5 giây).</li>
  * </ul>
  */
 public final class Tank15 {
@@ -59,20 +60,23 @@ public final class Tank15 {
 
     // ------------------------------------------------------------------ màu
     private static Color outline() { return Color.valueOf("26362f"); }
-    /** Màu đạn/tia: xanh xám (lấy đúng tông màu giáp thân unit). */
-    private static Color shootColor() { return Color.valueOf("96b098"); }
+    private static Color heatColor() { return Color.valueOf("9ee8ff"); }
+    /** Màu đạn/tia: xanh lam-lục (khớp bảng màu sprite mới). */
+    private static Color shootColor() { return Color.valueOf("4fd2f0"); }
 
     /** Gọi từ NexMod.loadContent(). */
     public static void create() {
         final Color ORANGE = shootColor();
+        final Color ORANGE_LIGHT = ORANGE.cpy().lerp(Color.white.cpy(), 0.7f);
+        final Color HEAT = heatColor();
         final Color OUTLINE = outline();
 
         tank15 = new UnitType("tank-15") {{
             constructor = TankUnit::create;
 
             localizedName = "Tank-15";
-            description = "Xe tăng xung kích hạng nặng trang bị súng rail laser xuyên giáp ở giữa thân.";
-            details = "Bắn liên tục giúp tốc độ nạp đạn tăng dần tới x5; mỗi loạt bắn ra cặp tia laser xuyên qua mục tiêu trên đường đạn.";
+            description = "Xe tăng xung kích hạng nặng trang bị pháo xoay 4 nòng và 2 súng rail laser.";
+            details = "Pháo xoay cần một lúc bắn liên tục mới đạt tốc độ bắn tối đa (x5), đạn xuyên 3 mục tiêu và có 10% chí mạng.";
 
             squareShape = true;
             omniMovement = false;
@@ -97,25 +101,43 @@ public final class Tank15 {
 
             abilities.add(new AccelerateReload(300, 60, 5, 150));
 
-            // ---- súng rail laser ở giữa (gộp từ 2 súng rail laser 2 bên hông cũ, giữ nguyên tia bắn)
-            weapons.add(new Weapon("newex-tank-15-laser-weapon") {{
+            // ---- pháo xoay chính 4 nòng
+            weapons.add(new Weapon("newex-tank-15-weapon1") {{
+                layerOffset = 0.04f;
                 y = -19 / 4f;
                 x = 0;
+                reload = 40;
                 mirror = false;
-                reload = 80;
-                ejectEffect = Fx.none;
+                ejectEffect = Fx.casing3Double;
                 recoil = 2f;
                 shootSound = Vars.tree.loadSound("tank-15-laser");
-                shoot = new ShootAlternate() {{
-                    shotDelay = 8;
-                    shots = 2;
-                    spread = 16f / 4f;
-                }};
+                inaccuracy = 4f;
+                velocityRnd = 0.15f;
+                xRand = 0.3f;
+                recoils = 4;
+                heatColor = HEAT;
 
                 rotate = true;
-                rotateSpeed = 1.5f;
+                rotateSpeed = 2f;
 
-                shootY = 16 / 4f;
+                shoot = new ShootAlternate() {{
+                    barrels = 4;
+                    shots = 2;
+                    shotDelay = 8;
+                    spread = 8 / 4f;
+                }};
+
+                shootY = 120 / 4f;
+                shootX = 0;
+
+                float x2 = 0 / 4f, y1 = 80 / 4f;
+
+                parts.add(new BarrelPart("-barrel") {{
+                    x = x2;
+                    y = y1 + recoil / 4f;
+                    intervalWidth = 16 / 4f;
+                    reloadProgress = heatProgress = progress = PartProgress.recoil;
+                }});
 
                 bullet = new RailBulletType() {{
                     length = 300;

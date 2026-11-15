@@ -230,7 +230,7 @@ public final class SurvivorSkills {
         SKILL_SRC.add(sk("sonicor", "Sóng âm xuyên, đẩy lùi", "Sonic wave, knockback", s -> {
             s.speed = 10; s.dmg = 7; s.life = 30; s.w = 14; s.h = 4; s.back = "cfe9ff"; s.pierce = 6; s.knock = 5; s.reload = 20; s.range = 280;
         }));
-        SKILL_SRC.add(sk("leolyr-spawner", "Mảnh tinh thể tự dẫn", "Homing crystal shards", s -> {
+        SKILL_SRC.add(sk("spawner", "Mảnh tinh thể tự dẫn", "Homing crystal shards", s -> {
             s.speed = 3.5f; s.dmg = 16; s.life = 130; s.w = 7; s.h = 7; s.back = "c8ff7a"; s.homing = 0.22f; s.homingRange = 260; s.pellets = 2; s.spread = 40; s.reload = 28; s.range = 400;
         }));
     }
@@ -312,7 +312,7 @@ public final class SurvivorSkills {
         DESC.put("tyber", new String[]{"Tên lửa 3 nòng, tự bắn tầm nhiệt và nổ xung kích", "3-barrel missiles, extra heat-seekers and shock pulses"});
         DESC.put("endyr", new String[]{"Xả đạn năng lượng / laser diện rộng vào vùng mục tiêu", "Area energy and laser barrages on a target zone"});
         DESC.put("sonicor", new String[]{"Sóng âm xuyên, đẩy lùi mục tiêu (bản rút gọn)", "Piercing sonic wave with knockback (simplified)"});
-        DESC.put("leolyr-spawner", new String[]{"Mảnh tinh thể tự dẫn (bản rút gọn)", "Homing crystal shards (simplified)"});
+        DESC.put("spawner", new String[]{"Mảnh tinh thể tự dẫn (bản rút gọn)", "Homing crystal shards (simplified)"});
     }
 
     static String descOf(SkillDef def) {

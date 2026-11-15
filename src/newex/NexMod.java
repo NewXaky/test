@@ -53,8 +53,6 @@ import newex.content.Laytery;
 import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
 import newex.content.Buffetles;
-import newex.content.Elorix;
-import newex.content.Leolyr;
 import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.Sonicor;
@@ -175,12 +173,10 @@ public class NexMod extends Mod {
         Tyber.init();
         NewMode.init();
         Sonicor.init();
-        Elorix.init();
         Buffetles.init();
         LoadoutSelection.init(); // main.js: require("loadout-selection") đứng trước newmode-survival
         Survival.init();
         SurvivorSkills.init();
-        Leolyr.init();
         LeolyrSummoner.init();
         Tankani.init();
         Tankani4k.init();
