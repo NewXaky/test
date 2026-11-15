@@ -46,8 +46,8 @@ public final class Flarmed {
 
     private static StatusEffect sBong, sViem;
 
-    /** Gọi trong NexMod.init() (giai đoạn loadContent để StatusEffect nhận tiền tố mod, như Emperical). */
-    public static void init() {
+    /** Gọi trong NexMod.loadContent(): StatusEffect phải tạo ở đây, KHÔNG tạo trong constructor NexMod (import mod sẽ trùng tên). */
+    public static void create() {
         sBong = new StatusEffect("bong");
         sBong.localizedName = "Bỏng";
         sBong.color = cOr;
@@ -63,7 +63,9 @@ public final class Flarmed {
         };
         sViem.localizedName = "Viêm hỏa";
         sViem.color = cRed;
+    }
 
+    public static void init() {
         Events.on(ContentInitEvent.class, e -> setup());
     }
 

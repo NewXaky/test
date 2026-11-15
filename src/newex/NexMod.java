@@ -261,6 +261,8 @@ public class NexMod extends Mod {
         Swordoder.create();
         Thermion.create(); // status/đạn/drone của Thermion (bài 109–111)
         Tank15.create(); // unit Tank-15
+        Emperical.create(); // paralyzed/oppressive (không tạo trong constructor)
+        Flarmed.create(); // bong/viem-hoa
     }
 
     static void applyNexDefaultsIfNeeded() {

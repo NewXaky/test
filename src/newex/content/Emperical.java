@@ -376,9 +376,8 @@ public final class Emperical {
         Draw.reset();
     }
 
-    public static void init() {
-        createEffects();
-
+    /** Gọi trong NexMod.loadContent(): StatusEffect PHẢI tạo ở đây (nhận tiền tố mod, không chạy lúc import mod). */
+    public static void create() {
         paralyzed = new StatusEffect("paralyzed");
         paralyzed.localizedName = "Paralyzed";
         paralyzed.speedMultiplier = 0.6f;
@@ -388,6 +387,14 @@ public final class Emperical {
         oppressive.localizedName = "Oppressive";
         oppressive.speedMultiplier = 0f;
         oppressive.reloadMultiplier = 0f;
+
+        // init() (constructor) chạy trước create() (loadContent) nên gán status cho đạn ở đây.
+        if (bLaser != null) bLaser.status = oppressive;
+        if (bLightning != null) bLightning.status = paralyzed;
+    }
+
+    public static void init() {
+        createEffects();
 
         EBasic frag = new EBasic(0f, false);
         frag.damage = 0f; frag.speed = 1f; frag.lifetime = 14.4f; frag.width = 0f; frag.height = 0f;
@@ -432,12 +439,12 @@ public final class Emperical {
         laser.damage = 900f; laser.lifetime = 30f; laser.width = 56f; laser.length = 480f;
         laser.pierce = true; laser.pierceCap = 999; laser.pierceArmor = true;
         laser.colors = new Color[]{COLOR_ALT, COLOR, WHITE};
-        laser.status = oppressive; laser.statusDuration = 120f;
+        laser.statusDuration = 120f;
         bLaser = laser;
 
         ELightning lightning = new ELightning();
         lightning.damage = 60f; lightning.lightningLength = 45; lightning.lightningColor = COLOR_ALT;
-        lightning.status = paralyzed; lightning.statusDuration = 90f;
+        lightning.statusDuration = 90f;
         bLightning = lightning;
 
         Events.on(WorldLoadEvent.class, e -> Time.run(10f, Emperical::updateMenuVisibility));
