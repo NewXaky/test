@@ -5,7 +5,7 @@ import arc.math.Rand;
 import arc.math.geom.Vec2;
 import mindustry.Vars;
 
-/** Các hàm tiện ích mà graphics của WarHammer cần (trích từ WHUtils). */
+/** Các hàm tiện ích cho graphics, trích từ WarHammer. */
 public final class NexGfxUtil {
     private NexGfxUtil() {}
 

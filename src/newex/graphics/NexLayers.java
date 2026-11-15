@@ -2,7 +2,7 @@ package newex.graphics;
 
 import mindustry.graphics.Layer;
 
-/** Các layer vẽ shader (lấy từ WHContent của WarHammer). */
+/** Các layer vẽ shader (lấy từ WarHammer). */
 public final class NexLayers {
     private NexLayers() {}
 

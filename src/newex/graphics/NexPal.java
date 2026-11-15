@@ -19,8 +19,8 @@ public final class NexPal {
     public static Color thurmixRed;
     public static Color thurmixRedLight;
     public static Color thurmixRedDark;
-    public static Color WHYellow;
-    public static Color WHYellow2;
+    public static Color NexYellow;
+    public static Color NexYellow2;
     public static Color ShootOrange;
     public static Color ShootOrangeLight;
     public static Color Outline;
@@ -58,8 +58,8 @@ public final class NexPal {
         thurmixRedLight = Color.valueOf("ffced0");
         thurmixRedDark = thurmixRed.cpy().lerp(Color.black, 0.9F);
 
-        WHYellow = Color.valueOf("FFFBBDE1").lerp(Pal.slagOrange, 0.1f);
-        WHYellow2 = Pal.accent.cpy().lerp(Color.white, 0.6F);
+        NexYellow = Color.valueOf("FFFBBDE1").lerp(Pal.slagOrange, 0.1f);
+        NexYellow2 = Pal.accent.cpy().lerp(Color.white, 0.6F);
         ShootOrange = Pal.bulletYellowBack.cpy().lerp(Pal.slagOrange.cpy(), 0.25f).lerp(Color.orange.cpy(), 0.25f).lerp(Pal.coalBlack.cpy(), 0.05f);
         ShootOrangeLight = ShootOrange.cpy().lerp(Color.white.cpy(), 0.7F);
 

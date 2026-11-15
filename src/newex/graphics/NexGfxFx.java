@@ -15,7 +15,7 @@ import static arc.graphics.g2d.Draw.color;
 import static arc.graphics.g2d.Lines.*;
 import static arc.math.Angles.randLenVectors;
 
-/** Các Effect nền mà BeamLightning / PositionLightning / Drawn dùng (trích từ WHFx của WarHammer). */
+/** Các Effect nền mà BeamLightning / PositionLightning / Drawn dùng (trích từ WarHammer). */
 public final class NexGfxFx {
     private NexGfxFx() {}
 

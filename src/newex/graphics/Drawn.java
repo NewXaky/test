@@ -29,7 +29,7 @@ import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.ui.Fonts;
 import newex.graphics.NexGfxFx;
-import newex.util.WHInterp;
+import newex.util.NexInterp;
 import newex.graphics.NexGfxUtil;
 import newex.util.Vec2Seq;
 
@@ -319,7 +319,7 @@ public final class Drawn{
     }
 
     public static float rotator_90(float in, float margin){
-        return 90.0F * WHInterp.pow10.apply(Mathf.curve(in, margin, 1.0F - margin));
+        return 90.0F * NexInterp.pow10.apply(Mathf.curve(in, margin, 1.0F - margin));
     }
 
     public static float rotator_90(){
@@ -327,7 +327,7 @@ public final class Drawn{
     }
 
     public static float rotator_120(float in, float margin){
-        return 120.0F * WHInterp.pow10.apply(Mathf.curve(in, margin, 1.0F - margin));
+        return 120.0F * NexInterp.pow10.apply(Mathf.curve(in, margin, 1.0F - margin));
     }
 
     public static float cycle(float phaseOffset, float T){

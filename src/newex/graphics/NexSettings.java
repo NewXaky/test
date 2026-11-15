@@ -3,7 +3,7 @@ package newex.graphics;
 import arc.Core;
 
 /**
- * Cài đặt đồ họa (thay WHSettings của WarHammer). Lưu trong Core.settings nên có thể chỉnh bằng
+ * Cài đặt đồ họa (thay cho hệ thống cài đặt của WarHammer). Lưu trong Core.settings nên có thể chỉnh bằng
  * Core.settings.put("nex-effect-enabled", false) hoặc thêm checkbox vào menu mod sau.
  */
 public final class NexSettings {
