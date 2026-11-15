@@ -21,6 +21,7 @@ import newex.content.Antikei;
 import newex.content.ArchuengPvp;
 import newex.content.BalashilonBlock;
 import newex.content.BeryiDrills;
+import newex.content.Blaw;
 import newex.content.Blixalum;
 import newex.content.Cin;
 import newex.content.Comduik;
@@ -53,6 +54,7 @@ import newex.content.LaserChargerUranilum;
 import newex.content.Korynd;
 import newex.content.Buffetles;
 import newex.content.Elorix;
+import newex.content.Leolyr;
 import newex.content.LeolyrSummoner;
 import newex.content.NewMode;
 import newex.content.Sonicor;
@@ -177,6 +179,7 @@ public class NexMod extends Mod {
         LoadoutSelection.init(); // main.js: require("loadout-selection") đứng trước newmode-survival
         Survival.init();
         SurvivorSkills.init();
+        Leolyr.init();
         LeolyrSummoner.init();
         Tankani.init();
         Tankani4k.init();
@@ -238,6 +241,7 @@ public class NexMod extends Mod {
         Lazash.create();
         Lyvervon.create();
         Dor.create();
+        Blaw.create();
         Maxitoner.create();
         Plasanod.create(); // sau Sta.create() vì cần Sta.cei
         Nucleytor.create();

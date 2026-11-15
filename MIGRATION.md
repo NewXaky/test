@@ -281,6 +281,9 @@ Mỗi mục: lỗi gặp → vì sao → cách đúng. Đọc trước khi chuy�
 117. **CargoDrone – chuyển số ngẫu nhiên.** `Mathf.randomSeed(id*7919+17)` (1 tham số) → `Mathf.randomSeed(id * 7919L + 17L, 0f, 1f)` (dùng `long` để khỏi tràn int; JS dùng double). Mọi `Mathf.random/randomSeed(a, b)` literal viết `f` (bài 20). `Math.floor(...)` ép `(int)` khi làm chỉ số.
 118. **CargoDrone – lưu ý khi biên dịch thật (chưa kiểm).** Cần xem: `Units.nearbyEnemies(team, x, y, radius, Cons<Unit>)` (bản bán kính), `Hitboxc.deltaX()/deltaY()`, `Bullet.timer.get(int,float)`, `Lines.arc(x,y,r,fraction,rotation)`, `Draw.color(Color,float)`, `Unit.damagePierce`, các hàm `maxHealth(float)/armor(float)` trên Unit, và việc `homingDelay` có ở BulletType v157. Cú pháp đã kiểm bằng JRE (bài 22): chỉ còn lỗi "cannot find symbol/does not override" do thiếu jar. Java 8: không dùng `instanceof` kèm biến (pattern matching).
 
+
+119. **Blaw – chuyển xong nhưng KHÔNG chạy: lớp không được đăng ký trong NexMod + sai kiểu block.** (a) `Blaw.init()` không ai gọi nên `buildType` (MK2/MK2B) không bao giờ được gán. (b) JS gốc dùng kiểu (a) `extend(ItemTurret, "blaw")` (hjson không có `type:`), nhưng bản Java đầu tiên viết theo kiểu (b) (tìm block theo tên trong `ContentInitEvent`) → không có ai tạo block. → Đổi thành `Blaw.create()` tạo `new ItemTurret("blaw")` + gọi trong NexMod cạnh `Dor.create()`; `ContentInitEvent` chỉ còn đặt âm thanh/đạn titan sau hjson (bài 18, 29). **Quy trình né lỗi:** sau khi chuyển mỗi file, kiểm hai việc: (1) `grep Ten.create/init NexMod.java`; (2) hjson có `type:` hay không so với JS (`extend(...)` = kiểu a, `Vars.content.getByName` = kiểu b). Script rà soát: liệt kê lớp có `public static void create()/init()` mà không ai gọi. Lần rà này còn phát hiện `Leolyr.init()` cũng chưa được gọi (đã thêm).
+
 1. ~~lazash.js~~ (xong)
 2. ~~nethyr.js~~ (xong)
 3. ~~hitekalum.js~~ (xong)

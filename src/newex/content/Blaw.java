@@ -23,6 +23,7 @@ import mindustry.entities.bullet.BasicBulletType;
 import mindustry.entities.bullet.BulletType;
 import mindustry.game.EventType.ContentInitEvent;
 import mindustry.gen.Call;
+import mindustry.type.Category;
 import mindustry.gen.Icon;
 import mindustry.graphics.Layer;
 import mindustry.ui.Styles;
@@ -59,7 +60,7 @@ public final class Blaw {
         return en() ? enText : viText;
     }
 
-    public static void init() {
+    public static void create() {
         hitFx = new Effect(40f, e -> {
             Draw.color(e.color);
             float r = 35f * Interp.pow2Out.apply(e.fin());
@@ -78,6 +79,19 @@ public final class Blaw {
         redMk2 = mk(3.64f, 50f, 10f, 24f, "FF0000FF", 120f, 32f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
         blueMk2b = mk(15.86f, 550f, 5f, 12f, "0031FFFF", 0f, 0f, mindustry.content.StatusEffects.freezing, 300f, true, 2);
         redMk2b = mk(15.86f, 550f, 5f, 12f, "FF5A00FF", 40f, 16f, mindustry.content.StatusEffects.blasted, 80f, false, 0);
+
+        // Block do Java tạo bằng new ItemTurret("blaw") nên blaw.hjson KHÔNG có `type:` (bài 29a). JS gốc: extend(ItemTurret, "blaw").
+        base = new ItemTurret("blaw");
+        base.squareSprite = false;
+        base.health = 950;
+        base.size = 3;
+        base.reload = 30f;
+        base.configurable = true;
+        base.category = Category.turret;
+        base.config(Integer.class, (BlawBuild tile, Integer value) -> {
+            if (tile != null) tile.setTier(value);
+        });
+        base.buildType = () -> new BlawBuild(base);
 
         Events.on(ContentInitEvent.class, e -> setup());
     }
@@ -102,18 +116,9 @@ public final class Blaw {
         rightBarrelRegion = PerfCore.region("newex-blaw-ap", "blaw-ap");
         customBaseRegion = PerfCore.region("newex-reinforced-block-3", "reinforced-block-3");
 
-        Block blk = Vars.content.getByName(ContentType.block, "newex-blaw");
-        if (blk == null) blk = Vars.content.getByName(ContentType.block, "blaw");
-        if (!(blk instanceof ItemTurret)) return;
-        base = (ItemTurret) blk;
-
-        base.configurable = true;
+        if (base == null) return;
         base.shootSound = shootSoundCannon;
-        base.ammoTypes.put(Items.titanium, blueMk1);
-        base.config(Integer.class, (BlawBuild tile, Integer value) -> {
-            if (tile != null) tile.setTier(value);
-        });
-        base.buildType = () -> new BlawBuild(base);
+        base.ammoTypes.put(Items.titanium, blueMk1);   // đặt lại sau hjson (bài 18)
     }
 
     public static class BlawBuild extends ItemTurret.ItemTurretBuild {
