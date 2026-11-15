@@ -81,6 +81,7 @@ import newex.content.Reflecounum;
 import newex.content.RedstoneWall;
 import newex.content.SplashFx;
 import newex.content.Sta;
+import newex.content.CargoDrone;
 import newex.content.DroneLauncher;
 import newex.content.Repulsyron;
 import newex.content.Tankani;
@@ -180,6 +181,7 @@ public class NexMod extends Mod {
         Tankani.init();
         Tankani4k.init();
         DroneLauncher.init();
+        CargoDrone.init();
         Repulsyron.init();
         ArchuengPvp.init();
         Erysidus.init();
