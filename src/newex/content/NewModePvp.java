@@ -224,7 +224,11 @@ public class NewModePvp {
     static final float DISRUPT_SPEED_MUL = 2.2f;
     static final int TERRITORY_TILES = 100;
     static final int TERRITORY_RADIUS = TERRITORY_TILES * Vars.tilesize;
-    static final float TERRITORY_SPEED_MUL = 1.2f;
+    static final float TERRITORY_SPEED_MUL = 1.5f;
+    static final int TERRITORY_EXP_PCT = 50; // trong lanh tho: +50% EXP nhan them
+    static final int LATE_EXP_MINUTES = 30; // sau bao nhieu phut tran dau thi bat bonus EXP
+    static final int LATE_EXP_PCT = 2000; // +2000% EXP nhan them (cong don, = x21 neu chi co bonus nay)
+    static final int LATE_EXP_TICKS = LATE_EXP_MINUTES * 3600;
     static final float EXP_PER_HP = 0.1f;
     static final int DEATH_EXP_PCT = 10;
     static final int SOLDIER_EXP_PCT = 10;
@@ -628,12 +632,33 @@ public class NewModePvp {
     /** JS: new Packages.mindustry.ai.types.NoAI() - lop NoAI khong con o v157.4 -> bo dieu khien khong lam gi (script tu lai bang botTick/soldierAI). */
     static final class NoAI extends mindustry.entities.units.AIController { @Override public void updateUnit() {} }
 
+    static boolean lateExpAnnounced = false;
+    /** Da qua LATE_EXP_MINUTES phut ke tu luc bat dau tran (chi tinh o map PvP, chay tren may chu/host). */
+    static boolean lateExpOn() { return isFull() && matchT >= LATE_EXP_TICKS; }
+    static void lateExpCheck() {
+        if (lateExpAnnounced || !lateExpOn()) return;
+        lateExpAnnounced = true;
+        toastAll(tr("[accent]Đã qua " + LATE_EXP_MINUTES + " phút! Mọi người nhận thêm +" + LATE_EXP_PCT + "% EXP.",
+            "[accent]" + LATE_EXP_MINUTES + " minutes in! Everyone now gets +" + LATE_EXP_PCT + "% EXP."), 6f);
+    }
+    /** He so EXP cong don: 1 + (50% neu dang trong lanh tho phe minh) + (2000% sau 30 phut). Chi ap dung o map PvP. */
+    static float expBonusMul(Player pl) {
+        if (!isFull()) return 1f;
+        float bonus = 0f;
+        try {
+            Unit u = pl.unit();
+            if (u != null && u.isValid() && inOwnTerritory(u)) bonus += TERRITORY_EXP_PCT / 100f;
+        } catch (Throwable err) {}
+        if (lateExpOn()) bonus += LATE_EXP_PCT / 100f;
+        return 1f + bonus;
+    }
     static void addExp(Player pl, float amount) { addExp(pl, amount, false); }
     static void addExp(Player pl, float amount, boolean quiet) {
         St st = bind(pl);
         if (st.lv >= maxLevel()) return;
         if (st.pi == PILOT_XIKI) amount = amount * (1 + XIKI_EXP_PCT);
         if (st.pi == PILOT_HIST) amount = amount * (1 + HIST_STAT_PCT);
+        amount = amount * expBonusMul(pl);
         st.exp += amount;
         if (!quiet) notifyExp(pl, amount);
         int before = st.lv, up = 0;
@@ -1101,6 +1126,7 @@ public class NewModePvp {
             if (b == null || b.block != def.block) continue;
             supplyTurret(b, def, tick, auth ? pl : null);
             hostOwner.put(b.id, pl.id);
+            if (isFull() && inOwnTerritory(b.team, b.x, b.y)) territoryFx(b.x, b.y, b.block.size * Vars.tilesize);
             if (st.s[4] > 0) {
                 float rm = 1 + st.s[4] * 0.06f;
                 try { b.applyBoost(rm, 5f); } catch (Throwable err) {}
@@ -2756,13 +2782,37 @@ public class NewModePvp {
         return true;
     }
 
-    static boolean inOwnTerritory(Unit unit) {
-        Seq<CoreBlock.CoreBuild> cores = unit.team.cores();
+    static boolean inOwnTerritory(Team team, float x, float y) {
+        Seq<CoreBlock.CoreBuild> cores = team.cores();
         for (int i = 0; i < cores.size; i++) {
             CoreBlock.CoreBuild c = cores.get(i);
-            if (c != null && c.isValid() && Mathf.dst(unit.x, unit.y, c.x, c.y) <= TERRITORY_RADIUS) return true;
+            if (c != null && c.isValid() && Mathf.dst(x, y, c.x, c.y) <= TERRITORY_RADIUS) return true;
         }
         return false;
+    }
+    static boolean inOwnTerritory(Unit unit) { return inOwnTerritory(unit.team, unit.x, unit.y); }
+
+    // Hieu ung buff lanh tho: giong nucleytorBuffEffect cua Nucleytor (3 soc sang xanh la -> xanh duong bay len tren unit/khoi phao).
+    static final Color TERR_FX_A = Color.valueOf("39e75f"), TERR_FX_B = Color.valueOf("00a2ff");
+    static final Effect territoryBuffFx = new Effect(40f, e -> {
+        float size = e.rotation > 0 ? e.rotation : 16f, half = size / 2f;
+        arc.math.Rand rand = new arc.math.Rand(e.id);
+        for (int i = 0; i < 3; i++) {
+            float rx = rand.random(-half, half), pLife = rand.random(0.5f, 1f);
+            float progress = Math.min(e.fin() / pLife, 1f);
+            if (progress >= 1f) continue;
+            float fout = 1f - progress, travel = rand.random(size * 0.8f, size * 1.3f);
+            float ry = -half + progress * travel, len = 8f * fout;
+            Draw.color(Tmp.c1.set(TERR_FX_A).lerp(TERR_FX_B, progress));
+            Lines.stroke(fout);
+            Lines.line(e.x + rx, e.y + ry - len / 2f, e.x + rx, e.y + ry + len / 2f);
+        }
+        Draw.reset();
+    });
+    /** Chi ve o may co man hinh (headless bo qua); 8%/tick giong Nucleytor. size = hitSize unit hoac size*8 cua khoi. */
+    static void territoryFx(float x, float y, float size) {
+        if (Vars.headless || !(Math.random() < 0.08)) return;
+        try { territoryBuffFx.at(x, y, size); } catch (Throwable err) {}
     }
     static void applyStats(Unit unit) {
         if (!isActive() || (!isFull() && !isTierUnit(unit))) return;
@@ -2811,7 +2861,10 @@ public class NewModePvp {
         if (isPl && unit.type == UnitTypes.disrupt) unit.speedMultiplier *= DISRUPT_SPEED_MUL;
         if (xakyOn) unit.speedMultiplier *= XAKY_SPD_MUL;
         if (histOn) unit.speedMultiplier *= 1 + HIST_STAT_PCT;
-        if (inOwnTerritory(unit)) unit.speedMultiplier *= TERRITORY_SPEED_MUL;
+        if (inOwnTerritory(unit)) {
+            unit.speedMultiplier *= TERRITORY_SPEED_MUL;
+            territoryFx(unit.x, unit.y, unit.hitSize);
+        }
         unit.reloadMultiplier *= 1 + s[4] * 0.06f;
         if (histOn) {
             unit.reloadMultiplier *= 1 + HIST_STAT_PCT;
@@ -3235,10 +3288,21 @@ public class NewModePvp {
             if (st == null) return;
             Team tm = pl.team();
             if (tm == null || tm == Team.derelict) return;
+            // CONG DON chi so cua moi nguoi choi (va bot) cung phe: nhieu nguoi vao host thi loi huong tong chi so da nang cua ho.
             int[] b = best.get(tm.id);
             if (b == null) best.put(tm.id, st.s.clone());
-            else for (int i = 0; i < st.s.length && i < b.length; i++) if (st.s[i] > b[i]) b[i] = st.s[i];
+            else for (int i = 0; i < st.s.length && i < b.length; i++) b[i] += st.s[i];
         });
+        // Doi khong con nguoi choi/bot nao: tra he so khoi/loi ve mac dinh.
+        Seq<Team> allTeams = pvpTeams();
+        for (int ti = 0; ti < allTeams.size; ti++) {
+            Team t0 = allTeams.get(ti);
+            if (best.containsKey(t0.id)) continue;
+            try {
+                mindustry.game.Rules.TeamRule r0 = Vars.state.rules.teams.get(t0);
+                r0.blockHealthMultiplier = 1f; r0.blockDamageMultiplier = 1f;
+            } catch (Throwable err) {}
+        }
         for (Map.Entry<Integer, int[]> e : best.entrySet()) {
             try {
                 Team team = Team.get(e.getKey());
@@ -4670,6 +4734,7 @@ public class NewModePvp {
                 botT -= Time.delta;
                 if (full && botT <= 0) { botT = 60; try { botManage(); } catch (Throwable err) { logOnce("botmanage", "bot manage failed: " + err, false); } }
                 if (full) botTick();
+                if (full) lateExpCheck();
                 if (full) eachPl(NewModePvp::eachBarracks);
                 if (full) eachPl(NewModePvp::eachSoldierAI);
                 bulletStatT -= Time.delta;
@@ -4825,7 +4890,7 @@ public class NewModePvp {
         byId = new HashMap<>(); teamsCache = null; assignCache = null; coreZoneFloor = null; coreZoneChecked = false;
         ecCache.clear(); seenPl.clear(); defsCache = null; equipAng.clear(); equipBeam.clear(); hostOwner.clear();
         if (!Vars.headless) stopBuild();
-        bonusWaveT = 0; matchT = 0; shieldMinT = 0; coreShield.clear(); shieldRecs.clear(); shieldEnded = false; shieldSyncT = 0;
+        bonusWaveT = 0; matchT = 0; lateExpAnnounced = false; shieldMinT = 0; coreShield.clear(); shieldRecs.clear(); shieldEnded = false; shieldSyncT = 0;
         shieldView = new ShieldView(); shieldFlash.clear(); shieldSeenHit.clear();
         vanhauField.clear();
         resetUiState();
@@ -5141,7 +5206,7 @@ public class NewModePvp {
         r.tags.put(TAG_ACTIVE, "1");
         store = new LinkedHashMap<>();
         r.tags.put(TAG_STORE, "{}");
-        matchT = 0; shieldMinT = 0; coreShield.clear(); shieldEnded = false;
+        matchT = 0; lateExpAnnounced = false; shieldMinT = 0; coreShield.clear(); shieldEnded = false;
         r.waves = true; r.waveTimer = true; r.attackMode = false; r.pvp = true; r.winWave = 0; r.waitEnemies = false; r.dropZoneRadius = 0;
         teamsCache = null; assignCache = null; seenPl.clear();
         Seq<Team> tl = pvpTeams();
