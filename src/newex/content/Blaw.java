@@ -47,14 +47,14 @@ import newex.PerfCore;
  * SỬA SO VỚI BẢN CŨ:
  *  - size: blaw.hjson (nạp SAU Java) đặt size 2 và sprite blaw/blaw-ap/blaw-at đều 64x64 = 2x2 ô. Bản cũ đặt size 3 rồi vẽ nền
  *    "reinforced-block-3" (96x96) đè lên pháo 2x2 nên nhìn như bị sai kích thước. Giờ size = 2 và nền lấy theo size THẬT trong load().
- *  - 1 viên: bản cũ mỗi lần bắn chỉ ra 1 viên từ 1 nòng (luân phiên). Giờ mặc định cả 2 nòng bắn cùng lúc (DUAL_BARREL).
+ *  - Mất đạn đỏ: mk() đặt pierceCap = 0 cho đạn Hỏa (không xuyên) nên đạn bị huỷ ngay tick đầu. Giờ chỉ đặt pierceCap cho đạn xuyên.
  *  - read(): bản cũ gọi setTier() nên mỗi lần load save máu bị hồi đầy. Giờ chỉ khôi phục cấp.
  */
 public final class Blaw {
     private Blaw() {}
 
-    /** true: mỗi lượt bắn ra 2 viên (Băng trái + Hỏa phải). false: luân phiên 1 viên/lượt như JS gốc. */
-    private static final boolean DUAL_BARREL = true;
+    /** false (mặc định, đúng JS gốc): luân phiên trái (Băng) -> phải (Hỏa) -> trái ... mỗi lượt 1 viên. true: cả 2 nòng bắn cùng lúc. */
+    private static final boolean DUAL_BARREL = false;
     /** MK2B: số viên/nòng/đợt. Luân phiên = 10; bắn đôi = 5 (đủ 10 viên/đợt, 2 đợt = 20 viên đúng mô tả). */
     private static final int SHOTGUN_PELLETS = DUAL_BARREL ? 5 : 10;
 
@@ -144,7 +144,9 @@ public final class Blaw {
         b.hitEffect = hitFx; b.despawnEffect = hitFx;
         if (splashDmg > 0f) { b.splashDamage = splashDmg; b.splashDamageRadius = splashRad; }
         b.status = status; b.statusDuration = statusDur;
-        b.pierce = pierce; b.pierceCap = pierceCap;
+        // QUAN TRỌNG: đạn không xuyên (Hỏa) phải để pierceCap mặc định -1. Đặt 0 khiến v157 coi "đã va chạm >= 0 mục tiêu"
+        // và huỷ viên đạn ngay khi vừa sinh ra -> chỉ thấy đạn Băng, không thấy đạn Hỏa. JS gốc không hề đặt pierceCap cho đạn Hỏa.
+        if (pierce) { b.pierce = true; b.pierceCap = pierceCap; }
         return b;
     }
 
@@ -409,12 +411,12 @@ public final class Blaw {
                 return t("[gold]⚡ BASE SPECS (MK1) ⚡[]\n[lightgray]Structure Health:[] [green]950 HP[]\n"
                     + "[lightgray]Effective Range:[] [orange]442 pixels[]\n[lightgray]Base Damage:[] [white]25 DMG / bullet[]\n"
                     + "[lightgray]Crit Chance:[] [yellow]80%[]\n[lightgray]Crit Damage:[] [orange]220% (120% bonus)[]\n\n"
-                    + "[cyan]⚡ SPECIAL SKILL MECHANICS:[]\n• Dual Frostfire Barrels: Both barrels fire together: left (Freezing + Pierce 3) and right (40 Splash DMG).\n"
+                    + "[cyan]⚡ SPECIAL SKILL MECHANICS:[]\n• Dual Frostfire Barrels: Alternates firing left barrel (Freezing + Pierce 3) and right barrel (40 Splash DMG).\n"
                     + "• Damage Amplification: Adds +1% DMG for every 100 target HP when HP > 100.\n• Random firing speed pulse from 0% to 200%.",
                   "[gold]⚡ THÔNG SỐ CƠ BẢN (MK1) ⚡[]\n[lightgray]Máu cấu trúc:[] [green]950 HP[]\n"
                     + "[lightgray]Tầm bắn hiệu dụng:[] [orange]442 pixel[]\n[lightgray]Sát thương gốc:[] [white]25 DMG / viên[]\n"
                     + "[lightgray]Tỉ lệ bạo kích:[] [yellow]80%[]\n[lightgray]Sát thương bạo kích:[] [orange]220% (120% bonus)[]\n\n"
-                    + "[cyan]⚡ CƠ CHẾ KỸ NĂNG ĐẶC BIỆT:[]\n• Băng Hỏa Song Nòng: Hai nòng bắn cùng lúc: nòng trái (Đóng băng + Xuyên 3 mục tiêu) và nòng phải (Nổ lan 40 DMG).\n"
+                    + "[cyan]⚡ CƠ CHẾ KỸ NĂNG ĐẶC BIỆT:[]\n• Băng Hỏa Song Nòng: Luân phiên bắn nòng trái (Đóng băng + Xuyên 3 mục tiêu) và nòng phải (Nổ lan 40 DMG).\n"
                     + "• Khuếch đại sát thương: Tăng +1% DMG cho mỗi 100 HP của mục tiêu khi HP > 100.\n• Xung nhịp tốc độ bắn ngẫu nhiên từ 0% đến 200%.");
             } else if (tier == 1) {
                 return t("[cyan]⚡ UPGRADE SPECS MK2 ⚡[]\n[lightgray]Structure Health:[] [green]950 HP[]\n"
