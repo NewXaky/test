@@ -202,6 +202,8 @@ public class NexMod extends Mod {
         Cos.init();
         Thermion.init(); // gắn bar + buildType cho block hjson (bài 29b)
 
+        NexBlackHole.init(); // lỗ đen + lõi đen đè lên glow (shaders/blackhole.frag)
+
         // SplashFx phải khởi tạo SAU CÙNG (JS gốc require splash-fx cuối main.js).
         SplashFx.init();
     }
