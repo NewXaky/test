@@ -74,10 +74,16 @@ public final class Tank15 {
         final Color OUTLINE = outline();
 
         // đạn hố đen: bay tới mục tiêu rồi nổ ra hố đen (500% sát thương = 5 x 80), lực hút cấp 2, phạm vi 50 ô
-        final NexBlackHole.BlackHoleBulletType hole = new NexBlackHole.BlackHoleBulletType(20f, 90f);
+        final NexBlackHole.BlackHoleBulletType hole = new NexBlackHole.BlackHoleBulletType(20f, 90f) {
+            @Override
+            public void despawned(Bullet b) {
+                super.despawned(b);
+                holeBusyUntil.put(ownerKey(b), 0f); // hố đen kết thúc -> cho phép tính tỉ lệ tiếp
+            }
+        };
         hole.damage = 80f * 5f;
         hole.damageInterval = 30f;
-        hole.lifetime = 150f;
+        hole.lifetime = HOLE_LIFE;
         hole.pullForce = 0.7f;
         hole.pullRad = 50f * 8f;
         final BasicBulletType holeShot = new BasicBulletType(8f, 80f * 5f) {{
@@ -407,6 +413,12 @@ public final class Tank15 {
         }
     }
 
+    static final float HOLE_LIFE = 150f;
+    /** Thời điểm (Time.time) mà hố đen của từng xe kết thúc; 0 = không có hố đen đang hoạt động. */
+    static final arc.struct.IntFloatMap holeBusyUntil = new arc.struct.IntFloatMap();
+
+    static int ownerKey(Bullet b) { return b.owner instanceof Unit ? ((Unit) b.owner).id : 0; }
+
     /** Tia rail: 10% thay bằng một viên đạn hố đen bắn tới mục tiêu. */
     public static class RailOrHole extends RailBulletType {
         final BulletType holeShot;
@@ -415,7 +427,10 @@ public final class Tank15 {
 
         @Override
         public void init(Bullet b) {
-            if (Mathf.chance(0.1)) {
+            int key = ownerKey(b);
+            // chỉ tính 10% khi hố đen trước đó của xe này đã kết thúc
+            if (Time.time >= holeBusyUntil.get(key, 0f) && Mathf.chance(0.1)) {
+                holeBusyUntil.put(key, Time.time + holeShot.lifetime + HOLE_LIFE + 30f); // dự phòng nếu đạn mang bị hủy
                 holeShot.create(b.owner, b.team, b.x, b.y, b.rotation());
                 return;
             }
@@ -430,7 +445,7 @@ public final class Tank15 {
 
         @Override
         public void addStats(Table t) {
-            t.add("[lightgray]Tỉ lệ: [white]10% mỗi tia bắn");
+            t.add("[lightgray]Tỉ lệ: [white]10% mỗi tia bắn (chỉ tính khi hố đen trước đã kết thúc)");
             t.row();
             t.add("[lightgray]Sát thương: [white]500% tấn công");
             t.row();

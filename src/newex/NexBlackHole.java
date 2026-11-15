@@ -89,25 +89,30 @@ public final class NexBlackHole {
             // không phát sáng
         }
 
+        // Cons dùng lại (không tạo lambda mới mỗi tick) - update chạy tuần tự nên dùng field chung là an toàn.
+        private Bullet cb;
+        private float cin, cpr;
+        private final arc.func.Cons<mindustry.gen.Unit> pullCons = u -> {
+            if (u == null || !u.targetable(cb.team)) return;
+            float dx = cb.x - u.x, dy = cb.y - u.y;
+            float d = Math.max(Mathf.len(dx, dy), 1f);
+            float f = (1f - Math.min(d / cpr, 1f)) * pullForce * cin * Time.delta / d;
+            u.vel.add(dx * f, dy * f);
+            u.vel.limit(5f);
+        };
+        private final arc.func.Cons<mindustry.gen.Unit> hitCons = u -> {
+            if (u != null && u.targetable(cb.team)) u.damage(damage * cb.damageMultiplier());
+        };
+
         @Override
         public void update(Bullet b) {
             super.update(b);
-            final float in = grow(b);
+            cb = b;
+            cin = grow(b);
+            cpr = pullRad > 0f ? pullRad : outRad;
 
-            final float pr = pullRad > 0f ? pullRad : outRad;
-            Units.nearbyEnemies(b.team, b.x, b.y, pr, u -> {
-                if (u == null || !u.targetable(b.team)) return;
-                float d = Math.max(u.dst(b), 1f);
-                float f = (1f - Math.min(d / pr, 1f)) * pullForce * in * Time.delta;
-                u.vel.add(Tmp.v1.set(b.x - u.x, b.y - u.y).nor().scl(f));
-                u.vel.limit(5f);
-            });
-
-            if (damage > 0f && b.timer(3, damageInterval)) {
-                Units.nearbyEnemies(b.team, b.x, b.y, inRad, u -> {
-                    if (u != null && u.targetable(b.team)) u.damage(damage * b.damageMultiplier());
-                });
-            }
+            if (cin > 0.01f) Units.nearbyEnemies(b.team, b.x, b.y, cpr, pullCons);
+            if (damage > 0f && b.timer(3, damageInterval)) Units.nearbyEnemies(b.team, b.x, b.y, inRad, hitCons);
         }
     }
 }
