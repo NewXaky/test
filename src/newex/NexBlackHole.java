@@ -56,6 +56,8 @@ public final class NexBlackHole {
         public float inRad, outRad;
         public float fadeTime = 72f;
         public float pullForce = 0.35f;
+        /** Bán kính hút (đơn vị thế giới); <=0 thì dùng outRad. */
+        public float pullRad = -1f;
         public float damageInterval = 12f;
 
         public BlackHoleBulletType(float inRad, float outRad) {
@@ -92,10 +94,11 @@ public final class NexBlackHole {
             super.update(b);
             final float in = grow(b);
 
-            Units.nearbyEnemies(b.team, b.x, b.y, outRad, u -> {
+            final float pr = pullRad > 0f ? pullRad : outRad;
+            Units.nearbyEnemies(b.team, b.x, b.y, pr, u -> {
                 if (u == null || !u.targetable(b.team)) return;
                 float d = Math.max(u.dst(b), 1f);
-                float f = (1f - Math.min(d / outRad, 1f)) * pullForce * in * Time.delta;
+                float f = (1f - Math.min(d / pr, 1f)) * pullForce * in * Time.delta;
                 u.vel.add(Tmp.v1.set(b.x - u.x, b.y - u.y).nor().scl(f));
                 u.vel.limit(5f);
             });

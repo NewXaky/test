@@ -22,6 +22,7 @@ import mindustry.content.Fx;
 import mindustry.entities.Effect;
 import mindustry.entities.abilities.Ability;
 import mindustry.entities.bullet.BasicBulletType;
+import mindustry.entities.bullet.BulletType;
 import mindustry.entities.bullet.RailBulletType;
 import mindustry.entities.effect.MultiEffect;
 import mindustry.entities.part.RegionPart;
@@ -38,6 +39,7 @@ import mindustry.type.UnitType;
 import mindustry.type.Weapon;
 import mindustry.world.meta.Env;
 import mindustry.world.meta.StatUnit;
+import newex.NexBlackHole;
 import newex.graphics.Drawn;
 import newex.graphics.NexSettings;
 
@@ -71,12 +73,36 @@ public final class Tank15 {
         final Color HEAT = heatColor();
         final Color OUTLINE = outline();
 
+        // đạn hố đen: bay tới mục tiêu rồi nổ ra hố đen (500% sát thương = 5 x 80), lực hút cấp 2, phạm vi 50 ô
+        final NexBlackHole.BlackHoleBulletType hole = new NexBlackHole.BlackHoleBulletType(20f, 90f);
+        hole.damage = 80f * 5f;
+        hole.damageInterval = 30f;
+        hole.lifetime = 150f;
+        hole.pullForce = 0.7f;
+        hole.pullRad = 50f * 8f;
+        final BasicBulletType holeShot = new BasicBulletType(8f, 80f * 5f) {{
+            lifetime = 300f / 8f;
+            width = height = 14f;
+            frontColor = Color.white;
+            backColor = trailColor = lightColor = Color.valueOf("7a3cff");
+            trailWidth = 4f;
+            trailLength = 12;
+            homingPower = 0.08f;
+            homingRange = 160f;
+            fragBullet = hole;
+            fragBullets = 1;
+            fragRandomSpread = 0f;
+            fragSpread = 0f;
+            fragVelocityMin = fragVelocityMax = 1f;
+            hitSound = Sounds.none;
+        }};
+
         tank15 = new UnitType("tank-15") {{
             constructor = TankUnit::create;
 
             localizedName = "Tank-15";
-            description = "Xe tăng xung kích hạng nặng trang bị pháo xoay 4 nòng và 2 súng rail laser.";
-            details = "Pháo xoay cần một lúc bắn liên tục mới đạt tốc độ bắn tối đa (x5), đạn xuyên 3 mục tiêu và có 10% chí mạng.";
+            description = "Xe tăng xung kích hạng nặng trang bị pháo xoay 4 nòng bắn tia rail laser xuyên giáp.";
+            details = "Bắn liên tục giúp tốc độ nạp đạn tăng dần tới x5; mỗi loạt bắn ra cặp tia laser xuyên qua mục tiêu, có 10% tỉ lệ bắn ra đạn hố đen.";
 
             squareShape = true;
             omniMovement = false;
@@ -100,6 +126,7 @@ public final class Tank15 {
             treadRects = new Rect[]{ new Rect(11 - lx, 6 + 4 - ly, 51, 232) };
 
             abilities.add(new AccelerateReload(300, 60, 5, 150));
+            abilities.add(new BlackHoleInfo());
 
             // ---- pháo xoay chính 4 nòng
             weapons.add(new Weapon("newex-tank-15-weapon1") {{
@@ -139,7 +166,7 @@ public final class Tank15 {
                     reloadProgress = heatProgress = progress = PartProgress.recoil;
                 }});
 
-                bullet = new RailBulletType() {{
+                bullet = new RailOrHole(holeShot) {{
                     length = 300;
                     damage = 80;
                     pointEffectSpace = 10f;
@@ -364,6 +391,11 @@ public final class Tank15 {
         }
 
         @Override
+        public String localized() {
+            return "Tăng tốc nạp đạn";
+        }
+
+        @Override
         public void addStats(Table t) {
             t.add("[lightgray]Tăng khi đang bắn: [white]+" + Strings.autoFixed(60f * 100f / increaseTime, 0) + "%" + StatUnit.perSecond.localized());
             t.row();
@@ -372,6 +404,37 @@ public final class Tank15 {
             t.add("[lightgray]Tốc độ bắn tối đa: [white]" + Strings.autoFixed(maxMultiplier * 100, 0) + "%");
             t.row();
             t.add("[lightgray]Thời gian duy trì: [white]" + Strings.autoFixed(resetTime / 60f, 0) + " " + StatUnit.seconds.localized());
+        }
+    }
+
+    /** Tia rail: 10% thay bằng một viên đạn hố đen bắn tới mục tiêu. */
+    public static class RailOrHole extends RailBulletType {
+        final BulletType holeShot;
+
+        RailOrHole(BulletType holeShot) { this.holeShot = holeShot; }
+
+        @Override
+        public void init(Bullet b) {
+            if (Mathf.chance(0.1)) {
+                holeShot.create(b.owner, b.team, b.x, b.y, b.rotation());
+                return;
+            }
+            super.init(b);
+        }
+    }
+
+    /** Chỉ để hiển thị khả năng "Hố đen" trong bảng thông tin unit. */
+    public static class BlackHoleInfo extends Ability {
+        @Override
+        public String localized() { return "Đạn hố đen"; }
+
+        @Override
+        public void addStats(Table t) {
+            t.add("[lightgray]Tỉ lệ: [white]10% mỗi tia bắn");
+            t.row();
+            t.add("[lightgray]Sát thương: [white]500% tấn công");
+            t.row();
+            t.add("[lightgray]Lực hút: [white]cấp 2, phạm vi 50 ô");
         }
     }
 
